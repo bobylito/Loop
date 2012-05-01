@@ -46,29 +46,32 @@
               context.fillRect(p[0], p[1], p[6], p[6]);
             }
           },
-          animate:function(){
-            var now = (new Date()).getTime();
+          animate:function(now){
             for(var i = 0; i < particles.length; i++){
-              var vd = field(particles[i]);
+              var p = particles[i],
+                  vd = field(p),
+                  elapsedtime = (now - p[7])/1000;
 
-              particles[i][0] = particles[i][0] + particles[i][3];
-              particles[i][1] = particles[i][1] + particles[i][4];
+              p[0] = p[0] + p[3] * elapsedtime;
+              p[1] = p[1] + p[4] * elapsedtime;
 
-              if( particles[i][0] > width+100 || 
-                  particles[i][1] > height+100 || 
-                  particles[i][0] < -100 || 
-                  particles[i][1] < -100 ||
-                  particles[i][2] < now ){
+              if( p[0] > width+100 || 
+                  p[1] > height+100 || 
+                  p[0] < -100 || 
+                  p[1] < -100 ||
+                  p[2] < now ){
                 particles.splice(i, 1);
               }
             }
+            
             return true;
           }
         }
 
     res.create = function(nbParticules) {
+      var now = (new Date()).getTime();
       for(var i = 0; i<nbParticules; i++){
-        particles.push(createParticle());
+        particles.push(createParticle(now));
       }
     };
 
@@ -127,35 +130,41 @@
 /*  
  *  Fire bottom
  */
-/*    loop.registerAnimation(createParticleField(
-        function(){
-          return [  
-            // x 
-            Math.random() * datastore[CANVAS_WIDTH],
-            // y
-            datastore[CANVAS_HEIGHT] ,
-            // Date d'expiration
-            (new Date()).getTime() + Math.random() * 500,
-            // Valeur de déplacement sur x
-            0,
-            // Valeur de deplacement sur y
-            1,
-            30,
-            5
-          ];
-        },
-        function(p){
-          var rx = 0.5 - (Math.random()),
-              ry = - (Math.random());
+/*  var fireFP = createParticleField(
+      function(){
+        return [  
+          // x 
+          Math.random() * datastore[CANVAS_WIDTH],
+          // y
+          datastore[CANVAS_HEIGHT] ,
+          // Date d'expiration
+          (new Date()).getTime() + 300 + Math.random() * 1000,
+          // Valeur de déplacement sur x
+          0,
+          // Valeur de deplacement sur y
+          1,
+          30,
+          2
+        ];
+      },
+      function(p){
+        var rx = 0.5 - (Math.random()),
+            ry = - (Math.random());
 
-          p[3] = p[3] + rx;
-          p[4] = p[4] + ry;
+        p[3] = p[3] + rx;
+        p[4] = p[4] + ry;
 
-          return p;
-        })
-      );
-*/
-  
+        return p;
+      });
+
+  fireFP.create(2000);
+
+  setInterval(function(){
+    fireFP.create(400);
+  }, 10)
+
+  loop.registerAnimation(fireFP);
+  */
 /**
  *
  * FOUNTAIN
@@ -223,18 +232,51 @@
       );
  */ 
   var sunPF = createParticleField(
-    function(){
+    function(now){
+      var r = Math.random();
       return [  
         // x 
         datastore[CANVAS_WIDTH]/3,
         // y
         datastore[CANVAS_HEIGHT]/2,
         // Date d'expiration
-        (new Date()).getTime() + 500 + Math.random()*1500,
+        now + 1500 + Math.random()*600,
         // Valeur de déplacement sur x
-        0.25 - Math.random()/2,
+        Math.sin(r * Math.PI * 2) / 2,
         // Valeur de deplacement sur y
-        0.25 - Math.random()/2,
+        Math.cos(r * Math.PI * 2 ) / 2,
+        //Color tint
+        20,
+        //Particle size
+        3,
+        now 
+      ];
+    },
+    function(p){
+      return p;
+    })
+
+  sunPF.create(500);
+
+  setInterval(function(){
+    sunPF.create(200);
+  }, 100);
+  
+  loop.registerAnimation(sunPF);
+ /* 
+  var explosionPF = createParticleField(
+    function(){
+      return [  
+        // x 
+        2 * datastore[CANVAS_WIDTH] / 3,
+        // y
+        datastore[CANVAS_HEIGHT]/2,
+        // Date d'expiration
+        (new Date()).getTime() + 1000 + Math.random()*2000,
+        // Valeur de déplacement sur x
+        0.5 - Math.random(),
+        // Valeur de deplacement sur y
+        0.5 - Math.random(),
         //Color tint
         20,
         //Particle size
@@ -245,14 +287,14 @@
       return p;
     })
 
-  sunPF.create(100);
+  explosionPF.create(500);
 
   setInterval(function(){
-    sunPF.create(50);
-  }, 100);
+    explosionPF.create(500);
+  }, 10000);
 
-  loop.registerAnimation(sunPF);
-
+  loop.registerAnimation(explosionPF);
+*/
   //Start the loop
   loop.start();
 
