@@ -30,16 +30,14 @@
     }
   })(document, window);
 
-  function createParticleField(createParticle, field){
-    var particles = [];
-
-
-    var context = datastore[CANVAS_CTX],
+  function createParticleField(createParticle, field, compositionMethod){
+    var particles = [],
+        context = datastore[CANVAS_CTX],
         width = datastore[CANVAS_WIDTH],
         height = datastore[CANVAS_HEIGHT],
         res = {
           render:function(){
-            context.globalCompositeOperation = "lighter";
+            context.globalCompositeOperation = compositionMethod;
             for(var i = 0; i < particles.length; i++){
               var p = particles[i];
               context.fillStyle = "hsl("+p[5]+", 90%, 10%)";
@@ -130,8 +128,9 @@
 /*  
  *  Fire bottom
  */
-/*  var fireFP = createParticleField(
-      function(){
+/*
+  var fireFP = createParticleField(
+      function(now){
         return [  
           // x 
           Math.random() * datastore[CANVAS_WIDTH],
@@ -144,7 +143,8 @@
           // Valeur de deplacement sur y
           1,
           30,
-          2
+          2,
+          now
         ];
       },
       function(p){
@@ -164,7 +164,8 @@
   }, 10)
 
   loop.registerAnimation(fireFP);
-  */
+*/
+
 /**
  *
  * FOUNTAIN
@@ -230,15 +231,16 @@
           return p;
         })
       );
- */ 
+ */
+
   var sunPF = createParticleField(
     function(now){
       var r = Math.random();
       return [  
         // x 
-        datastore[CANVAS_WIDTH]/3,
+        datastore[CANVAS_WIDTH] / 2,
         // y
-        datastore[CANVAS_HEIGHT]/2,
+        datastore[CANVAS_HEIGHT] / 2,
         // Date d'expiration
         now + 1500 + Math.random()*600,
         // Valeur de déplacement sur x
@@ -249,54 +251,87 @@
         20,
         //Particle size
         3,
+        //Start time
         now 
       ];
     },
     function(p){
       return p;
-    })
+    },
+    "lighter")
 
   sunPF.create(500);
 
   setInterval(function(){
-    sunPF.create(200);
-  }, 100);
+    sunPF.create(100);
+  }, 50);
   
   loop.registerAnimation(sunPF);
- /* 
-  var explosionPF = createParticleField(
-    function(){
+ 
+  var starfieldPF = createParticleField(
+    function(now){
+      var r = Math.random();
       return [  
         // x 
-        2 * datastore[CANVAS_WIDTH] / 3,
+        datastore[CANVAS_WIDTH] * Math.random(),
         // y
-        datastore[CANVAS_HEIGHT]/2,
+        datastore[CANVAS_HEIGHT],
         // Date d'expiration
-        (new Date()).getTime() + 1000 + Math.random()*2000,
+        now + 10000,
         // Valeur de déplacement sur x
-        0.5 - Math.random(),
+        0,
         // Valeur de deplacement sur y
-        0.5 - Math.random(),
+        (r * -6 + 3) ,
         //Color tint
         20,
         //Particle size
-        3 
+        (1 - r) * 6+1,
+        now
       ];
     },
     function(p){
       return p;
-    })
+    }, 
+    "source-over")
 
-  explosionPF.create(500);
+  setInterval(function(){
+    starfieldPF.create(2);
+  }, 1);
+
+  loop.registerAnimation(starfieldPF);
+  
+  var explosionPF = createParticleField(
+    function(now){
+      var r = Math.random();
+      return [  
+        // x 
+        datastore[CANVAS_WIDTH] / 2,
+        // y
+        datastore[CANVAS_HEIGHT] / 2,
+        // Date d'expiration
+        now + 2000 + Math.random()*3000,
+        // Valeur de déplacement sur x
+        Math.sin(r * Math.PI * 2) / 2,
+        // Valeur de deplacement sur y
+        Math.cos(r * Math.PI * 2 ) / 2,
+        //Color tint
+        20,
+        //Particle size
+        1,
+        now
+      ];
+    },
+    function(p){
+      return p;
+    }, 
+    "lighter")
 
   setInterval(function(){
     explosionPF.create(500);
-  }, 10000);
+  }, 5000);
 
   loop.registerAnimation(explosionPF);
-*/
+
   //Start the loop
   loop.start();
-
-  document.addEventListener()
 })();
