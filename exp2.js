@@ -9,22 +9,31 @@
 
   //keys to the global array
   var CANVAS="CANVAS";
+  var CANVAS_SHADOW="CANVAS_SHADOW";
   var CANVAS_CTX="CANVAS_CTX"; //Contexte canvas
+  var CANVAS_SHADOW_CTX="CANVAS_SHADOW_CTX"; //Contexte canvas
   var CANVAS_HEIGHT="CANVAS_HEIGHT";
   var CANVAS_WIDTH="CANVAS_WIDTH";
 
   //global storage of some interesting infos
   var datastore= (function init(d,w){
-    var canvasDom = d.getElementById("scene");
+    var canvasDom = d.getElementById("scene"),
+        canvasOff = d.createElement("canvas");
 
     //FULLSCREEN
     canvasDom.height=w.innerHeight;
     canvasDom.width=w.innerWidth;
+
+    canvasOff.height=w.innerHeight;
+    canvasOff.width=w.innerWidth;
+    
     canvasDom.style.cssText="position:absolute;top:0;left:0";
 
     return {
       CANVAS: canvasDom,
       CANVAS_CTX : canvasDom.getContext("2d"),
+      CANVAS_SHADOW: canvasOff,
+      CANVAS_SHADOW_CTX : canvasOff.getContext("2d"),
       CANVAS_HEIGHT : canvasDom.height,
       CANVAS_WIDTH : canvasDom.width
     }
@@ -32,7 +41,7 @@
 
   function createParticleField(createParticle, field, compositionMethod, color){
     var particles = [],
-        context = datastore[CANVAS_CTX],
+        context = datastore[CANVAS_SHADOW_CTX],
         width = datastore[CANVAS_WIDTH],
         height = datastore[CANVAS_HEIGHT],
         res = {
@@ -80,7 +89,9 @@
   //MAIN LOOP
   function createMainLoop(){
     var animations=[],
-        context = datastore[CANVAS_CTX],
+        context = datastore[CANVAS_SHADOW_CTX],
+        canvasOff = datastore[CANVAS_SHADOW],
+        contextOn = datastore[CANVAS_CTX],
         lastUpdate = undefined,
         status = undefined, 
         fadeOutScreen = function(){
@@ -93,6 +104,10 @@
           for(var i = animations.length-1; i>=0; i--){
             animations[i].render();
           }
+
+          //Copie canvas offscreen vers canvas on
+          contextOn.drawImage(canvasOff, 0, 0);
+
           for(var i = animations.length-1; i>=0; i--){
             if(!animations[i].animate(time)){
               animations.splice(i,1);
@@ -105,12 +120,8 @@
 
     return {
       start: function(){
-        context.save();
         context.fillStyle = "#000";
         context.fillRect(0,0,datastore[CANVAS_WIDTH],datastore[CANVAS_HEIGHT]);
-        context.restore();
-
-        
         status = true;
         loop();
       },
@@ -267,30 +278,38 @@
     sunPF.create(100);
   }, 50);
   
-  loop.registerAnimation(sunPF);
  
   var starfieldPF = createParticleField(
     function(now){
-      var r = Math.random();
+      var r = Math.random(),
+          x = datastore[CANVAS_WIDTH] * Math.random(),
+          y = datastore[CANVAS_HEIGHT] * Math.random();
+
       return [  
         // x 
-        datastore[CANVAS_WIDTH] * Math.random(),
+        x,
         // y
-        datastore[CANVAS_HEIGHT],
+        y,
         // Date d'expiration
         now + 10000,
         // Valeur de déplacement sur x
         0,
         // Valeur de deplacement sur y
-        (r * -6 + 3) ,
+        0,
         //Color tint
         20,
         //Particle size
-        (1 - r) * 6+1,
+        (1 - r) * 2+1,
         now
       ];
     },
     function(p){
+      var i = Math.pow(p[0] - datastore[CANVAS_WIDTH]/2, 3),
+          j = Math.pow(p[1] - datastore[CANVAS_HEIGHT]/2, 3) ;
+
+      p[0] -= i/100000;
+      p[1] -= j/100000;
+
       return p;
     }, 
     "source-over",
@@ -300,7 +319,6 @@
     starfieldPF.create(2);
   }, 1);
 
-  loop.registerAnimation(starfieldPF);
   
   var explosionPF = createParticleField(
     function(now){
@@ -324,6 +342,8 @@
       ];
     },
     function(p){
+      p[3] = 1.03 * p[3];
+      p[4] = 1.03 * p[4];
       return p;
     }, 
     "lighter", 
@@ -333,6 +353,8 @@
     explosionPF.create(500);
   }, 5000);
 
+  loop.registerAnimation(starfieldPF);
+  loop.registerAnimation(sunPF);
   loop.registerAnimation(explosionPF);
 
   //Start the loop
