@@ -30,7 +30,7 @@
     }
   })(document, window);
 
-  function createParticleField(createParticle, field, compositionMethod){
+  function createParticleField(createParticle, field, compositionMethod, color){
     var particles = [],
         context = datastore[CANVAS_CTX],
         width = datastore[CANVAS_WIDTH],
@@ -38,9 +38,9 @@
         res = {
           render:function(){
             context.globalCompositeOperation = compositionMethod;
+            context.fillStyle = color;
             for(var i = 0; i < particles.length; i++){
               var p = particles[i];
-              context.fillStyle = "hsl("+p[5]+", 90%, 10%)";
               context.fillRect(p[0], p[1], p[6], p[6]);
             }
           },
@@ -258,7 +258,8 @@
     function(p){
       return p;
     },
-    "lighter")
+    "lighter", 
+    "hsl(20, 90%, 10%)")
 
   sunPF.create(500);
 
@@ -292,7 +293,8 @@
     function(p){
       return p;
     }, 
-    "source-over")
+    "source-over",
+    "hsla(0, 100%, 100%, 0.2)");
 
   setInterval(function(){
     starfieldPF.create(2);
@@ -313,7 +315,7 @@
         // Valeur de déplacement sur x
         Math.sin(r * Math.PI * 2) / 2,
         // Valeur de deplacement sur y
-        Math.cos(r * Math.PI * 2 ) / 2,
+        Math.cos(r * Math.PI * 2 ) / 2,0
         //Color tint
         20,
         //Particle size
@@ -324,7 +326,8 @@
     function(p){
       return p;
     }, 
-    "lighter")
+    "lighter", 
+    "hsl(20, 90%, 10%)")
 
   setInterval(function(){
     explosionPF.create(500);
