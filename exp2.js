@@ -315,7 +315,7 @@
         // Valeur de déplacement sur x
         Math.sin(r * Math.PI * 2) / 2,
         // Valeur de deplacement sur y
-        Math.cos(r * Math.PI * 2 ) / 2,0
+        Math.cos(r * Math.PI * 2 ) / 2,
         //Color tint
         20,
         //Particle size
