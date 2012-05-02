@@ -275,9 +275,10 @@
   sunPF.create(500);
 
   setInterval(function(){
-    sunPF.create(200);
+    sunPF.create(100);
   }, 50);
-  
+ 
+  var pow = 1; 
  
   var starfieldPF = createParticleField(
     function(now){
@@ -293,7 +294,7 @@
         // Date d'expiration
         now + 20000,
         // Valeur de déplacement sur x
-        1,
+        0,
         // Valeur de deplacement sur y
         0,
         //Color tint
@@ -308,8 +309,8 @@
           yPrime = (p[1] - datastore[CANVAS_HEIGHT]/2),
           d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));
 
-      p[3] -= 1000/Math.pow(d, 2) * (xPrime>0?1:-1);
-      p[4] -= 1000/Math.pow(d, 2) * (yPrime>0?1:-1);
+      p[3] -= 1000/Math.pow(d, 2) * (xPrime>0?1:-1) * pow;
+      p[4] -= 1000/Math.pow(d, 2) * (yPrime>0?1:-1) * pow;
 
       return p;
     }, 
@@ -352,6 +353,8 @@
   }, 200)
   setInterval(function(){
     explosionPF.create(500);
+    pow = -20;
+    setInterval(function(){pow = 2 }, 300);
   }, 5000);
 
   loop.registerAnimation(starfieldPF);
