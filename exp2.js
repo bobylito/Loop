@@ -50,7 +50,7 @@
             context.fillStyle = color;
             for(var i = 0; i < particles.length; i++){
               var p = particles[i];
-              context.fillRect(p[0], p[1], p[6], p[6]);
+              context.fillRect(~~p[0], ~~p[1], ~~p[6], ~~p[6]);
             }
           },
           animate:function(now){
@@ -62,10 +62,10 @@
               p[0] = p[0] + p[3] * elapsedtime;
               p[1] = p[1] + p[4] * elapsedtime;
 
-              if( p[0] > width+100 || 
-                  p[1] > height+100 || 
-                  p[0] < -100 || 
-                  p[1] < -100 ||
+              if( p[0] > width+500 || 
+                  p[1] > height+500 || 
+                  p[0] < -500 || 
+                  p[1] < -500 ||
                   p[2] < now ){
                 particles.splice(i, 1);
               }
@@ -96,7 +96,7 @@
         status = undefined, 
         fadeOutScreen = function(){
           context.globalCompositeOperation = "source-over";
-          context.fillStyle = "rgba(0,0,0,0.2)";
+          context.fillStyle = "rgb(0,0,0)";
           context.fillRect(0,0,datastore[CANVAS_WIDTH],datastore[CANVAS_HEIGHT]);
         },
         loop = function(time){
@@ -261,7 +261,7 @@
         //Color tint
         20,
         //Particle size
-        3,
+        4,
         //Start time
         now 
       ];
@@ -275,15 +275,15 @@
   sunPF.create(500);
 
   setInterval(function(){
-    sunPF.create(100);
+    sunPF.create(200);
   }, 50);
   
  
   var starfieldPF = createParticleField(
     function(now){
       var r = Math.random(),
-          x = datastore[CANVAS_WIDTH] * Math.random(),
-          y = datastore[CANVAS_HEIGHT] * Math.random();
+          x = (datastore[CANVAS_WIDTH] + 1000) * Math.random() - 500,
+          y = (datastore[CANVAS_HEIGHT] + 1000) * Math.random() - 500;
 
       return [  
         // x 
@@ -291,9 +291,9 @@
         // y
         y,
         // Date d'expiration
-        now + 10000,
+        now + 20000,
         // Valeur de déplacement sur x
-        0,
+        1,
         // Valeur de deplacement sur y
         0,
         //Color tint
@@ -304,20 +304,18 @@
       ];
     },
     function(p){
-      var i = Math.pow(p[0] - datastore[CANVAS_WIDTH]/2, 3),
-          j = Math.pow(p[1] - datastore[CANVAS_HEIGHT]/2, 3) ;
+      var xPrime = (p[0] - datastore[CANVAS_WIDTH]/2),
+          yPrime = (p[1] - datastore[CANVAS_HEIGHT]/2),
+          d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));
 
-      p[0] -= i/100000;
-      p[1] -= j/100000;
+      p[3] -= 1000/Math.pow(d, 2) * (xPrime>0?1:-1);
+      p[4] -= 1000/Math.pow(d, 2) * (yPrime>0?1:-1);
 
       return p;
     }, 
     "source-over",
-    "hsla(0, 100%, 100%, 0.2)");
+    "hsl(0, 100%, 100%)");
 
-  setInterval(function(){
-    starfieldPF.create(2);
-  }, 1);
 
   
   var explosionPF = createParticleField(
@@ -349,6 +347,9 @@
     "lighter", 
     "hsl(20, 90%, 10%)")
 
+  setInterval(function(){
+    starfieldPF.create(10);
+  }, 200)
   setInterval(function(){
     explosionPF.create(500);
   }, 5000);
