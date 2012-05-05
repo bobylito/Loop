@@ -1,43 +1,4 @@
 (function(){
-
-/*  
- *  Fire bottom
- */
-/*
-*/
-/*
-  loop.registerAnimation(loop.animations.particle(
-        function(){
-          return [  
-            // x 
-            datastore["CANVAS_WIDTH"]/3,
-            // y
-            datastore["CANVAS_HEIGHT"]/2,
-            // Date d'expiration
-            (new Date()).getTime() + 200 + Math.random()*2000,
-            // Valeur de déplacement sur x
-            0.25 - Math.random()/2,
-            // Valeur de deplacement sur y
-            0.25 - Math.random()/2,
-            //Color tint
-            30,
-            //Particle size
-            5 
-          ];
-        },
-        function(p){
-          var rx = 0.25 - (Math.random())/2,
-              ry = 0.15 - (Math.random())*0.4;
-
-          p[3] = p[3] + rx;
-          p[4] = p[4] + ry;
-
-
-          return p;
-        })
-      );
- */
-
   var sunPF = loop.animations.particle(
     function(now){
       var r = Math.random();
