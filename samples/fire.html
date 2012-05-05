@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+<title>Xperience : animation playground</title>
+<style type="text/css" media="screen">
+/* <![CDATA[ */
+*{padding:0;margin:0}
+body{background-color:#000}
+
+body{text-align:left; background-color:#111; color:#FFF; font-family:Verdana, Helvetica, Arial, Sans-serif; padding:35px 35px;}
+ul li{list-style-type:none;}
+
+/* ]]> */
+</style>
+
+</head>
+
+<body>
+  <div id="principal"> 
+    <canvas id="scene" height="500" width="500"></canvas>
+  </div>
+</body>
+
+<script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" charset="utf-8">
+(function(){
+  var fireFP = loop.animations.particle(
+      function(now){
+        return [  
+          // x 
+          Math.random() * datastore["CANVAS_WIDTH"],
+          // y
+          datastore["CANVAS_HEIGHT"] ,
+          // Date d'expiration
+          (new Date()).getTime() + 300 + Math.random() * 1000,
+          // Valeur de déplacement sur x
+          0,
+          // Valeur de deplacement sur y
+          1,
+          30,
+          5,
+          now
+        ];
+      },
+      function(p){
+        var rx = 0.5 - (Math.random()),
+            ry = - (Math.random());
+
+        p[3] = p[3] + rx;
+        p[4] = p[4] + ry;
+
+        return p;
+      }, 
+    "lighter",
+    "hsl(30, 100%, 5%)");
+
+  fireFP.create(2000);
+
+  setInterval(function(){
+    fireFP.create(1000);
+  }, 30)
+
+  loop.registerAnimation(fireFP);
+
+  loop.start();
+})();
+</script>
+</html>
