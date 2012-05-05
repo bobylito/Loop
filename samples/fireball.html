@@ -25,6 +25,9 @@ ul li{list-style-type:none;}
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
+  var nbFireballs = 7,
+      fireballs = [];
+
   function createFireballGenerator(x, y){
     return function(now){
       return [  
@@ -47,7 +50,7 @@ ul li{list-style-type:none;}
 
   function physic(p){
     var rx = (1 - (Math.random()) * 2)/8,
-    ry = 0.15 - (Math.random()) * 0.4;
+        ry = 0.15 - (Math.random()) * 0.4;
 
     p[3] = p[3] + rx;
     p[4] = p[4] + ry;
@@ -55,31 +58,21 @@ ul li{list-style-type:none;}
     return p;
   } 
 
-  var fireball1FP = loop.animations.particle(
-        createFireballGenerator(datastore["CANVAS_WIDTH"]/3, datastore["CANVAS_HEIGHT"]/2),
-        physic,
-        "lighter",
-        "hsl(30, 100%, 5%)"),
-      fireball2FP = loop.animations.particle(
-        createFireballGenerator(datastore["CANVAS_WIDTH"]/2, datastore["CANVAS_HEIGHT"]/2),
-        physic,
-        "lighter",
-        "hsl(30, 100%, 5%)"),
-      fireball3FP = loop.animations.particle(
-        createFireballGenerator(2 *datastore["CANVAS_WIDTH"]/3, datastore["CANVAS_HEIGHT"]/2),
+  for(var i = nbFireballs-1 ; i > 0; i--){
+    var fireballFP = loop.animations.particle(
+        createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
         physic,
         "lighter",
         "hsl(30, 100%, 5%)");
+    loop.registerAnimation(fireballFP);
+    fireballs.push(fireballFP);
+  }
 
   setInterval(function(){
-    fireball1FP.create(10);
-    fireball2FP.create(10);
-    fireball3FP.create(10);
+    for(var i = 0; i < nbFireballs; i++){
+      fireballs[i].create(10);
+    }
   }, 20)
-
-  loop.registerAnimation(fireball1FP);
-  loop.registerAnimation(fireball2FP);
-  loop.registerAnimation(fireball3FP);
 
   loop.start();
 })();
