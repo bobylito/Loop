@@ -33,7 +33,7 @@ ul li{list-style-type:none;}
           // y
           datastore["CANVAS_HEIGHT"] ,
           // Date d'expiration
-          (new Date()).getTime() + 300 + Math.random() * 1000,
+          (new Date()).getTime() + 500 + Math.random() * 200,
           // Valeur de déplacement sur x
           0,
           // Valeur de deplacement sur y
@@ -53,13 +53,14 @@ ul li{list-style-type:none;}
         return p;
       }, 
     "lighter",
-    "hsl(30, 100%, 5%)");
+    "hsl(30, 100%, 5%)", 
+    5);
 
-  fireFP.create(2000);
+  fireFP.create(200);
 
   setInterval(function(){
-    fireFP.create(1000);
-  }, 30)
+    fireFP.create(400);
+  }, 50)
 
   loop.registerAnimation(fireFP);
 

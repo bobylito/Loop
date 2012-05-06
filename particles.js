@@ -1,5 +1,14 @@
 window.loop.animations.particle = 
-  function createParticleField(createParticle, field, compositionMethod, color){
+  function createParticleField(createParticle, field, compositionMethod, color, size){
+    var particleCanvas = document.createElement("canvas"),
+        particleContext = particleCanvas.getContext('2d');
+    
+    particleCanvas.width = size || 3;
+    particleCanvas.height = size || 3;
+
+    particleContext.fillStyle = color;
+    particleContext.fillRect(0,0,size || 3, size || 3);
+
     var particles = [],
         context = datastore["CANVAS_SHADOW_CTX"],
         width = datastore["CANVAS_WIDTH"],
@@ -7,10 +16,9 @@ window.loop.animations.particle =
         res = {
           render:function(){
             context.globalCompositeOperation = compositionMethod;
-            context.fillStyle = color;
             for(var i = 0; i < particles.length; i++){
               var p = particles[i];
-              context.fillRect(~~p[0], ~~p[1], ~~p[6], ~~p[6]);
+              context.drawImage(particleCanvas, ~~p[0], ~~p[1]);
             }
           },
           animate:function(now){
