@@ -6,6 +6,12 @@ window.requestAnimFrame = (function(){
   window.msRequestAnimationFrame;
 })();
 
+var Stats = Stats || function(){
+  this.setMode = function(){};
+  this.begin = function(){};
+  this.end = function(){};
+};
+
 window.datastore = (function init(d,w){
   var canvasDom = d.getElementById("scene"),
       canvasOff = d.createElement("canvas");
@@ -30,7 +36,19 @@ window.datastore = (function init(d,w){
 })(document, window);
 
 window.loop = (function createMainLoop(){
-    var animations=[],
+    var stats = (function(){
+          var s = new Stats();
+          s.setMode(1);
+          if(s.domElement){
+            s.domElement.style.position = 'absolute';
+            s.domElement.style.left = '0px';
+            s.domElement.style.top = '0px';
+
+            document.body.appendChild( s.domElement );
+          }
+          return s;
+        })(),
+        animations=[],
         context = datastore["CANVAS_SHADOW_CTX"],
         canvasOff = datastore["CANVAS_SHADOW"],
         contextOn = datastore["CANVAS_CTX"],
@@ -43,6 +61,8 @@ window.loop = (function createMainLoop(){
         },
         loop = function(time){
           fadeOutScreen();
+
+          stats.begin();
           for(var i = animations.length-1; i>=0; i--){
             animations[i].render();
           }
@@ -55,6 +75,8 @@ window.loop = (function createMainLoop(){
               animations.splice(i,1);
             }
           }
+
+          stats.end();
           if(status){
             window.requestAnimFrame(loop);
           }

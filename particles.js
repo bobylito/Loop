@@ -1,13 +1,18 @@
 window.loop.animations.particle = 
   function createParticleField(createParticle, field, compositionMethod, color, size){
     var particleCanvas = document.createElement("canvas"),
-        particleContext = particleCanvas.getContext('2d');
+        particleContext = particleCanvas.getContext('2d'),
+        size = size || 3,
+        half = size / 2 ;
     
     particleCanvas.width = size || 3;
     particleCanvas.height = size || 3;
 
     particleContext.fillStyle = color;
-    particleContext.fillRect(0,0,size || 3, size || 3);
+    particleContext.beginPath();
+      particleContext.arc(half, half, half, 0, 2 * Math.PI, true);
+    particleContext.closePath();
+    particleContext.fill();
 
     var particles = [],
         context = datastore["CANVAS_SHADOW_CTX"],

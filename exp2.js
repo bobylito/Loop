@@ -16,7 +16,7 @@
         //Color tint
         20,
         //Particle size
-        4,
+        10,
         //Start time
         now 
       ];
@@ -25,13 +25,9 @@
       return p;
     },
     "lighter", 
-    "hsl(20, 90%, 10%)")
+    "hsl(20, 90%, 10%)",
+    7)
 
-  sunPF.create(500);
-
-  setInterval(function(){
-    sunPF.create(100);
-  }, 50);
  
   var starfieldPF = loop.animations.particle(
     function(now){
@@ -91,9 +87,9 @@
         // Date d'expiration
         now + 2000 + Math.random()*3000,
         // Valeur de déplacement sur x
-        Math.sin(r * Math.PI * 2) / 2,
+        Math.sin(r * Math.PI * 2) / 5,
         // Valeur de deplacement sur y
-        Math.cos(r * Math.PI * 2 ) / 2,
+        Math.cos(r * Math.PI * 2 ) / 5,
         //Color tint
         20,
         //Particle size
@@ -102,19 +98,25 @@
       ];
     },
     function(p){
-      p[3] = 1.03 * p[3];
-      p[4] = 1.03 * p[4];
+      p[3] = 1.05 * p[3];
+      p[4] = 1.05 * p[4];
       return p;
     }, 
     "lighter", 
-    "hsl(20, 90%, 10%)")
+    "hsl(20, 70%, 30%)",
+    5)
 
+  sunPF.create(100);
+
+  setInterval(function(){
+    sunPF.create(100);
+  }, 50);
   setInterval(function(){
     starfieldPF.create(10);
   }, 200)
   setInterval(function(){
-    explosionPF.create(500);
-  }, 5000);
+    explosionPF.create(300);
+  }, 2000);
 
   loop.registerAnimation(starfieldPF);
   loop.registerAnimation(sunPF);
