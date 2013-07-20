@@ -29,47 +29,57 @@ ul li{list-style-type:none;}
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
+      img = (function(){
+        var i = new Image();
+        i.src="ouno.png";
+        return i;
+      })(),
       fireFP = loop.animations.particle(
       function(now){
         return [  
           // x 
-          Math.random() * datastore["CANVAS_WIDTH"],
+          (0.49 + 0.02 * Math.random()) * datastore["CANVAS_WIDTH"],
           // y
-          Math.random() * datastore["CANVAS_HEIGHT"] ,
+          (0.49 + 0.02 * Math.random()) * datastore["CANVAS_HEIGHT"] ,
           // Date d'expiration
           (new Date()).getTime() + 50000 ,
           // Valeur de déplacement sur x
-          3 - Math.random() * 6,
+          0,
           // Valeur de deplacement sur y
-          3 - Math.random() * 6,
+          0,
           // Début
           now
         ];
       },
-      function(p){
-        var xPrime = (p[0] - datastore["CANVAS_WIDTH"]/2),
-            yPrime = (p[1] - datastore["CANVAS_HEIGHT"]/2),
-            d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));
-/*
-        p[3] -= 10/Math.pow(d, 2) * (xPrime>0?1:-1);
-        p[4] -= 10/Math.pow(d, 2) * (yPrime>0?1:-1);
-        */
+      (function(){
+        var xMean = 0, yMean = 0;
+        return function(p, particles){
+          if(p === particles[0]){
+            xMean = particles.reduce(function(val, elt){
+              return elt[0] + val;
+            }, 0) / particles.length;
+            yMean = particles.reduce(function(val, elt){
+              return elt[1] + val;
+            }, 0) / particles.length;
+          }
+          var xPrime = (p[0] - xMean),
+              yPrime = (p[1] - yMean),
+              d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));
 
-        p[3] = p[3] / Math.sin(d/20) * (xPrime>0?1:-1)/1.1;
+          p[3] -= 1/Math.pow(d, 2) * (xPrime>0?1:-1);
+          p[4] -= 1/Math.pow(d, 2) * (yPrime>0?1:-1);
 
-        p[4] = p[4] / Math.sin(d/20) * (yPrime>0?1:-1)/1.1;
-
-
-        return p;
-      }, 
-    "lighter",
-    "hsl(230, 100%, 20%)", 
-    20);
+          return p;
+        }
+      })()
+      , 
+    "",
+    img);
 
 
   setTimeout(function(){
-    fireFP.create(4000);
-  }, 500)
+    fireFP.create(1000);
+  }, 0)
 
   loop.registerAnimation(fireFP);
 

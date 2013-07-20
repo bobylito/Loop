@@ -1,18 +1,22 @@
 window.loop.animations.particle = 
   function createParticleField(createParticle, field, compositionMethod, color, size){
-    var particleCanvas = document.createElement("canvas"),
-        particleContext = particleCanvas.getContext('2d'),
-        size = size || 3,
-        half = size / 2 ;
-    
-    particleCanvas.width = size || 3;
-    particleCanvas.height = size || 3;
+    if(size){
+      // I know these variables won't be scope in the if (semantic purpose)
+      var particleCanvas = document.createElement("canvas"),
+          particleContext = particleCanvas.getContext('2d'),
+          half = size / 2 ;
+      particleCanvas.width = size;
+      particleCanvas.height = size;
 
-    particleContext.fillStyle = color;
-    particleContext.beginPath();
-      particleContext.arc(half, half, half, 0, 2 * Math.PI, true);
-    particleContext.closePath();
-    particleContext.fill();
+      particleContext.fillStyle = color;
+      particleContext.beginPath();
+        particleContext.arc(half, half, half, 0, 2 * Math.PI, true);
+      particleContext.closePath();
+      particleContext.fill();
+    }else{
+      // let's assume if we don't have a size, we'll have a canvas... (FIXME)
+      particleCanvas = color;
+    }
 
     var particles = [],
         context = datastore["CANVAS_SHADOW_CTX"],
@@ -29,8 +33,8 @@ window.loop.animations.particle =
           animate:function(now){
             for(var i = 0; i < particles.length; i++){
               var p = particles[i],
-                  vd = field(p),
-                  elapsedtime = (now - p[7])/1000;
+                  vd = field(p, particles),
+                  elapsedtime = (now - p[5])/1000;
 
               p[0] = p[0] + p[3] * elapsedtime;
               p[1] = p[1] + p[4] * elapsedtime;

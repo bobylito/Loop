@@ -13,10 +13,6 @@
         Math.sin(r * Math.PI * 2) / 2,
         // Valeur de deplacement sur y
         Math.cos(r * Math.PI * 2 ) / 2,
-        //Color tint
-        20,
-        //Particle size
-        10,
         //Start time
         now 
       ];
@@ -46,10 +42,6 @@
         0,
         // Valeur de deplacement sur y
         0,
-        //Color tint
-        20,
-        //Particle size
-        (1 - r) * 2+1,
         now
       ];
     },
@@ -66,8 +58,8 @@
         return p;
       }
 
-      p[3] -= 1000/Math.pow(d, 2) * (xPrime>0?1:-1);
-      p[4] -= 1000/Math.pow(d, 2) * (yPrime>0?1:-1);
+      p[3] -= 100/Math.pow(d, 2) * (xPrime>0?1:-1);
+      p[4] -= 100/Math.pow(d, 2) * (yPrime>0?1:-1);
 
       return p;
     }, 
@@ -91,10 +83,6 @@
         Math.sin(r * Math.PI * 2) / 5,
         // Valeur de deplacement sur y
         Math.cos(r * Math.PI * 2 ) / 5,
-        //Color tint
-        20,
-        //Particle size
-        1,
         now
       ];
     },

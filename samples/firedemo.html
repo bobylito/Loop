@@ -26,7 +26,7 @@ ul li{list-style-type:none;}
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
-  var nbFireballs = 20,
+  var nbFireballs = 5,
       fireballs = [];
 
   function createFireballGenerator(x, y){
@@ -47,7 +47,7 @@ ul li{list-style-type:none;}
 
   function physic(p){
     var rx = (1 - (Math.random()) * 2)/8,
-        ry = 0.15 - (Math.random()) * 0.4;
+        ry = 0.1 - (Math.random()) * 0.4;
 
     p[3] = p[3] + rx;
     p[4] = p[4] + ry;
@@ -55,20 +55,20 @@ ul li{list-style-type:none;}
     return p;
   } 
 
-  for(var i = nbFireballs-1 ; i >= 0; i--){
+  for(var i = nbFireballs-1 ; i > 0; i--){
     var fireballFP = loop.animations.particle(
         createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
         physic,
         "lighter",
-        "hsl(30, 100%, 5%)",
-        7);
+        "hsl(30, 100%, 10%)",
+        55);
     loop.registerAnimation(fireballFP);
     fireballs.push(fireballFP);
   }
 
   setInterval(function(){
     for(var i = 0; i < nbFireballs; i++){
-      fireballs[i].create(10);
+      fireballs[i].create(25);
     }
   }, 20)
 
