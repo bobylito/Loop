@@ -1,9 +1,13 @@
 //Handling many implementations
 window.requestAnimFrame = (function(){
-  return window.requestAnimationFrame || 
-  window.mozRequestAnimationFrame || 
-  window.webkitRequestAnimationFrame || 
-  window.msRequestAnimationFrame;
+  return  window.requestAnimationFrame || 
+  window.webkitRequestAnimationFrame   || 
+  window.mozRequestAnimationFrame      || 
+  window.oRequestAnimationFrame        || 
+  window.msRequestAnimationFrame       || 
+  function( callback ){
+    window.setTimeout(callback, 1000 / 60);
+  };
 })();
 
 var Stats = Stats || function(){
@@ -16,14 +20,8 @@ window.datastore = (function init(d,w){
   var canvasDom = d.getElementById("scene"),
       canvasOff = d.createElement("canvas");
 
-  //FULLSCREEN
-  canvasDom.height=w.innerHeight;
-  canvasDom.width=w.innerWidth;
-
-  canvasOff.height=w.innerHeight;
-  canvasOff.width=w.innerWidth;
-  
-  canvasDom.style.cssText="position:absolute;top:0;left:0";
+  canvasOff.height = canvasDom.height;
+  canvasOff.width  = canvasDom.width;
 
   return {
     "CANVAS"            : canvasDom,
@@ -41,7 +39,7 @@ window.loop = (function createMainLoop(){
           s.setMode(1);
           if(s.domElement){
             s.domElement.style.position = 'absolute';
-            s.domElement.style.left = '0px';
+            s.domElement.style.right = '0px';
             s.domElement.style.top = '0px';
 
             document.body.appendChild( s.domElement );
@@ -63,15 +61,15 @@ window.loop = (function createMainLoop(){
           fadeOutScreen();
 
           stats.begin();
-          for(var i = animations.length-1; i>=0; i--){
-            animations[i].render();
-          }
+          animations.forEach(function(anim){
+            anim.render(context, datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"]);
+          });
 
           //Copie canvas offscreen vers canvas on
           contextOn.drawImage(canvasOff, 0, 0);
 
           for(var i = animations.length-1; i>=0; i--){
-            if(!animations[i].animate(time)){
+            if(!animations[i].animate(time, datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])){
               animations.splice(i,1);
             }
           }
@@ -82,12 +80,20 @@ window.loop = (function createMainLoop(){
           }
         };
 
+    var loadCount = 0;
     return {
       animations:{},
       start: function(){
+        for(anim in this.animations){
+          if(this.animations.hasOwnProperty(anim) && typeof(this.animations[anim]._init) === "function")
+            this.animations[anim]._init(datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])
+        }
+        animations.forEach(function(anim){
+          if(typeof(anim._init) === "function")
+            anim._init(datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])
+        });
         context.fillStyle = "#000";
-        context.fillRect(0,0,datastore["CANVAS_WIDTH"],
-            datastore["CANVAS_HEIGHT"]);
+        context.fillRect(0,0,datastore["CANVAS_WIDTH"], datastore["CANVAS_HEIGHT"]);
         status = true;
         loop();
       },
@@ -95,7 +101,20 @@ window.loop = (function createMainLoop(){
         status = false;
       },
       registerAnimation: function(animation){
+        if(status){
+          if(typeof(animation._init) === "function")
+            animation._init(datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])
+        }
         animations.push(animation);
+      },
+      loadImage: function registerImageRequest(uri, callback){
+	var domImage = new Image();
+        domImage.src = uri;
+        loadCount++;
+        domImage.onload = function(){
+            callback(domImage);
+            loadCount--;
+        }
       }
     };
   })();
