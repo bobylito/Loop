@@ -30,6 +30,7 @@ ul li{list-style-type:none;}
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
       fireFP = loop.animations.particle(
+      function(){return []},
       function(now){
         return [  
           // x 

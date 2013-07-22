@@ -1,5 +1,6 @@
 (function(){
   var sunPF = loop.animations.particle(
+    function(){return [];},
     function(now){
       var r = Math.random();
       return [  
@@ -26,6 +27,7 @@
 
  
   var starfieldPF = loop.animations.particle(
+    function(){return [];},
     function(now){
       var r = Math.random(),
           x = (datastore["CANVAS_WIDTH"] + 1000) * Math.random() - 500,
@@ -67,9 +69,8 @@
     "hsl(0, 100%, 100%)",
     5);
 
-
-  
   var explosionPF = loop.animations.particle(
+    function(){return [];},
     function(now){
       var r = Math.random();
       return [  
@@ -110,6 +111,9 @@
   loop.registerAnimation(starfieldPF);
   loop.registerAnimation(sunPF);
   loop.registerAnimation(explosionPF);
+
+
+  loop.registerAnimation(loop.animations.particle.bench());
 
   //Start the loop
   loop.start();

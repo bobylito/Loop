@@ -33,6 +33,7 @@ window.loop.animations.particle =
           _init : function(n, w, h){
             particles = init(n, w,h);
           },
+          getParticleCount : function(){ return particles.length; },
           render:function(context, width, height){
                    context.globalCompositeOperation = compositionMethod;
                    for(var i = 0; i < particles.length; i++){
@@ -43,8 +44,8 @@ window.loop.animations.particle =
           animate:function(now, width, height){
                     for(var i = 0; i < particles.length; i++){
                       var p = particles[i],
-                        vd = field(p, particles),
-                           elapsedtime = (now - p[5])/1000;
+                          vd = field(p, particles),
+                          elapsedtime = (now - p[5])/1000;
 
                       p[0] = p[0] + p[3];
                       p[1] = p[1] + p[4];
@@ -64,7 +65,7 @@ window.loop.animations.particle =
         }
 
   res.create = function(nbParticules) {
-    var now = (new Date()).getTime();
+    var now = Date.now();
     for(var i = 0; i<nbParticules; i++){
       particles.push(createParticle(now, width, height));
     }
@@ -76,7 +77,7 @@ window.loop.animations.particle =
 pGen._init = function(w, h){
   height = h;
   width = w;
-  fields.forEach(function(e){e._init(new Date(),w,h)})
+  fields.forEach(function(e){e._init(Date.now(),w,h)})
 }
 return pGen;
 })();

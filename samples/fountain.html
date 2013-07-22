@@ -24,6 +24,7 @@ ul li{list-style-type:none;}
 <script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
   var fountainFP = loop.animations.particle(
@@ -64,6 +65,7 @@ ul li{list-style-type:none;}
   }, 10)
 
   loop.registerAnimation(fountainFP);
+  loop.registerAnimation(loop.animations.particle.bench());
 
   loop.start();
 })();

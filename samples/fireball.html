@@ -24,6 +24,7 @@ ul li{list-style-type:none;}
 <script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
   var nbFireballs = 20,
@@ -35,7 +36,7 @@ ul li{list-style-type:none;}
       x,
       y,
       // Date d'expiration
-      (new Date()).getTime() + 500 + Math.random()*300,
+      now + 500 + Math.random()*300,
       // Valeur de déplacement sur x
       0.25 - Math.random()/2,
       // Valeur de deplacement sur y
@@ -57,18 +58,21 @@ ul li{list-style-type:none;}
 
   for(var i = nbFireballs-1 ; i >= 0; i--){
     var fireballFP = loop.animations.particle(
-        createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
-        physic,
-        "lighter",
-        "hsl(30, 100%, 5%)",
-        7);
+            function(){ return []},
+            createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
+            physic,
+            "lighter",
+            "hsl(30, 100%, 5%)",
+            7);
     loop.registerAnimation(fireballFP);
     fireballs.push(fireballFP);
   }
 
+  loop.registerAnimation(loop.animations.particle.bench());
+
   setInterval(function(){
     for(var i = 0; i < nbFireballs; i++){
-      fireballs[i].create(10);
+      fireballs[i].create(11);
     }
   }, 20)
 

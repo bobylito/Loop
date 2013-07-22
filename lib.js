@@ -46,7 +46,6 @@ window.loop = (function createMainLoop(){
           }
           return s;
         })(),
-        animations=[],
         context = datastore["CANVAS_SHADOW_CTX"],
         canvasOff = datastore["CANVAS_SHADOW"],
         contextOn = datastore["CANVAS_CTX"],
@@ -56,46 +55,22 @@ window.loop = (function createMainLoop(){
           context.globalCompositeOperation = "source-over";
           context.fillStyle = "rgb(0,0,0)";
           context.fillRect(0,0,datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"]);
-        },
-        loop = function(time){
-          fadeOutScreen();
-
-          stats.begin();
-          animations.forEach(function(anim){
-            anim.render(context, datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"]);
-          });
-
-          //Copie canvas offscreen vers canvas on
-          contextOn.drawImage(canvasOff, 0, 0);
-
-          for(var i = animations.length-1; i>=0; i--){
-            if(!animations[i].animate(time, datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])){
-              animations.splice(i,1);
-            }
-          }
-
-          stats.end();
-          if(status){
-            window.requestAnimFrame(loop);
-          }
         };
 
     var loadCount = 0;
-    return {
+    var animationSys = {
+      _animations:[],
       animations:{},
       start: function(){
-        for(anim in this.animations){
-          if(this.animations.hasOwnProperty(anim) && typeof(this.animations[anim]._init) === "function")
-            this.animations[anim]._init(datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])
-        }
-        animations.forEach(function(anim){
+        this._animations.forEach(function(anim){
           if(typeof(anim._init) === "function")
-            anim._init(datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])
-        });
+            anim._init( datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"], this);
+        }, this);
+        this._trigger("start");
         context.fillStyle = "#000";
         context.fillRect(0,0,datastore["CANVAS_WIDTH"], datastore["CANVAS_HEIGHT"]);
         status = true;
-        loop();
+        this.loop();
       },
       stop: function(){
         status = false;
@@ -103,9 +78,9 @@ window.loop = (function createMainLoop(){
       registerAnimation: function(animation){
         if(status){
           if(typeof(animation._init) === "function")
-            animation._init(datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])
+            animation._init.call(datastore["CANVAS_WIDTH"], datastore["CANVAS_HEIGHT"], this)
         }
-        animations.push(animation);
+        this._animations.push(animation);
       },
       loadImage: function registerImageRequest(uri, callback){
 	var domImage = new Image();
@@ -115,6 +90,47 @@ window.loop = (function createMainLoop(){
             callback(domImage);
             loadCount--;
         }
+      },
+      eventRegister : {}, 
+      on : function(eventType, funK){
+        if( this.eventRegister[eventType] === undefined ){
+          this.eventRegister[eventType] = [];
+        }
+        this.eventRegister[eventType].push(funK);
+      },
+      _trigger: function(eventType){
+        if( this.eventRegister[eventType] ){
+          var animationSystem = this;
+          this.eventRegister[eventType].forEach(function(f){
+              f.call(animationSystem);
+          });
+        }
       }
     };
+
+    animationSys.loop = (function(){
+      var time = Date.now();
+      fadeOutScreen();
+
+      stats.begin();
+      this._animations.forEach(function(anim){
+        anim.render(context, datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"]);
+      });
+
+      //Copie canvas offscreen vers canvas on
+      contextOn.drawImage(canvasOff, 0, 0);
+
+      for(var i = this._animations.length-1; i>=0; i--){
+        if(!this._animations[i].animate(time, datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])){
+          this._animations.splice(i,1);
+        }
+      }
+      stats.end();
+
+      if(status){
+        window.requestAnimFrame(this.loop);
+      }
+    }).bind(animationSys);
+
+    return animationSys;
   })();
