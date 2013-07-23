@@ -57,7 +57,7 @@ ul li{list-style-type:none;}
   } 
 
   for(var i = nbFireballs-1 ; i >= 0; i--){
-    var fireballFP = loop.animations.particleLasso(
+    var fireballFP = loop.animations.particleLasso2(
             function(){ return []},
             createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
             physic,
