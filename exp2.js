@@ -1,5 +1,5 @@
 (function(){
-  var sunPF = loop.animations.particle(
+  var sunPF = loop.animations.particleLasso(
     function(){return [];},
     function(now){
       var r = Math.random();
