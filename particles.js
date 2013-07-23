@@ -1,225 +1,157 @@
-window.loop.animations.particle =
 (function(){
-  var fields = [],
-      height = 0, 
-      width = 0;
+  /**
+   * Renderings are pluggable rendering for particles systems
+   * Parameters : 
+   *  - renderingOptions options specific to the rendering passed when the system is created
+   *  - context canvas 2D context
+   *  - width width of the canvas
+   *  - height height of the canvas
+   */
+  var rendering = {
+    /**
+     * circle : rendering of particles as discs
+     * Rendering options : 
+     *  - color : color of the disc
+     *  - size : diameter of the disc
+     *  - compositionMethod : composition to use when drawing the disc
+     */
+    circle : function(renderingOptions, context, width, height){
+      if(!this.particleCanvas){
+        this.particleCanvas = (function initCacheCanvas(){
+          var particleCanvas = document.createElement("canvas"),
+              particleContext = particleCanvas.getContext('2d'),
+              half = renderingOptions.size / 2 ;
+          
+          particleCanvas.width = renderingOptions.size;
+          particleCanvas.height = renderingOptions.size;
 
-  var pGen = function createParticleField(init, createParticle, field, compositionMethod, color, size, eolCallback){
-    if(size){
-      // I know these variables won't be scope in the if (semantic purpose)
-      var particleCanvas = document.createElement("canvas"),
-          particleContext = particleCanvas.getContext('2d'),
-          half = size / 2 ;
-      
-      particleCanvas.width = size;
-      particleCanvas.height = size;
-
-      particleContext.fillStyle = color;
-      particleContext.beginPath();
-      particleContext.arc(half, half, half, 0, 2 * Math.PI, true);
-      particleContext.closePath();
-      particleContext.fill();
-    }else{
-      // let's assume if we don't have a size, we'll have a canvas... (FIXME)
-      particleCanvas = color;
-    }
-
-    if(typeof(eolCallback)!="function"){
-      eolCallback = function(){};
-    }
-
-    var particles = [],
-        res = {
-          _init : function(n, w, h){
-            particles = init(n, w,h);
-          },
-          getParticleCount : function(){ return particles.length; },
-          render:function(context, width, height){
-                   context.globalCompositeOperation = compositionMethod;
-                   for(var i = 0; i < particles.length; i++){
-                     var p = particles[i];
-                     context.drawImage(particleCanvas, ~~p[0], ~~p[1]);
-                   }
-                 },
-          animate:function(now, width, height){
-                    for(var i = 0; i < particles.length; i++){
-                      var p = particles[i],
-                          vd = field(p, particles),
-                          elapsedtime = (now - p[5])/1000;
-
-                      p[0] = p[0] + p[3];
-                      p[1] = p[1] + p[4];
-
-                      if( p[0] > width+500 || 
-                          p[1] > height+500 || 
-                          p[0] < -500 || 
-                          p[1] < -500 ||
-                          p[2] < now ){
-                        eolCallback(p)
-                        particles.splice(i, 1);
-                      }
-                    }
-
-                    return true;
-                  }
-        }
-
-  res.create = function(nbParticules) {
-    var now = Date.now();
-    for(var i = 0; i<nbParticules; i++){
-      particles.push(createParticle(now, width, height));
-    }
-  };
-
-  fields.push(res);
-  return res;
-}
-pGen._init = function(w, h){
-  height = h;
-  width = w;
-  fields.forEach(function(e){e._init(Date.now(),w,h)})
-}
-return pGen;
-})();
-
-window.loop.animations.particleLasso =
-(function(){
-  var fields = [],
-      height = 0, 
-      width = 0;
-
-  var pGen = function createParticleField(init, createParticle, field, compositionMethod, color, size, eolCallback){
-    if(typeof(eolCallback)!="function"){
-      eolCallback = function(){};
-    }
-
-    var particles = [],
-        res = {
-          _init : function(n, w, h){
-            particles = init(n, w,h);
-          },
-          getParticleCount : function(){ return particles.length; },
-          render : function(context, width, height){
-            if(particles.length === 0) return ;
-            context.globalCompositeOperation = compositionMethod;
-            context.beginPath();
-            context.strokeStyle=color;
-            context.moveTo(~~(particles[0][0]), ~~(particles[0][1]));
-            for(var i = 1; i < particles.length; i++){
-              var p = particles[i];
-              context.lineTo(~~p[0], ~~p[1]);
-            }
-            context.stroke();
-          },
-          animate : function(now, width, height){
-            for(var i = 0; i < particles.length; i++){
-              var p = particles[i],
-                  vd = field(p, particles),
-                  elapsedtime = (now - p[5])/1000;
-
-              p[0] = p[0] + p[3];
-              p[1] = p[1] + p[4];
-
-              if( p[0] > width+500 || 
-                  p[1] > height+500 || 
-                  p[0] < -500 || 
-                  p[1] < -500 ||
-                  p[2] < now ){
-                eolCallback(p)
-                particles.splice(i, 1);
-              }
-            }
-
-            return true;
-          }
-        }
-
-    res.create = function(nbParticules) {
-      var now = Date.now();
-      for(var i = 0; i<nbParticules; i++){
-        particles.push(createParticle(now, width, height));
+          particleContext.fillStyle = renderingOptions.color;
+          particleContext.beginPath();
+          particleContext.arc(half, half, half, 0, 2 * Math.PI, true);
+          particleContext.closePath();
+          particleContext.fill();
+          return particleCanvas;
+        })();
       }
-    };
-
-    fields.push(res);
-    return res;
-  }
-
-  pGen._init = function(w, h){
-    height = h;
-    width = w;
-    fields.forEach(function(e){e._init(Date.now(),w,h)})
-  }
-  return pGen;
-})();
-
-window.loop.animations.particleLasso2 =
-(function(){
-  var fields = [],
-      height = 0, 
-      width = 0;
-
-  var pGen = function createParticleField(init, createParticle, field, compositionMethod, color, size, eolCallback){
-    if(typeof(eolCallback)!="function"){
-      eolCallback = function(){};
-    }
-
-    var particles = [],
-        res = {
-          _init : function(n, w, h){
-            particles = init(n, w,h);
-          },
-          getParticleCount : function(){ return particles.length; },
-          render : function(context, width, height){
-            if(particles.length === 0) return ;
-            context.globalCompositeOperation = compositionMethod;
-            context.beginPath();
-            context.strokeStyle=color;
-            context.moveTo(~~(particles[0][0]), ~~(particles[0][1]));
-            for(var i = 1; i < particles.length; i++){
-              var p = particles[i];
-              context.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
-            }
-            context.stroke();
-          },
-          animate : function(now, width, height){
-            for(var i = 0; i < particles.length; i++){
-              var p = particles[i],
-                  vd = field(p, particles),
-                  elapsedtime = (now - p[5])/1000;
-
-              p[0] = p[0] + p[3];
-              p[1] = p[1] + p[4];
-
-              if( p[0] > width+500 || 
-                  p[1] > height+500 || 
-                  p[0] < -500 || 
-                  p[1] < -500 ||
-                  p[2] < now ){
-                eolCallback(p)
-                particles.splice(i, 1);
-              }
-            }
-
-            return true;
-          }
-        }
-
-    res.create = function(nbParticules) {
-      var now = Date.now();
-      for(var i = 0; i<nbParticules; i++){
-        particles.push(createParticle(now, width, height));
+      context.globalCompositeOperation = renderingOptions.compositionMethod;
+      for(var i = 0; i < this.particles.length; i++){
+        var p = this.particles[i];
+        context.drawImage(this.particleCanvas, ~~p[0], ~~p[1]);
       }
-    };
-
-    fields.push(res);
-    return res;
+    },
+    /**
+     * line : rendering of the particles as lines drawn between particles
+     * Rendering options : 
+     *  - compositionMethod
+     *  - color
+     */
+    line : function(renderingOptions, context, width, height){
+      if(this.particles.length === 0) return ;
+      context.globalCompositeOperation = renderingOptions.compositionMethod;
+      context.beginPath();
+      context.strokeStyle=renderingOptions.color;
+      context.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      for(var i = 1; i < this.particles.length; i++){
+        var p = this.particles[i];
+        context.lineTo(~~p[0], ~~p[1]);
+      }
+      context.stroke();
+    },
+    /**
+     * quadratic : rendering of the particles as curve drawn between particles
+     * Rendering options : 
+     *  - compositionMethod
+     *  - color
+     */
+    quadratic : function(renderingOptions, context, width, height){
+      if( this.particles.length === 0 ) return ;
+      context.globalCompositeOperation = renderingOptions.compositionMethod;
+      context.beginPath();
+      context.strokeStyle = renderingOptions.color;
+      context.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      for(var i = 1; i < this.particles.length; i++){
+        var p = this.particles[i];
+        context.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
+      }
+      context.stroke();
+    }
   }
 
-  pGen._init = function(w, h){
-    height = h;
-    width = w;
-    fields.forEach(function(e){e._init(Date.now(),w,h)})
+
+  /**
+   * Object defining a type of particle system
+   */
+  function ParticleField( render ){
+    this.render = render;
   }
-  return pGen;
-})();
+
+  ParticleField.prototype = {
+    /**
+     *  Create field : create a field of particle
+     *  initf : function executed at the initialization of the particle system
+     *  createf: function that initialize a single particle
+     *  fieldf: function that simulates the physic of the system
+     *  renderingOptions : options given to the rendering engine
+     *  endOfLifef : function executed when a particle is removed by the system
+     */
+    createField : function(
+                      initf,
+                      createParticlef,
+                      fieldf,
+                      renderingOptions,
+                      endOfLifef 
+                    ){
+      var eolf    = endOfLifef || function(){},
+          system  = {
+            _init: function(w, h){
+              this.width = w;
+              this.height = h;
+              this.particles = initf ? initf(w, h):[];
+            },
+            animate:function(now, width, height){
+              for(var i = 0; i < this.particles.length; i++){
+                var p = this.particles[i],
+                    vd = fieldf(p, this.particles),
+                    elapsedtime = (now - p[5])/1000;
+
+                p[0] = p[0] + p[3];
+                p[1] = p[1] + p[4];
+
+                if( p[0] > width+500 || 
+                    p[1] > height+500 || 
+                    p[0] < -500 || 
+                    p[1] < -500 ||
+                    p[2] < now ){
+                  eolf(p);
+                  this.particles.splice(i, 1);
+                }
+              }
+
+              return true;
+            },
+            create : function(nbParticules) {
+              var now = Date.now();
+              for(var i = 0; i<nbParticules; i++){
+                this.particles.push(createParticlef(now, this.width, this.height));
+              }
+            },
+            getParticleCount:function(){
+              return this.particles.length;
+            }
+          };
+      system.render = this.render.bind(system, renderingOptions);
+      return system;
+    }
+  }
+  
+  var circleParticleGenerator     = new ParticleField(rendering.circle);
+  var lineParticleGenerator       = new ParticleField(rendering.line);
+  var quadraticParticleGenerator  = new ParticleField(rendering.quadratic);
+
+  window.loop.animations.particle       = circleParticleGenerator.createField.bind(circleParticleGenerator);
+  window.loop.animations.particleLasso  = lineParticleGenerator.createField.bind(lineParticleGenerator);
+  window.loop.animations.particleLasso2 = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
+})( 
+    window
+  );
+

@@ -57,13 +57,15 @@ ul li{list-style-type:none;}
   } 
 
   for(var i = nbFireballs-1 ; i >= 0; i--){
-    var fireballFP = loop.animations.particleLasso2(
+    var fireballFP = loop.animations.particleLasso(
             function(){ return []},
             createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
             physic,
-            "lighter",
-            "hsl(30, 100%, 5%)",
-            7);
+            {
+              compositionMethod:"lighter",
+              color:"hsl(30, 100%, 5%)",
+              size:7
+            });
     loop.registerAnimation(fireballFP);
     fireballs.push(fireballFP);
   }
