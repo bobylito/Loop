@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+<title>Xperience : animation playground</title>
+<style type="text/css" media="screen">
+/* <![CDATA[ */
+*{padding:0;margin:0}
+body{background-color:#000}
+
+body{text-align:left; background-color:#111; color:#FFF; font-family:Verdana, Helvetica, Arial, Sans-serif; padding:35px 35px;}
+ul li{list-style-type:none;}
+
+/* ]]> */
+</style>
+
+</head>
+
+<body>
+  <div id="principal"> 
+    <canvas id="scene" height="500" width="500"></canvas>
+  </div>
+</body>
+
+<script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" charset="utf-8">
+(function(){
+  var nbFireballs = 20,
+      fireballs = [];
+
+  function createFireballGenerator(x, y){
+    return function(now){
+      return [  
+      x,
+      y,
+      // Date d'expiration
+      now + 500 + Math.random()*300,
+      // Valeur de déplacement sur x
+      0.25 - Math.random()/2,
+      // Valeur de deplacement sur y
+      0.25 - Math.random()/2,
+      now 
+      ];
+    };
+  }
+
+  function physic(p){
+    var rx = (1 - (Math.random()) * 2)/8,
+        ry = 0.15 - (Math.random()) * 0.4;
+
+    p[3] = p[3] + rx;
+    p[4] = p[4] + ry;
+
+    return p;
+  } 
+
+  for(var i = nbFireballs-1 ; i >= 0; i--){
+    var fireballFP = loop.animations.particleImageData(
+            function(){ return []},
+            createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
+            physic,
+            {
+              compositionMethod:"lighter",
+              color:"hsl(30, 100%, 5%)",
+              size:7
+            });
+    loop.registerAnimation(fireballFP);
+    fireballs.push(fireballFP);
+  }
+
+  loop.registerAnimation(loop.animations.particle.bench());
+
+  setInterval(function(){
+    for(var i = 0; i < nbFireballs; i++){
+      fireballs[i].create(30);
+    }
+  }, 20)
+
+  loop.start();
+})();
+</script>
+</html>

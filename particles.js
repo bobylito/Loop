@@ -84,7 +84,23 @@
         context.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
       }
       context.stroke();
-    }
+    },
+    imageData : function(renderingOptions, context, width, height){
+      var imgData = context.getImageData(0, 0,width,height),
+          data    = imgData.data;
+      for(var i = 1; i < this.particles.length; i++){
+        var p = this.particles[i],
+            x = ~~p[0],
+            y = ~~p[1],
+            t = (x + y * width) * 4;
+        //context.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
+        data[t] = 250;
+        data[t+1] = 250;
+        data[t+2] = 2;
+        data[t+3] = 255;
+      }
+      context.putImageData(imgData, 0,0);
+    },
   }
 
 
@@ -159,11 +175,13 @@
   var lineParticleGenerator       = new ParticleField(rendering.line);
   var quadraticParticleGenerator  = new ParticleField(rendering.quadratic);
   var textureParticleGenerator    = new ParticleField(rendering.texture);
+  var imageDataParticleGenerator  = new ParticleField(rendering.imageData);
 
-  window.loop.animations.particle       = circleParticleGenerator.createField.bind(circleParticleGenerator);
-  window.loop.animations.particleLasso  = lineParticleGenerator.createField.bind(lineParticleGenerator);
-  window.loop.animations.particleLasso2 = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
-  window.loop.animations.particleTexture= textureParticleGenerator.createField.bind(textureParticleGenerator);
+  window.loop.animations.particle         = circleParticleGenerator.createField.bind(circleParticleGenerator);
+  window.loop.animations.particleLasso    = lineParticleGenerator.createField.bind(lineParticleGenerator);
+  window.loop.animations.particleLasso2   = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
+  window.loop.animations.particleTexture  = textureParticleGenerator.createField.bind(textureParticleGenerator);
+  window.loop.animations.particleImageData= imageDataParticleGenerator.createField.bind(imageDataParticleGenerator);
 })( 
     window
   );
