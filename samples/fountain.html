@@ -56,9 +56,11 @@ ul li{list-style-type:none;}
 
           return p;
         },
-        "lighter",
-        "hsl(230, 100%, 70%)",
-        10);
+        {
+          compositionMethod:"lighter",
+          color:"hsl(230, 100%, 70%)",
+          size:10
+        });
 
   setInterval(function(){
     fountainFP.create(10);

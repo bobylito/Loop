@@ -62,10 +62,6 @@ window.loop = (function createMainLoop(){
       _animations:[],
       animations:{},
       start: function(){
-        this._animations.forEach(function(anim){
-          if(typeof(anim._init) === "function")
-            anim._init( datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"], this);
-        }, this);
         this._trigger("start");
         context.fillStyle = "#000";
         context.fillRect(0,0,datastore["CANVAS_WIDTH"], datastore["CANVAS_HEIGHT"]);
@@ -76,10 +72,8 @@ window.loop = (function createMainLoop(){
         status = false;
       },
       registerAnimation: function(animation){
-        if(status){
-          if(typeof(animation._init) === "function")
-            animation._init.call(datastore["CANVAS_WIDTH"], datastore["CANVAS_HEIGHT"], this)
-        }
+        if(typeof(animation._init) === "function")
+          animation._init(datastore["CANVAS_WIDTH"], datastore["CANVAS_HEIGHT"], this);
         this._animations.push(animation);
       },
       loadImage: function registerImageRequest(uri, callback){

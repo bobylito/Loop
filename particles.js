@@ -40,6 +40,16 @@
       }
     },
     /**
+     * texture: rendering of particles as images
+     *  - img : image dom element
+     */
+    texture: function(renderingOptions, context, width, height){
+      for(var i = 0; i < this.particles.length; i++){
+        var p = this.particles[i];
+        context.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
+      }
+    },
+    /**
      * line : rendering of the particles as lines drawn between particles
      * Rendering options : 
      *  - compositionMethod
@@ -132,7 +142,7 @@
             create : function(nbParticules) {
               var now = Date.now();
               for(var i = 0; i<nbParticules; i++){
-                this.particles.push(createParticlef(now, this.width, this.height));
+                this.particles.push(this._createParticlef(now, this.width, this.height));
               }
             },
             getParticleCount:function(){
@@ -140,6 +150,7 @@
             }
           };
       system.render = this.render.bind(system, renderingOptions);
+      system._createParticlef = createParticlef;
       return system;
     }
   }
@@ -147,10 +158,12 @@
   var circleParticleGenerator     = new ParticleField(rendering.circle);
   var lineParticleGenerator       = new ParticleField(rendering.line);
   var quadraticParticleGenerator  = new ParticleField(rendering.quadratic);
+  var textureParticleGenerator    = new ParticleField(rendering.texture);
 
   window.loop.animations.particle       = circleParticleGenerator.createField.bind(circleParticleGenerator);
   window.loop.animations.particleLasso  = lineParticleGenerator.createField.bind(lineParticleGenerator);
   window.loop.animations.particleLasso2 = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
+  window.loop.animations.particleTexture= textureParticleGenerator.createField.bind(textureParticleGenerator);
 })( 
     window
   );

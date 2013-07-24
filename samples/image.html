@@ -34,7 +34,7 @@ ul li{list-style-type:none;}
         i.src="ouno.png";
         return i;
       })(),
-      fireFP = loop.animations.particle(
+      fireFP = loop.animations.particleTexture(
       function(){ return [];},
       function(now){
         return [  
@@ -73,9 +73,10 @@ ul li{list-style-type:none;}
           return p;
         }
       })()
-      , 
-    "",
-    img);
+      ,
+      {
+        img : img
+      });
 
 
   setTimeout(function(){

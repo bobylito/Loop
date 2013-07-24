@@ -6,10 +6,8 @@
 /* <![CDATA[ */
 *{padding:0;margin:0}
 body{background-color:#000}
-
 body{text-align:left; background-color:#111; color:#FFF; font-family:Verdana, Helvetica, Arial, Sans-serif; padding:35px 35px;}
 ul li{list-style-type:none;}
-
 /* ]]> */
 </style>
 
@@ -67,11 +65,11 @@ ul li{list-style-type:none;}
 
           return p;
         }
-      })()
-      , 
-    "lighter",
-    "hsl(230, 100%, 20%)", 
-    20);
+      })(),
+      {
+        compositionMethod : "lighter",
+        color : "hsl(230, 100%, 20%)"
+      });
 
 
   setTimeout(function(){

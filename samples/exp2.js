@@ -21,9 +21,10 @@
     function(p){
       return p;
     },
-    "lighter", 
-    "hsl(20, 90%, 10%)",
-    7)
+    {
+      compositionMethod: "lighter", 
+      color: "hsl(20, 90%, 10%)"
+    });
 
  
   var starfieldPF = loop.animations.particle(
@@ -65,9 +66,11 @@
 
       return p;
     }, 
-    "source-over",
-    "hsl(0, 100%, 100%)",
-    5);
+    {
+      compositionMethod : "source-over",
+      color:"hsl(0, 100%, 100%)",
+      size: 5
+    });
 
   var explosionPF = loop.animations.particle(
     function(){return [];},
@@ -92,9 +95,15 @@
       p[4] = 1.05 * p[4];
       return p;
     }, 
-    "lighter", 
-    "hsl(20, 70%, 30%)",
-    5)
+    {
+      compositionMethod:"lighter", 
+      color: "hsl(20, 70%, 30%)",
+      size: 5
+    });
+
+  loop.registerAnimation(starfieldPF);
+  loop.registerAnimation(sunPF);
+  loop.registerAnimation(explosionPF);
 
   sunPF.create(100);
 
@@ -107,11 +116,6 @@
   setInterval(function(){
     explosionPF.create(300);
   }, 2000);
-
-  loop.registerAnimation(starfieldPF);
-  loop.registerAnimation(sunPF);
-  loop.registerAnimation(explosionPF);
-
 
   loop.registerAnimation(loop.animations.particle.bench());
 
