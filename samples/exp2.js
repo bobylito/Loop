@@ -32,7 +32,13 @@
     function(now, width, height){
       var r = Math.random(),
           x = (width  + 1000) * Math.random() - 500,
-          y = (height + 1000) * Math.random() - 500;
+          y = (height + 1000) * Math.random() - 500,
+          cX= width/2,
+          cY= height/2,
+          dx = cX - x,
+          dy = cY - y,
+          vx = 2 * Math.sin( dx * Math.PI / 2),
+          vy = 2 * Math.cos( dy * Math.PI / 2);
 
       return [  
         // x 
@@ -42,9 +48,9 @@
         // Date d'expiration
         now + 20000,
         // Valeur de déplacement sur x
-        0,
+        vx,
         // Valeur de deplacement sur y
-        0,
+        vy,
         now
       ];
     },
@@ -69,7 +75,7 @@
     {
       compositionMethod : "source-over",
       color:"hsl(0, 100%, 100%)",
-      size: 3
+      size: 2
     });
 
   var explosionPF = Loop.animations.particle(
@@ -108,13 +114,13 @@
   sunPF.create(100);
 
   setInterval(function(){
-    sunPF.create(100);
+    sunPF.create(300);
   }, 50);
   setInterval(function(){
     starfieldPF.create(20);
   }, 200)
   setInterval(function(){
-    explosionPF.create(300);
+    explosionPF.create(500);
   }, 2000);
 
   loop.registerAnimation(Loop.animations.particle.bench());

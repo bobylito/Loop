@@ -9,9 +9,13 @@ An animation system : the todo
  [ ] Pluggable IO on animation system
 
 ## Cleanup 
- [-] Remove datastore
- [-] Main loop as a function to be used multiple time
+ [+] Remove datastore
+ [+] Main loop as a function to be used multiple time
 
 ## Investigate 
  [ ] Particle system over time (pure function, reproductibility)?
  [+] Rendering engine with filled line and curve => boring...
+
+## Samples 
+ [ ] Update everything
+ [-] Make exp2 starfield tangent direction
