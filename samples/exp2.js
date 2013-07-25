@@ -1,13 +1,13 @@
 (function(){
-  var sunPF = loop.animations.particleLasso(
+  var sunPF = Loop.animations.particleLasso(
     function(){return [];},
-    function(now){
+    function(now, width, height){
       var r = Math.random();
       return [  
         // x 
-        datastore["CANVAS_WIDTH"] / 2,
+        width / 2,
         // y
-        datastore["CANVAS_HEIGHT"] / 2,
+        height / 2,
         // Date d'expiration
         now + 1500 + Math.random()*600,
         // Valeur de déplacement sur x
@@ -27,12 +27,12 @@
     });
 
  
-  var starfieldPF = loop.animations.particle(
+  var starfieldPF = Loop.animations.particle(
     function(){return [];},
-    function(now){
+    function(now, width, height){
       var r = Math.random(),
-          x = (datastore["CANVAS_WIDTH"] + 1000) * Math.random() - 500,
-          y = (datastore["CANVAS_HEIGHT"] + 1000) * Math.random() - 500;
+          x = (width  + 1000) * Math.random() - 500,
+          y = (height + 1000) * Math.random() - 500;
 
       return [  
         // x 
@@ -48,14 +48,14 @@
         now
       ];
     },
-    function(p){
-      var xPrime = (p[0] - datastore["CANVAS_WIDTH"]/2),
-          yPrime = (p[1] - datastore["CANVAS_HEIGHT"]/2),
+    function(p, allP, width, height){
+      var xPrime = (p[0] - width/2),
+          yPrime = (p[1] - height/2),
           d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));
 
       if(d<30){
-        p[0] = datastore["CANVAS_WIDTH"]/2;
-        p[1] = datastore["CANVAS_HEIGHT"]/2;
+        p[0] = width/2;
+        p[1] = height/2;
         p[3] = p[4] = 0;
 
         return p;
@@ -69,18 +69,18 @@
     {
       compositionMethod : "source-over",
       color:"hsl(0, 100%, 100%)",
-      size: 5
+      size: 3
     });
 
-  var explosionPF = loop.animations.particle(
+  var explosionPF = Loop.animations.particle(
     function(){return [];},
-    function(now){
+    function(now, width, height){
       var r = Math.random();
       return [  
         // x 
-        datastore["CANVAS_WIDTH"] / 2,
+        width / 2,
         // y
-        datastore["CANVAS_HEIGHT"] / 2,
+        height/ 2,
         // Date d'expiration
         now + 2000 + Math.random()*3000,
         // Valeur de déplacement sur x
@@ -90,7 +90,7 @@
         now
       ];
     },
-    function(p){
+    function(p, allP, width, height){
       p[3] = 1.05 * p[3];
       p[4] = 1.05 * p[4];
       return p;
@@ -111,13 +111,13 @@
     sunPF.create(100);
   }, 50);
   setInterval(function(){
-    starfieldPF.create(10);
+    starfieldPF.create(20);
   }, 200)
   setInterval(function(){
     explosionPF.create(300);
   }, 2000);
 
-  loop.registerAnimation(loop.animations.particle.bench());
+  loop.registerAnimation(Loop.animations.particle.bench());
 
   //Start the loop
   loop.start();

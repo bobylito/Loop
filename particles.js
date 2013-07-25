@@ -137,7 +137,7 @@
             animate:function(now, width, height){
               for(var i = 0; i < this.particles.length; i++){
                 var p = this.particles[i],
-                    vd = fieldf(p, this.particles),
+                    vd = fieldf(p, this.particles, width, height),
                     elapsedtime = (now - p[5])/1000;
 
                 p[0] = p[0] + p[3];
@@ -177,11 +177,11 @@
   var textureParticleGenerator    = new ParticleField(rendering.texture);
   var imageDataParticleGenerator  = new ParticleField(rendering.imageData);
 
-  window.loop.animations.particle         = circleParticleGenerator.createField.bind(circleParticleGenerator);
-  window.loop.animations.particleLasso    = lineParticleGenerator.createField.bind(lineParticleGenerator);
-  window.loop.animations.particleLasso2   = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
-  window.loop.animations.particleTexture  = textureParticleGenerator.createField.bind(textureParticleGenerator);
-  window.loop.animations.particleImageData= imageDataParticleGenerator.createField.bind(imageDataParticleGenerator);
+  window.Loop.animations.particle         = circleParticleGenerator.createField.bind(circleParticleGenerator);
+  window.Loop.animations.particleLasso    = lineParticleGenerator.createField.bind(lineParticleGenerator);
+  window.Loop.animations.particleLasso2   = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
+  window.Loop.animations.particleTexture  = textureParticleGenerator.createField.bind(textureParticleGenerator);
+  window.Loop.animations.particleImageData= imageDataParticleGenerator.createField.bind(imageDataParticleGenerator);
 })( 
     window
   );

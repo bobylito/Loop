@@ -10,121 +10,105 @@ window.requestAnimFrame = (function(){
   };
 })();
 
+/**
+ * Stats.js "polyfill"
+ */
 var Stats = Stats || function(){
   this.setMode = function(){};
   this.begin = function(){};
   this.end = function(){};
 };
 
-window.datastore = (function init(d,w){
-  var canvasDom = d.getElementById("scene"),
-      canvasOff = d.createElement("canvas");
+function Loop( canvas, fadeoutf ){
+  this.eventRegister= {};
+  this._animations  = [];
 
-  canvasOff.height = canvasDom.height;
-  canvasOff.width  = canvasDom.width;
+  this.canvas       = canvas || document.createElement("canvas");
+  this.canvasOff    = (function copyProperties(newC, original){
+    newC.height = original.height;
+    newC.width  = original.width;
+    return newC;
+  })(document.createElement("canvas"), this.canvas);
+  this.ctx          = this.canvas.getContext("2d");
+  this.ctxOff       = this.canvasOff.getContext("2d");
 
-  return {
-    "CANVAS"            : canvasDom,
-    "CANVAS_CTX"        : canvasDom.getContext("2d"),
-    "CANVAS_SHADOW"     : canvasOff,
-    "CANVAS_SHADOW_CTX" : canvasOff.getContext("2d"),
-    "CANVAS_HEIGHT"     : canvasDom.height,
-    "CANVAS_WIDTH"      : canvasDom.width
+  this.height       = canvas.height;
+  this.width        = canvas.width;
+  this.fadeoutf     = fadeoutf || function(){
+    this.ctxOff.globalCompositeOperation = "source-over";
+    this.ctxOff.fillStyle = "#000000";
+    this.ctxOff.fillRect(0,0,this.width,this.height);
   }
-})(document, window);
-
-window.loop = (function createMainLoop(){
-    var stats = (function(){
-          var s = new Stats();
-          s.setMode(1);
-          if(s.domElement){
-            s.domElement.style.position = 'absolute';
-            s.domElement.style.right = '0px';
-            s.domElement.style.top = '0px';
-
-            document.body.appendChild( s.domElement );
-          }
-          return s;
-        })(),
-        context = datastore["CANVAS_SHADOW_CTX"],
-        canvasOff = datastore["CANVAS_SHADOW"],
-        contextOn = datastore["CANVAS_CTX"],
-        lastUpdate = undefined,
-        status = undefined, 
-        fadeOutScreen = function(){
-          context.globalCompositeOperation = "source-over";
-          context.fillStyle = "rgb(0,0,0)";
-          context.fillRect(0,0,datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"]);
-        };
-
-    var loadCount = 0;
-    var animationSys = {
-      _animations:[],
-      animations:{},
-      start: function(){
-        this._trigger("start");
-        context.fillStyle = "#000";
-        context.fillRect(0,0,datastore["CANVAS_WIDTH"], datastore["CANVAS_HEIGHT"]);
-        status = true;
-        this.loop();
-      },
-      stop: function(){
-        status = false;
-      },
-      registerAnimation: function(animation){
-        if(typeof(animation._init) === "function")
-          animation._init(datastore["CANVAS_WIDTH"], datastore["CANVAS_HEIGHT"], this);
-        this._animations.push(animation);
-      },
-      loadImage: function registerImageRequest(uri, callback){
-	var domImage = new Image();
-        domImage.src = uri;
-        loadCount++;
-        domImage.onload = function(){
-            callback(domImage);
-            loadCount--;
-        }
-      },
-      eventRegister : {}, 
-      on : function(eventType, funK){
-        if( this.eventRegister[eventType] === undefined ){
-          this.eventRegister[eventType] = [];
-        }
-        this.eventRegister[eventType].push(funK);
-      },
-      _trigger: function(eventType){
-        if( this.eventRegister[eventType] ){
-          var animationSystem = this;
-          this.eventRegister[eventType].forEach(function(f){
-              f.call(animationSystem);
-          });
-        }
-      }
-    };
-
-    animationSys.loop = (function(){
-      var time = Date.now();
-      fadeOutScreen();
-
-      stats.begin();
-      this._animations.forEach(function(anim){
-        anim.render(context, datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"]);
-      });
-
-      //Copie canvas offscreen vers canvas on
-      contextOn.drawImage(canvasOff, 0, 0);
-
-      for(var i = this._animations.length-1; i>=0; i--){
-        if(!this._animations[i].animate(time, datastore["CANVAS_WIDTH"],datastore["CANVAS_HEIGHT"])){
-          this._animations.splice(i,1);
-        }
-      }
-      stats.end();
-
-      if(status){
-        window.requestAnimFrame(this.loop);
-      }
-    }).bind(animationSys);
-
-    return animationSys;
+  this.status = undefined;
+  this.stats = (function(){
+    var s = new Stats();
+    if(s.domElement){
+      s.domElement.style.position = 'absolute';
+      s.domElement.style.right = '0px';
+      s.domElement.style.top = '0px';
+      document.body.appendChild( s.domElement );
+    }
+    return s;
   })();
+
+  this.loop = this.loop.bind(this);
+}
+
+Loop.prototype = {
+  loop:function(){
+    var time    = Date.now(),
+        animSys = this;
+    this.fadeoutf();
+
+    this.stats.begin();
+    this._animations.forEach(function(anim){
+      anim.render( this.ctxOff, this.width, this.height );
+    }, this);
+
+    //Copie canvas offscreen vers canvas on
+    this.ctx.drawImage(this.canvasOff, 0, 0);
+
+    for(var i = this._animations.length-1; i>=0; i--){
+      if(!this._animations[i].animate(time, this.width, this.height)){
+        this._animations.splice(i,1);
+      }
+    }
+    this.stats.end();
+
+    if(status){
+      window.requestAnimFrame( this.loop );
+    }
+  },
+  start: function(){
+    this._trigger("start");
+    this.fadeoutf();
+    status = true;
+    this.loop();
+  },
+  stop: function(){
+    this._trigger("stop");
+    status = false;
+  },
+  registerAnimation: function(animation){
+    if(typeof(animation._init) === "function")
+      animation._init( this.width, this.height, this);
+    this._animations.push(animation);
+  },
+  on : function(eventType, funK){
+    if( this.eventRegister[eventType] === undefined ){
+      this.eventRegister[eventType] = [];
+    }
+    this.eventRegister[eventType].push(funK);
+  },
+  _trigger: function(eventType){
+    if( this.eventRegister[eventType] ){
+      var animationSystem = this;
+      this.eventRegister[eventType].forEach(function(f){
+          f.call(animationSystem);
+      });
+    }
+  }
+};
+
+Loop.animations = {};
+window.loop = new Loop( document.getElementById("scene") );
