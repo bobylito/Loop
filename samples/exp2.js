@@ -107,6 +107,8 @@
       size: 5
     });
 
+  loop.addIO(Loop.io.time);
+
   loop.registerAnimation(starfieldPF);
   loop.registerAnimation(sunPF);
   loop.registerAnimation(explosionPF);

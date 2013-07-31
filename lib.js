@@ -22,6 +22,7 @@ var Stats = Stats || function(){
 function Loop( canvas, fadeoutf ){
   this.eventRegister= {};
   this._animations  = [];
+  this._io          = [];
 
   this.canvas       = canvas || document.createElement("canvas");
   this.canvasOff    = (function copyProperties(newC, original){
@@ -57,8 +58,9 @@ function Loop( canvas, fadeoutf ){
 Loop.prototype = {
   loop:function(){
     var time    = Date.now(),
-        animSys = this;
-    this.fadeoutf();
+        animSys = this,
+        ioState = {};
+    this.fadeoutf(this.ctxOff, this.width, this.height);
 
     this.stats.begin();
     this._animations.forEach(function(anim){
@@ -68,8 +70,11 @@ Loop.prototype = {
     //Copie canvas offscreen vers canvas on
     this.ctx.drawImage(this.canvasOff, 0, 0);
 
+    this._io.map(function(o){ return o.update;})
+            .reduce(function(state, updateF){ return updateF(state);}, ioState);
+
     for(var i = this._animations.length-1; i>=0; i--){
-      if(!this._animations[i].animate(time, this.width, this.height)){
+      if(!this._animations[i].animate(ioState, this.width, this.height)){
         this._animations.splice(i,1);
       }
     }
@@ -81,7 +86,7 @@ Loop.prototype = {
   },
   start: function(){
     this._trigger("start");
-    this.fadeoutf();
+    this.fadeoutf(this.ctxOff, this.width, this.height);
     status = true;
     this.loop();
   },
@@ -93,6 +98,9 @@ Loop.prototype = {
     if(typeof(animation._init) === "function")
       animation._init( this.width, this.height, this);
     this._animations.push(animation);
+  },
+  addIO : function( ioManager ){
+    this._io.push( ioManager );
   },
   on : function(eventType, funK){
     if( this.eventRegister[eventType] === undefined ){

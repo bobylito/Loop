@@ -134,11 +134,11 @@
               this.height = h;
               this.particles = initf ? initf(w, h):[];
             },
-            animate:function(now, width, height){
+            animate:function(ioState, width, height){
               for(var i = 0; i < this.particles.length; i++){
-                var p = this.particles[i],
-                    vd = fieldf(p, this.particles, width, height),
-                    elapsedtime = (now - p[5])/1000;
+                var p   = this.particles[i],
+                    now = ioState.time,
+                    vd  = fieldf(p, this.particles, width, height);
 
                 p[0] = p[0] + p[3];
                 p[1] = p[1] + p[4];
