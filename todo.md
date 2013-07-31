@@ -6,7 +6,8 @@ An animation system : the todo
  [+] Particles : Image data rendering
  [ ] Control time
  [ ] animation context
- [ ] Pluggable IO on animation system
+ [+] Pluggable IO on animation system
+ [ ] test if required IO are provided by IO manager before start
 
 ## Cleanup 
  [+] Remove datastore
@@ -15,7 +16,9 @@ An animation system : the todo
 ## Investigate 
  [ ] Particle system over time (pure function, reproductibility)?
  [+] Rendering engine with filled line and curve => boring...
+ [ ] Rendering engine with filled triangles
 
 ## Samples 
  [ ] Update everything
- [-] Make exp2 starfield tangent direction
+ [~] Make exp2 starfield tangent direction
+ [+] Port bezier under the sea
