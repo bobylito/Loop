@@ -57,9 +57,8 @@ function Loop( canvas, fadeoutf ){
 
 Loop.prototype = {
   loop:function(){
-    var time    = Date.now(),
-        animSys = this,
-        ioState = {};
+    var animSys = this,
+        ioState = this.calculateIOState();
     this.fadeoutf(this.ctxOff, this.width, this.height);
 
     this.stats.begin();
@@ -69,9 +68,6 @@ Loop.prototype = {
 
     //Copie canvas offscreen vers canvas on
     this.ctx.drawImage(this.canvasOff, 0, 0);
-
-    this._io.map(function(o){ return o.update;})
-            .reduce(function(state, updateF){ return updateF(state);}, ioState);
 
     for(var i = this._animations.length-1; i>=0; i--){
       if(!this._animations[i].animate(ioState, this.width, this.height)){
@@ -96,11 +92,15 @@ Loop.prototype = {
   },
   registerAnimation: function(animation){
     if(typeof(animation._init) === "function")
-      animation._init( this.width, this.height, this);
+      animation._init( this.width, this.height, this, this.calculateIOState());
     this._animations.push(animation);
   },
   addIO : function( ioManager ){
     this._io.push( ioManager );
+  },
+  calculateIOState : function(){
+    return this._io.map(    function(o){ return o.update;})
+                   .reduce( function(state, updateF){ return updateF(state);}, {});
   },
   on : function(eventType, funK){
     if( this.eventRegister[eventType] === undefined ){

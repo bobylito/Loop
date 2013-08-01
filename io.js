@@ -9,7 +9,30 @@ Loop.io = (function(){
     return ioState;
   }, ["time"] );
 
+  var controledTimeIO = new IOManager( function(ioState ){
+    ioState.time = this._timeValue();
+    return ioState;
+  }, ["time"]);
+
+  controledTimeIO._timeValue = function(){
+    if( !this._el ){
+      this._el = (function(self){
+        var d = document.createElement("input");
+        d.setAttribute("type", "range");
+        d.addEventListener("change", function(){
+           self._time = parseInt(this.value, 10) * 100;
+        });
+        document.body.appendChild(d);
+        d.value=0;
+        self._time = 0;
+        return d;
+      })(this);
+    }
+    return this._time;
+  }
+
   return {
-    time : timeIO
+    time : timeIO,
+    controlTime : controledTimeIO
   };
 })();

@@ -4,7 +4,7 @@ An animation system : the todo
 
 ## Features
  [+] Particles : Image data rendering
- [ ] Control time
+ [+] Control time
  [ ] animation context
  [+] Pluggable IO on animation system
  [ ] test if required IO are provided by IO manager before start
@@ -17,6 +17,7 @@ An animation system : the todo
  [ ] Particle system over time (pure function, reproductibility)?
  [+] Rendering engine with filled line and curve => boring...
  [ ] Rendering engine with filled triangles
+ [ ] Verify time
 
 ## Samples 
  [ ] Update everything
