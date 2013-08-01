@@ -1,6 +1,5 @@
 # Loop
-
-An animation system : the todo
+An animation system : this is the todo
 
 ## Features
  [+] Particles : Image data rendering
@@ -17,7 +16,7 @@ An animation system : the todo
  [ ] Particle system over time (pure function, reproductibility)?
  [+] Rendering engine with filled line and curve => boring...
  [ ] Rendering engine with filled triangles
- [ ] Verify time
+ [ ] Time control for particles
 
 ## Samples 
  [ ] Update everything

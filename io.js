@@ -15,19 +15,21 @@ Loop.io = (function(){
   }, ["time"]);
 
   controledTimeIO._timeValue = function(){
-    if( !this._el ){
-      this._el = (function(self){
-        var d = document.createElement("input");
-        d.setAttribute("type", "range");
-        d.addEventListener("change", function(){
-           self._time = parseInt(this.value, 10) * 100;
-        });
-        document.body.appendChild(d);
-        d.value=0;
-        self._time = 0;
-        return d;
-      })(this);
-    }
+    this._el = (function(self){
+      var d = document.createElement("input");
+      d.setAttribute("type", "range");
+      d.addEventListener("change", function(){
+         self._time = parseInt(this.value, 10) * 100;
+      });
+      document.body.appendChild(d);
+      d.value=0;
+      self._time = 0;
+      return d;
+    })(this);
+
+    this._timeValue = function(){
+      return this._time;
+    };
     return this._time;
   }
 
