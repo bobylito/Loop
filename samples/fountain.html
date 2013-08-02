@@ -17,34 +17,35 @@ ul li{list-style-type:none;}
 
 <body>
   <div id="principal"> 
-    <canvas id="scene" height="500" width="500"></canvas>
+    <canvas id="scene" height="500" width="1000"></canvas>
   </div>
 </body>
 
 <script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
-  var fountainFP = loop.animations.particle(
+  var fountainFP = Loop.animations.particle(
         function(){ return [];},
-        function(now){
+        function(ioState, width, height){
           var r = Math.random() > 0.5 ? 1: -1,
               a = 1.5 * Math.PI + 0.1 * r * Math.PI;
 
           return [  
             // x 
-            datastore["CANVAS_WIDTH"]/2,
+            width * 0.5,
             // y
-            datastore["CANVAS_HEIGHT"]/2,
+            height * 0.85,
             // Date d'expiration
-            (new Date()).getTime() + 2000,
+            ioState.time + 2000,
             // Valeur de déplacement sur x
             Math.cos(a) * 20,
             // Valeur de deplacement sur y
             Math.sin(a) * 20,
-            now 
+            ioState.time
           ];
         },
         function(p){
@@ -66,8 +67,9 @@ ul li{list-style-type:none;}
     fountainFP.create(10);
   }, 10)
 
+  loop.addIO(Loop.io.time);
   loop.registerAnimation(fountainFP);
-  loop.registerAnimation(loop.animations.particle.bench());
+  loop.registerAnimation(Loop.animations.particle.bench());
 
   loop.start();
 })();
