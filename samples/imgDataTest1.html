@@ -10,6 +10,7 @@
 </div>
 <script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
@@ -17,27 +18,27 @@
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
-      fireFP = loop.animations.particleImageData(
+      fireFP = Loop.animations.particleImageData(
       function(){ return []; },
-      function(now, width, height, iteration){
+      function(ioState, width, height){
         return [  
           // x 
-          datastore["CANVAS_WIDTH"]/2,
+          width/2,
           // y
-          datastore["CANVAS_HEIGHT"]/2,
+          height/2,
           // Date d'expiration
-          (new Date()).getTime() + 50000 ,
+          ioState.time + 50000 ,
           // Valeur de déplacement sur x
           3 - Math.random() * 6,
           // Valeur de deplacement sur y
           3 - Math.random() * 6,
           // Début
-          now
+          ioState.time
         ];
       },
-      function(p){
-        var xPrime = (p[0] - datastore["CANVAS_WIDTH"]/2),
-            yPrime = (p[1] - datastore["CANVAS_HEIGHT"]/2),
+      function(p, pAll, width, height){
+        var xPrime = (p[0] - width/2),
+            yPrime = (p[1] - height/2),
             d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));
         return p;
       }, 
@@ -51,8 +52,9 @@
     fireFP.create(4000);
   }, 500)
 
+  loop.addIO(Loop.io.time);
   loop.registerAnimation(fireFP);
-  loop.registerAnimation(loop.animations.particle.bench());
+  loop.registerAnimation(Loop.animations.particle.bench());
 
   loop.start();
 })();

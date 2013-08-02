@@ -23,28 +23,29 @@ ul li{list-style-type:none;}
 
 <script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
-      fireFP = loop.animations.particle(
+      fireFP = Loop.animations.particle(
       function(){return []},
-      function(now){
+      function(ioState, width, height){
         return [  
           // x 
-          (0.25 + 0.5 * Math.random()) * datastore["CANVAS_WIDTH"],
+          (0.47 + 0.06 * Math.random()) * width,
           // y
-          (0.25 + 0.5 * Math.random()) * datastore["CANVAS_HEIGHT"] ,
+          (0.47 + 0.06 * Math.random()) * height ,
           // Date d'expiration
-          (new Date()).getTime() + 50000 ,
+          ioState.time + 50000 ,
           // Valeur de déplacement sur x
           0,
           // Valeur de deplacement sur y
           0,
           // Début
-          now
+          ioState.time
         ];
       },
       (function(){
@@ -69,15 +70,18 @@ ul li{list-style-type:none;}
         }
       })()
       , 
-    "lighter",
-    "hsl(230, 100%, 20%)", 
-    20);
+      { 
+        compositionMethod : "lighter",
+        color : "hsl(230, 100%, 20%)", 
+        size : 20
+      });
 
 
   setTimeout(function(){
     fireFP.create(4000);
   }, 0)
 
+  loop.addIO(Loop.io.time);
   loop.registerAnimation(fireFP);
 
   loop.start();

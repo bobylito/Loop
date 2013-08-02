@@ -27,7 +27,7 @@ An animation system : this is the todo
  [ ] Rendering engine with filled triangles
 
 ## Samples 
- [-] Update everything
+ [+] Update everything
  [ ] Reorganize folders
  [~] Make exp2 starfield tangent direction
  [+] Port bezier under the sea
