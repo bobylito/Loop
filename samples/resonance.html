@@ -23,6 +23,7 @@ ul li{list-style-type:none;}
 
 <script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
@@ -30,37 +31,31 @@ ul li{list-style-type:none;}
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
-      fireFP = loop.animations.particle(
+      fireFP = Loop.animations.particle(
       function(){ return []; },
-      function(now){
+      function(ioState, width, height){
         return [  
           // x 
-          Math.random() * datastore["CANVAS_WIDTH"],
+          Math.random() * width,
           // y
-          Math.random() * datastore["CANVAS_HEIGHT"] ,
+          Math.random() * height ,
           // Date d'expiration
-          (new Date()).getTime() + 50000 ,
+          ioState.time + 50000 ,
           // Valeur de déplacement sur x
           3 - Math.random() * 6,
           // Valeur de deplacement sur y
           3 - Math.random() * 6,
           // Début
-          now
+          ioState.time
         ];
       },
-      function(p){
-        var xPrime = (p[0] - datastore["CANVAS_WIDTH"]/2),
-            yPrime = (p[1] - datastore["CANVAS_HEIGHT"]/2),
+      function(p, allP, width, height){
+        var xPrime = (p[0] - width  / 2),
+            yPrime = (p[1] - height / 2),
             d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));
-/*
-        p[3] -= 10/Math.pow(d, 2) * (xPrime>0?1:-1);
-        p[4] -= 10/Math.pow(d, 2) * (yPrime>0?1:-1);
-        */
 
         p[3] = p[3] / Math.sin(d/20) * (xPrime>0?1:-1)/1.1;
-
         p[4] = p[4] / Math.sin(d/20) * (yPrime>0?1:-1)/1.1;
-
 
         return p;
       },
@@ -75,8 +70,10 @@ ul li{list-style-type:none;}
     fireFP.create(4000);
   }, 500)
 
+  loop.addIO(Loop.io.time);
+
   loop.registerAnimation(fireFP);
-  loop.registerAnimation(loop.animations.particle.bench());
+  loop.registerAnimation(Loop.animations.particle.bench());
 
   loop.start();
 })();
