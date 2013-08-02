@@ -23,25 +23,26 @@ ul li{list-style-type:none;}
 
 <script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
-  var nbFireballs = 20,
+  var nbFireballs = 10,
       fireballs = [];
 
   function createFireballGenerator(x, y){
-    return function(now){
+    return function(ioState, width, height){
       return [  
       x,
       y,
       // Date d'expiration
-      now + 500 + Math.random()*300,
+      ioState.time + 500 + Math.random()*300,
       // Valeur de déplacement sur x
       0.25 - Math.random()/2,
       // Valeur de deplacement sur y
       0.25 - Math.random()/2,
-      now 
+      ioState.time
       ];
     };
   }
@@ -56,25 +57,26 @@ ul li{list-style-type:none;}
     return p;
   } 
 
+  loop.addIO(Loop.io.time);
   for(var i = nbFireballs-1 ; i >= 0; i--){
-    var fireballFP = loop.animations.particleLasso(
+    var fireballFP = Loop.animations.particleLasso(
             function(){ return []},
-            createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
+            createFireballGenerator( i * loop.width / nbFireballs, loop.height/2),
             physic,
             {
-              compositionMethod:"",
-              color:"hsl(30, 100%, 100%)",
+              compositionMethod:"lighter",
+              color:"hsl(30, 100%, 10%)",
               size:7
             });
     loop.registerAnimation(fireballFP);
     fireballs.push(fireballFP);
   }
 
-  loop.registerAnimation(loop.animations.particle.bench());
+  loop.registerAnimation(Loop.animations.particle.bench());
 
   setInterval(function(){
     for(var i = 0; i < nbFireballs; i++){
-      fireballs[i].create(30);
+      fireballs[i].create(50);
     }
   }, 20)
 
