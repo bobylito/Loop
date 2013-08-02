@@ -133,8 +133,13 @@
               this.width = w;
               this.height = h;
               this.particles = initf ? initf(w, h):[];
+              this.toBeCreated = [];
             },
             animate:function(ioState, width, height){
+              this.toBeCreated.forEach(function( n ){
+                this._create(ioState, n);
+              }, this);
+              this.toBeCreated = [];
               for(var i = 0; i < this.particles.length; i++){
                 var p   = this.particles[i],
                     now = ioState.time,
@@ -155,10 +160,13 @@
 
               return true;
             },
-            create : function(nbParticules) {
+            create : function(nbParticles){
+              this.toBeCreated.push(nbParticles);
+            },
+            _create : function(ioState, nbParticles) {
               var now = Date.now();
-              for(var i = 0; i<nbParticules; i++){
-                this.particles.push(this._createParticlef(now, this.width, this.height));
+              for(var i = 0; i<nbParticles; i++){
+                this.particles.push(this._createParticlef(ioState, this.width, this.height));
               }
             },
             getParticleCount:function(){

@@ -12,6 +12,10 @@ An animation system : this is the todo
  [+] Remove datastore
  [+] Main loop as a function to be used multiple time
 
+## FIX
+ [ ] Particles creation time should be added by the particle system.
+ [+] Particle creation should be done at the animate phase and time based on ioState
+
 ## Investigate 
  [ ] Particle system over time (pure function, reproductibility)?
  [+] Rendering engine with filled line and curve => boring...

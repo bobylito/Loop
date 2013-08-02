@@ -1,7 +1,7 @@
 (function(){
   var sunPF = Loop.animations.particleLasso(
     function(){return [];},
-    function(now, width, height){
+    function(ioState, width, height){
       var r = Math.random();
       return [  
         // x 
@@ -9,13 +9,13 @@
         // y
         height / 2,
         // Date d'expiration
-        now + 1500 + Math.random()*600,
+        ioState.time + 1500 + Math.random()*600,
         // Valeur de déplacement sur x
         Math.sin(r * Math.PI * 2) / 2,
         // Valeur de deplacement sur y
         Math.cos(r * Math.PI * 2 ) / 2,
         //Start time
-        now 
+        ioState.time
       ];
     },
     function(p){
@@ -29,7 +29,7 @@
  
   var starfieldPF = Loop.animations.particle(
     function(){return [];},
-    function(now, width, height){
+    function(ioState, width, height){
       var r = Math.random(),
           x = (width  + 1000) * Math.random() - 500,
           y = (height + 1000) * Math.random() - 500,
@@ -46,12 +46,12 @@
         // y
         y,
         // Date d'expiration
-        now + 20000,
+        ioState.time + 20000,
         // Valeur de déplacement sur x
         vx,
         // Valeur de deplacement sur y
         vy,
-        now
+        ioState.time 
       ];
     },
     function(p, allP, width, height){
@@ -80,7 +80,7 @@
 
   var explosionPF = Loop.animations.particle(
     function(){return [];},
-    function(now, width, height){
+    function(ioState, width, height){
       var r = Math.random();
       return [  
         // x 
@@ -88,12 +88,12 @@
         // y
         height/ 2,
         // Date d'expiration
-        now + 2000 + Math.random()*3000,
+        ioState.time + 2000 + Math.random()*3000,
         // Valeur de déplacement sur x
         Math.sin(r * Math.PI * 2) / 5,
         // Valeur de deplacement sur y
         Math.cos(r * Math.PI * 2 ) / 5,
-        now
+        ioState.time 
       ];
     },
     function(p, allP, width, height){
