@@ -23,25 +23,26 @@ ul li{list-style-type:none;}
 
 <script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
-  var nbFireballs = 20,
+  var nbFireballs = 10,
       fireballs = [];
 
   function createFireballGenerator(x, y){
-    return function(now){
+    return function(ioState, width, height){
       return [  
       x,
       y,
       // Date d'expiration
-      now + 500 + Math.random()*300,
+      ioState.time + 500 + Math.random()*300,
       // Valeur de déplacement sur x
       0.25 - Math.random()/2,
       // Valeur de deplacement sur y
       0.25 - Math.random()/2,
-      now 
+      ioState.time
       ];
     };
   }
@@ -56,10 +57,12 @@ ul li{list-style-type:none;}
     return p;
   } 
 
+  loop.addIO(Loop.io.time);
+  
   for(var i = nbFireballs-1 ; i >= 0; i--){
-    var fireballFP = loop.animations.particle(
+    var fireballFP = Loop.animations.particle(
             function(){ return []},
-            createFireballGenerator( i * datastore["CANVAS_WIDTH"]/nbFireballs, datastore["CANVAS_HEIGHT"]/2),
+            createFireballGenerator( i * loop.width / nbFireballs, loop.height/2),
             physic,
             {
               compositionMethod:"lighter",
@@ -70,11 +73,11 @@ ul li{list-style-type:none;}
     fireballs.push(fireballFP);
   }
 
-  loop.registerAnimation(loop.animations.particle.bench());
+  loop.registerAnimation(Loop.animations.particle.bench());
 
   setInterval(function(){
     for(var i = 0; i < nbFireballs; i++){
-      fireballs[i].create(11);
+      fireballs[i].create(16);
     }
   }, 20)
 
