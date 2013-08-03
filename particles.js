@@ -16,11 +16,11 @@
      *  - compositionMethod : composition to use when drawing the disc
      */
     circle : function(renderingOptions, context, width, height){
+      var half = renderingOptions.size / 2 ;
       if(!this.particleCanvas){
         this.particleCanvas = (function initCacheCanvas(){
           var particleCanvas = document.createElement("canvas"),
-              particleContext = particleCanvas.getContext('2d'),
-              half = renderingOptions.size / 2 ;
+              particleContext = particleCanvas.getContext('2d');
           
           particleCanvas.width = renderingOptions.size;
           particleCanvas.height = renderingOptions.size;
@@ -36,7 +36,7 @@
       context.globalCompositeOperation = renderingOptions.compositionMethod;
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.drawImage(this.particleCanvas, ~~p[0], ~~p[1]);
+        context.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
       }
     },
     /**
