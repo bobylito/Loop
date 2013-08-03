@@ -34,8 +34,8 @@ ul li{list-style-type:none;}
   function createFireballGenerator(x, y){
     return function(ioState, width, height){
       return [  
-      x,
-      y,
+      ioState.position.x || x,
+      ioState.position.y || y,
       // Date d'expiration
       ioState.time + 1300 ,
       // Valeur de déplacement sur x
@@ -47,7 +47,7 @@ ul li{list-style-type:none;}
     };
   }
 
-  function physic(p){
+  function physic(p, pAll, w, h, ioState){
     var rx = (1 - (Math.random()) * 2)/8,
         ry = 0.1 - (Math.random()) * 0.4;
 
@@ -77,6 +77,7 @@ ul li{list-style-type:none;}
     }
   }, 20)
 
+  loop.addIO( Loop.io.mouse() );
   loop.addIO( Loop.io.time );
   loop.registerAnimation(Loop.animations.particle.bench());
   loop.start();

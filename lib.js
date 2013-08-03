@@ -96,6 +96,7 @@ Loop.prototype = {
     this._animations.push(animation);
   },
   addIO : function( ioManager ){
+    ioManager._init( this.canvas );
     this._io.push( ioManager );
   },
   calculateIOState : function(){

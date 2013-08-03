@@ -143,7 +143,7 @@
               for(var i = 0; i < this.particles.length; i++){
                 var p   = this.particles[i],
                     now = ioState.time,
-                    vd  = fieldf(p, this.particles, width, height);
+                    vd  = fieldf(p, this.particles, width, height, ioState);
 
                 p[0] = p[0] + p[3];
                 p[1] = p[1] + p[4];

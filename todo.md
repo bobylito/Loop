@@ -7,7 +7,7 @@ An animation system : this is the todo
  [ ] animation context
  [+] Pluggable IO on animation system
  [ ] test if required IO are provided by IO manager before start
- [ ] Mouse IO manager
+ [-] Mouse IO manager
  [ ] Keyboard IO manager
  [ ] Hierarchical animations
  [ ] Switch rendering on the fly
