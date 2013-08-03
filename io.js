@@ -6,13 +6,18 @@ Loop.io = (function(){
 
   IOManager.prototype = {
     _init : function( sceneDom ){
-      this.el = sceneDom;      
+      this.el = sceneDom;
+      this.elPos = sceneDom.getBoundingClientRect();
     }
   };
 
   var mouseIO = function(){
     var io = new IOManager( function(ioState){
-      ioState.position = this._positionValue();
+      var pos = this._positionValue()
+      ioState.position = {
+        x : pos.x ? pos.x - this.elPos.left : pos.x,
+        y : pos.y ? pos.y - this.elPos.top  : pos.y
+      };
       return ioState;
     }, ["position"]);
 
@@ -20,8 +25,8 @@ Loop.io = (function(){
       var self = this;
       this.el.addEventListener("mousemove", function(e){
         self._position = {
-          x : e.layerX,
-          y : e.layerY
+          x : e.pageX,
+          y : e.pageY
         };
       });
       this.el.addEventListener("mouseout", function(e){
@@ -37,6 +42,7 @@ Loop.io = (function(){
         x : null,
         y : null
       }
+      return this._position;
     };
 
     return io;

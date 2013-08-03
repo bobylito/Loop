@@ -7,7 +7,7 @@ An animation system : this is the todo
  [ ] animation context
  [+] Pluggable IO on animation system
  [ ] test if required IO are provided by IO manager before start
- [-] Mouse IO manager
+ [+] Mouse IO manager
  [ ] Keyboard IO manager
  [ ] Hierarchical animations
  [ ] Switch rendering on the fly
@@ -19,6 +19,7 @@ An animation system : this is the todo
 ## FIX
  [ ] Particles creation time should be added by the particle system.
  [+] Particle creation should be done at the animate phase and time based on ioState
+ [+] Fix circle particle position
 
 ## Investigate 
  [ ] Particle system over time (pure function, reproductibility)?
