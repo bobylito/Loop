@@ -11,6 +11,11 @@ An animation system : this is the todo
  [ ] Keyboard IO manager
  [ ] Hierarchical animations
  [ ] Switch rendering on the fly
+ [ ] Meta animations : 
+ [ ]  - a then b animation
+ [-] Text animations 
+ [-]  - simple
+ [ ]  - complex
 
 ## Cleanup 
  [+] Remove datastore
