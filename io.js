@@ -11,6 +11,38 @@ Loop.io = (function(){
     }
   };
 
+  var keyboardIO = function( watchedKeys ){
+    var io = new IOManager(function(ioState){
+      ioState.keys = this._currentKeys();
+    });
+ 
+    io._keys = {};
+    io._inversedConfig = {};
+    for(k in watchedKeys ){
+      io._keys[k] = false;
+      io._inversedConfig[ watchedKeys[k] ] = k;
+    }
+
+    io._currentKeys = function(){
+      document.addEventListener("keydown", function(){
+        var code = e.keyCode;
+        if( code in io._inversedConfig ){
+          this._keys[code] = true;
+        }
+      });
+      document.addEventListener("keyup", function(e){
+        var code = e.keyCode;
+        if( code in this._inversedConfig ){
+          this._keys[code] = false;
+        }
+      });
+      io._currentKeys = function(){
+        return this._keys;
+      }
+      return this._keys;
+    };
+  }
+
   var mouseIO = function(){
     var io = new IOManager( function(ioState){
       var pos = this._positionValue()
@@ -80,6 +112,7 @@ Loop.io = (function(){
   return {
     mouse : mouseIO,
     time : timeIO,
+    keyboard : keyboardIO,
     controlTime : controledTimeIO
   };
 })();
