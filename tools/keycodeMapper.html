@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+</head>
+<body>
+
+<button class="starter">Start!</button>
+<div class="keys"></div>
+<pre id=output></pre>
+
+	
+<script type="text/javascript">
+window.addEventListener("load", app);
+function app(){
+  var startBtn  = document.querySelector(".starter");
+  var keysInput = document.querySelector(".keys");
+  var output    = document.getElementById("output");
+  var config    = {
+    UP    : null,
+    DOWN  : null,
+    LEFT  : null,
+    RIGHT : null,
+    SPACE : null
+  };
+  var keys = [];
+  var currentKey = null;
+ 
+  for(var k in config){
+    keys.push(k);
+  }
+  keys.reverse();
+
+  startBtn.addEventListener("click", function starting(){
+    startBtn.removeEventListener(starting);
+    updateCurrentKey();
+
+    document.addEventListener("keyup", function keyWaiting(e){
+      var code = e.keyCode;
+      config[currentKey] = code;
+      if( keys.length > 0){
+        updateCurrentKey();
+      }
+      else{
+        document.removeEventListener(keyWaiting);
+        keysInput.innerHTML = "";
+        output.innerText = JSON.stringify(config);
+      }
+    });
+
+    function updateCurrentKey(){
+      currentKey = keys.pop(); 
+      keysInput.innerHTML = currentKey;
+    }
+  });
+
+
+}
+</script>
+
+</body>
+</html>
