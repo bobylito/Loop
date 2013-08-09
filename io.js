@@ -14,6 +14,7 @@ Loop.io = (function(){
   var keyboardIO = function( watchedKeys ){
     var io = new IOManager(function(ioState){
       ioState.keys = this._currentKeys();
+      return ioState;
     });
  
     io._keys = {};
@@ -24,16 +25,16 @@ Loop.io = (function(){
     }
 
     io._currentKeys = function(){
-      document.addEventListener("keydown", function(){
+      document.addEventListener("keydown", function(e){
         var code = e.keyCode;
         if( code in io._inversedConfig ){
-          this._keys[code] = true;
+          io._keys[ io._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in this._inversedConfig ){
-          this._keys[code] = false;
+        if( code in io._inversedConfig ){
+          io._keys[ io._inversedConfig[code] ] = false;
         }
       });
       io._currentKeys = function(){
@@ -41,6 +42,8 @@ Loop.io = (function(){
       }
       return this._keys;
     };
+
+    return io;
   }
 
   var mouseIO = function(){

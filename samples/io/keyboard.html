@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+<title>Xperience : animation playground</title>
+<style type="text/css" media="screen">
+/* <![CDATA[ */
+*{padding:0;margin:0}
+body{background-color:#000}
+
+body{text-align:left; background-color:#111; color:#FFF; font-family:Verdana, Helvetica, Arial, Sans-serif; padding:35px 35px;}
+ul li{list-style-type:none;}
+
+/* ]]> */
+</style>
+
+</head>
+
+<body>
+  <p>Use the space bar to mix the particles. Use the arrow to move them around.</p>
+  <div id="principal"> 
+    <canvas id="scene" height="500" width="500"></canvas>
+  </div>
+</body>
+
+<script src="../../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script type="text/javascript" language="javascript" charset="utf-8">
+(function(){
+  var nbFireballs = 2,
+      fireballs = [];
+
+  function createFireballGenerator(x, y){
+    return function(ioState, width, height){
+      if(ioState.keys.LEFT)  x -= 1;
+      if(ioState.keys.RIGHT) x += 1;
+      if(ioState.keys.UP)    y -= 1;
+      if(ioState.keys.DOWN)  y += 1;
+      return [  
+      ioState.keys.SPACE ? width  / 2 : x,
+      ioState.keys.SPACE ? height / 2 : y,
+      // Date d'expiration
+      ioState.time + 1300 ,
+      // Valeur de déplacement sur x
+      0.25 - Math.random()/2,
+      // Valeur de deplacement sur y
+      0.25 - Math.random()/2,
+      ioState.time
+      ];
+    };
+  }
+
+  function physic(p, pAll, w, h, ioState){
+    var rx = (1 - (Math.random()) * 2)/8,
+        ry = 0.1 - (Math.random()) * 0.4;
+
+    p[3] = p[3] + rx;
+    p[4] = p[4] + ry;
+
+    return p;
+  } 
+
+  for(var i = nbFireballs-1 ; i >= 0; i--){
+    var fireballFP = Loop.animations.particle(
+        function(){return []},
+        createFireballGenerator( (i+1) * loop.width/(nbFireballs+1), loop.height * 0.8),
+        physic,
+        {
+          compositionMethod: "lighter",
+          color: "hsl(100, 100%, 1%)",
+          size:  85
+        });
+    loop.registerAnimation(fireballFP);
+    fireballs.push(fireballFP);
+  }
+
+  setInterval(function(){
+    for(var i = 0; i < nbFireballs; i++){
+      fireballs[i].create(25);
+    }
+  }, 20)
+
+  //FIXME Does not work yet
+  loop.addIO( Loop.io.keyboard({"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32}) );
+  loop.addIO( Loop.io.time );
+  loop.registerAnimation(Loop.animations.particle.bench());
+  loop.start();
+})();
+</script>
+</html>
