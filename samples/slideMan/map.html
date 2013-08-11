@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Map sample</title>
+</head>
+<body>
+	
+  <canvas id="scene" height=500 width=500></canvas>
+  <script src="../../Stats.js" type="text/javascript"></script>
+  <script src="../../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+  <script src="../../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+  <script src="../../meta.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+  <script src="../../text.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+  <script src="../../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+
+  <script type="text/javascript">
+(function(){
+  var xhr = new XMLHttpRequest();
+  xhr.addEventListener("load", function mapLoaded( e ){
+    var mapData     = JSON.parse(this.response);
+    var textureDom  = document.createElement("img");
+
+    textureDom.addEventListener("load", function(){
+      var m = cameraMap(mapData, textureDom);
+      loop.registerAnimation(m);
+    });
+    textureDom.src = mapData.tilesets[0].image;
+  });
+  xhr.open("GET", "map.json", true);
+  xhr.send();
+
+
+  loop.addIO(Loop.io.keyboard({"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32}) );
+  loop.start();
+
+
+  //pattern application in an animation
+  function cameraMap( mapData, texture ){
+    var txH = mapData.tileheight,
+        txW = mapData.tilewidth ;
+    return {
+      pos : {
+        x :  4,
+        y : 95
+      },
+      render : function(ctx, width, height){
+        var xIt = Math.ceil( width / txW ),
+            yIt = Math.ceil( height/ txH );
+
+        var translatePos = this.pos.y * mapData.layers[0].width + this.pos.x;
+
+        for( i = 0; i < xIt; i++){
+          for( j = 0; j < yIt; j++){
+            var dataPos = translatePos + i + j * mapData.layers[0].width ,
+                imgX = mapData.layers[0].data[ dataPos ] - 1,
+                imgY = 0;
+            ctx.drawImage(texture, imgX * txW, imgY * txH, 
+                                  (imgX + 1) * txW, (imgY + 1) * txH, 
+                                   i * txW , 
+                                   j * txH , 
+                                   (imgX + 1) * txW , 
+                                   (imgY + 1) * txH );
+          }
+        }
+      },
+      animate: function(ioState, width, height){ 
+        if(ioState.keys.LEFT)  this.pos.x -= 1;
+        if(ioState.keys.RIGHT) this.pos.x += 1;
+        if(ioState.keys.UP)    this.pos.y -= 1;
+        if(ioState.keys.DOWN)  this.pos.y += 1;
+        return true; 
+      }
+    };
+  }
+})();
+  </script>
+</body>
+</html>
