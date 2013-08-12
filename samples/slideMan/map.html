@@ -49,18 +49,19 @@
             yIt = Math.ceil( height/ txH );
 
         var translatePos = this.pos.y * mapData.layers[0].width + this.pos.x;
+        var mapWidth = mapData.layers[0].width ;
 
         for( i = 0; i < xIt; i++){
           for( j = 0; j < yIt; j++){
-            var dataPos = translatePos + i + j * mapData.layers[0].width ,
-                imgX = mapData.layers[0].data[ dataPos ] - 1,
+            var dataPos = translatePos + i + j * mapWidth,
+                imgX = Math.floor(dataPos / mapWidth) != (j + this.pos.y)  ? -1 : mapData.layers[0].data[ dataPos ] - 1,
                 imgY = 0;
             ctx.drawImage(texture, imgX * txW, imgY * txH, 
-                                  (imgX + 1) * txW, (imgY + 1) * txH, 
+                                   txW, txH, 
                                    i * txW , 
                                    j * txH , 
-                                   (imgX + 1) * txW , 
-                                   (imgY + 1) * txH );
+                                   txW , 
+                                   txH );
           }
         }
       },
