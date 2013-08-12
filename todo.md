@@ -8,14 +8,16 @@ An animation system : this is the todo
  [+] Pluggable IO on animation system
  [ ] test if required IO are provided by IO manager before start
  [+] Mouse IO manager
- [ ] Keyboard IO manager
- [ ] Hierarchical animations
- [ ] Switch rendering on the fly
- [ ] Meta animations : 
- [ ]  - a then b animation
- [-] Text animations 
- [-]  - simple
+ [+] Keyboard IO manager
+ [+] Hierarchical animations >> Meta animations
+ [ ] Switch rendering on the fly for particles ? 
+ [-] Meta animations : 
+ [+]  - a then b animation
+ [-]  - all a,b,c animations at the same time 
+ [+] Text animations 
+ [+]  - simple
  [ ]  - complex
+ [-] Map based on Tiled file 
 
 ## Cleanup 
  [+] Remove datastore
@@ -34,6 +36,6 @@ An animation system : this is the todo
 
 ## Samples 
  [+] Update everything
- [ ] Reorganize folders
+ [+] Reorganize folders
  [~] Make exp2 starfield tangent direction
  [+] Port bezier under the sea
