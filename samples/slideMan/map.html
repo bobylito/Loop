@@ -30,10 +30,8 @@
   xhr.open("GET", "map.json", true);
   xhr.send();
 
-
   loop.addIO(Loop.io.keyboard({"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32}) );
   loop.start();
-
 
   //pattern application in an animation
   function cameraMap( mapData, texture ){
@@ -48,28 +46,38 @@
         var xIt = Math.ceil( width / txW ),
             yIt = Math.ceil( height/ txH );
 
-        var translatePos = this.pos.y * mapData.layers[0].width + this.pos.x;
-        var mapWidth = mapData.layers[0].width ;
+        var naturalPos = {
+          x : Math.floor(this.pos.x),
+          y : Math.floor(this.pos.y)
+        };
 
-        for( i = 0; i < xIt; i++){
-          for( j = 0; j < yIt; j++){
+        var devPos = {
+          x : this.pos.x - Math.floor(this.pos.x),
+          y : this.pos.y - Math.floor(this.pos.y)
+        };
+
+        var translatePos = naturalPos.y * mapData.layers[0].width + naturalPos.x;
+        var mapWidth = mapData.layers[0].width;
+
+        for( i = -1; i < xIt; i++){
+          for( j = -1; j < yIt + 1; j++){
             var dataPos = translatePos + i + j * mapWidth,
-                imgX = Math.floor(dataPos / mapWidth) != (j + this.pos.y)  ? -1 : mapData.layers[0].data[ dataPos ] - 1,
+                imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : mapData.layers[0].data[ dataPos ] - 1,
                 imgY = 0;
             ctx.drawImage(texture, imgX * txW, imgY * txH, 
                                    txW, txH, 
-                                   i * txW , 
-                                   j * txH , 
+                                   (i + devPos.x) * txW, 
+                                   (j - devPos.y) * txH, 
                                    txW , 
                                    txH );
           }
         }
       },
       animate: function(ioState, width, height){ 
-        if(ioState.keys.LEFT)  this.pos.x -= 1;
-        if(ioState.keys.RIGHT) this.pos.x += 1;
-        if(ioState.keys.UP)    this.pos.y -= 1;
-        if(ioState.keys.DOWN)  this.pos.y += 1;
+        if(ioState.keys.LEFT)  this.pos.x -= 0.1;
+        if(ioState.keys.RIGHT) this.pos.x += 0.1;
+        if(ioState.keys.UP)    this.pos.y -= 0.1;
+        if(ioState.keys.DOWN)  this.pos.y += 0.1;
         return true; 
       }
     };
