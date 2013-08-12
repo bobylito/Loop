@@ -59,14 +59,14 @@
         var translatePos = naturalPos.y * mapData.layers[0].width + naturalPos.x;
         var mapWidth = mapData.layers[0].width;
 
-        for( i = -1; i < xIt; i++){
+        for( i = -1; i < xIt + 1; i++){
           for( j = -1; j < yIt + 1; j++){
             var dataPos = translatePos + i + j * mapWidth,
                 imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : mapData.layers[0].data[ dataPos ] - 1,
                 imgY = 0;
             ctx.drawImage(texture, imgX * txW, imgY * txH, 
                                    txW, txH, 
-                                   (i + devPos.x) * txW, 
+                                   (i - devPos.x) * txW, 
                                    (j - devPos.y) * txH, 
                                    txW , 
                                    txH );
