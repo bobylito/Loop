@@ -2,22 +2,24 @@
 An animation system : this is the todo
 
 ## Features
- [+] Particles : Image data rendering
- [+] Control time
- [ ] animation context
- [+] Pluggable IO on animation system
  [ ] test if required IO are provided by IO manager before start
- [+] Mouse IO manager
- [+] Keyboard IO manager
- [+] Hierarchical animations >> Meta animations
- [ ] Switch rendering on the fly for particles ? 
  [-] Meta animations : 
  [+]  - a then b animation
  [-]  - all a,b,c animations at the same time 
- [+] Text animations 
+ [ ]  - all animations with resources
+ [ ] Loading animation
+ [-] Text animations 
  [+]  - simple
  [ ]  - complex
- [-] Map based on Tiled file 
+ [+] Map based on Tiled file (basic version)
+ [ ] Map based on Tiled file (read all properties for square/flat map)
+ [ ] Switch rendering on the fly for particles ? 
+ [+] Particles : Image data rendering
+ [+] Control time
+ [+] Pluggable IO on animation system
+ [+] Mouse IO manager
+ [+] Keyboard IO manager
+ [+] Hierarchical animations >> Meta animations
 
 ## Cleanup 
  [+] Remove datastore
@@ -31,8 +33,9 @@ An animation system : this is the todo
 ## Investigate 
  [ ] Particle system over time (pure function, reproductibility)?
  [ ] Time control for particles
- [+] Rendering engine with filled line and curve => boring...
+ [ ] animation context >> meta animations?
  [ ] Rendering engine with filled triangles
+ [+] Rendering engine with filled line and curve => boring...
 
 ## Samples 
  [+] Update everything

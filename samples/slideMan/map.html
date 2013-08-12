@@ -20,6 +20,13 @@
   xhr.addEventListener("load", function mapLoaded( e ){
     var mapData     = JSON.parse(this.response);
     var textureDom  = document.createElement("img");
+    var ounoSprite  = document.createElement("img");
+
+    ounoSprite.addEventListener("load", function(){
+      var c = character(ounoSprite);
+      loop.registerAnimation(c); 
+    });
+    ounoSprite.src = "../ouno.png";
 
     textureDom.addEventListener("load", function(){
       var m = cameraMap(mapData, textureDom);
@@ -32,6 +39,21 @@
 
   loop.addIO(Loop.io.keyboard({"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32}) );
   loop.start();
+
+  function character(sprite){
+    return {
+      pos     : {
+        x : 4,
+        y : 95
+      },
+      render  : function(ctx, w, h){
+        ctx.drawImage(sprite, w/2, h/2);
+      },
+      animate : function(ioState, w, h){
+        return true; 
+      }
+    };
+  }
 
   //pattern application in an animation
   function cameraMap( mapData, texture ){
