@@ -3,14 +3,11 @@ An animation system : this is the todo
 
 ## Features
  [ ] test if required IO are provided by IO manager before start
- [-] Meta animations : 
- [+]  - a then b animation
- [-]  - all a,b,c animations at the same time 
- [ ]  - all animations with resources
  [ ] Loading animation
  [-] Text animations 
  [+]  - simple
  [ ]  - complex
+ [-]  - loading
  [+] Map based on Tiled file (basic version)
  [ ] Map based on Tiled file (read all properties for square/flat map)
  [ ] Switch rendering on the fly for particles ? 
@@ -20,6 +17,9 @@ An animation system : this is the todo
  [+] Mouse IO manager
  [+] Keyboard IO manager
  [+] Hierarchical animations >> Meta animations
+ [+] Meta animations : 
+ [+]  - a then b animation
+ [+]  - all a,b,c animations at the same time 
 
 ## Cleanup 
  [+] Remove datastore

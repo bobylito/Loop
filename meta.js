@@ -30,6 +30,10 @@ Loop.meta = (function(){
     }
   };
 
+  /**
+   * Meta animation that takes n (>2) animations and animate them at the same time
+   * Order matters : from background to foreground
+   */
   var all = function(){
     if(arguments.length < 1) throw new Error("all must have at least 1 animation");
     return {
