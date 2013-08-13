@@ -1,23 +1,6 @@
-<!DOCTYPE HTML>
-<html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<title>Map sample</title>
-</head>
-<body>
-	
-  <canvas id="scene" height=500 width=500></canvas>
-  <script src="../../Stats.js" type="text/javascript"></script>
-  <script src="../../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-  <script src="../../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-  <script src="../../meta.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-  <script src="../../text.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-  <script src="../../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-
-  <script type="text/javascript">
 (function(){
   var loading = Loop.text.loading({
-    img : ["../ouno.png", "textureMap.png"],
+    img : ["ouno.png", "textureMap.png"],
     data : ["map.json"]
   });
 
@@ -64,7 +47,7 @@
   function character(){
     return {
       _init : function(w, h, sys, ioState, resources, character){
-        this.sprite = resources["../ouno.png"];
+        this.sprite = resources["ouno.png"];
         this.model  = character;
       },
       render  : function(ctx, w, h){
@@ -85,7 +68,6 @@
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
         this.center = positionnable;
-        //FIXME : get resources
       },
       render : function(ctx, width, height){
         var xIt = Math.ceil( width / this.txW ),
@@ -128,6 +110,3 @@
     };
   }
 })();
-  </script>
-</body>
-</html>
