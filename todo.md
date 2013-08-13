@@ -39,9 +39,9 @@ An animation system : this is the todo
 ## Investigate 
  [ ] Particle system over time (pure function, reproductibility)?
  [ ] Time control for particles
+ [ ] Animation context >> meta animations?
  [ ] Rendering engine with filled triangles
  [+] Rendering engine with filled line and curve => boring...
- [+] Animation context >> meta animations?
 
 ## Samples 
  [+] Update everything
