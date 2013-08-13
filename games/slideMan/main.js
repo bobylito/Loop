@@ -8,6 +8,7 @@
   var c = character();
   var game = gameScreen( m, c ); 
 
+  loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
   loop.registerAnimation( Loop.meta.andThen(loading, game) );
   loop.start();
@@ -23,10 +24,15 @@
       },
       render  : allAnimations.render.bind(allAnimations),
       animate : function(ioState, width, height){ 
-        if(ioState.keys.LEFT)  this.player.position.x -= 0.1;
-        if(ioState.keys.RIGHT) this.player.position.x += 0.1;
-        if(ioState.keys.UP)    this.player.position.y -= 0.1;
-        if(ioState.keys.DOWN)  this.player.position.y += 0.1;
+        if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -5);
+        if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  5);
+        if(!ioState.keys.LEFT && !ioState.keys.RIGHT) this.player.motion.x = Math.max(this.player.motion.x / 2, 0);
+
+        if( ioState.keys.UP   ) this.player.motion.y = Math.max( this.player.motion.y - 0.3, -5);
+        if( ioState.keys.DOWN ) this.player.motion.y = Math.min( this.player.motion.y + 0.3,  5);
+        if(!ioState.keys.UP && !ioState.keys.DOWN ) this.player.motion.y = Math.max(this.player.motion.y / 2, 0);
+
+        //collision
         return allAnimations.animate.apply(allAnimations, arguments);
       },
       createPlayer : function(mapData){
@@ -36,7 +42,11 @@
           position : {
             x : start.x / mapData.tilewidth,
             y : start.y / mapData.tileheight
-          } 
+          },
+          motion : {
+            x : 0,
+            y : 0
+          }
         };
       }
     };
@@ -49,11 +59,18 @@
       _init : function(w, h, sys, ioState, resources, character){
         this.sprite = resources["ouno.png"];
         this.model  = character;
+        this.lastT  = ioState.time;
       },
       render  : function(ctx, w, h){
         ctx.drawImage(this.sprite, w/2, h/2);
       },
       animate : function(ioState, w, h){
+        var deltaT = (ioState.time - this.lastT) / 1000;
+        this.model.position = {
+          x : this.model.position.x + this.model.motion.x * deltaT,
+          y : this.model.position.y + this.model.motion.y * deltaT
+        };
+        this.lastT = ioState.time;
         return true; 
       }
     };
