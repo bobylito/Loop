@@ -23,16 +23,15 @@
     var ounoSprite  = document.createElement("img");
 
     ounoSprite.addEventListener("load", function(){
-      var c = character(ounoSprite);
-      loop.registerAnimation(c); 
+      textureDom.src = mapData.tilesets[0].image;
     });
     ounoSprite.src = "../ouno.png";
 
     textureDom.addEventListener("load", function(){
       var m = cameraMap(mapData, textureDom);
-      loop.registerAnimation(m);
+      var c = character(ounoSprite);
+      loop.registerAnimation( Loop.meta.all( m, c) ); 
     });
-    textureDom.src = mapData.tilesets[0].image;
   });
   xhr.open("GET", "map.json", true);
   xhr.send();

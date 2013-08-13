@@ -3,7 +3,7 @@ Loop.meta = (function(){
    * Meta animation that takes at least two animations and display them sequentially
    */
   var andThen = function(){
-    if(arguments.lenght < 1) throw new Error("andThen must have at least one animation");
+    if(arguments.length < 1) throw new Error("andThen must have at least one animation");
     var animations = Array.prototype.slice.call(arguments, 0);
     return {
       _init:  function(){
@@ -30,7 +30,36 @@ Loop.meta = (function(){
     }
   };
 
+  var all = function(){
+    if(arguments.length < 1) throw new Error("all must have at least 1 animation");
+    return {
+      animations : Array.prototype.slice.call(arguments, 0),
+      _init   : function(){
+        var args = arguments;
+        this.animations.forEach(function(a){
+          if(a._init && typeof a._init === "function") a._init.apply(a, args);
+        });          
+      },
+      render  : function(){
+        var args = arguments;
+        this.animations.forEach(function(a){
+          a.render.apply(a, args);
+        });
+      },
+      animate : function(ioState, w, h){
+        var args = arguments;
+        this.animations = this.animations.reduce(function(memo, a){
+          var isAlive = a.animate.apply(a, args);
+          if(isAlive) memo.push(a);
+          return memo;
+        }, []);
+        return this.animations.length > 0;
+      }
+    };
+  }
+
   return {
-    andThen : andThen
+    andThen : andThen,
+    all : all
   };
 })();
