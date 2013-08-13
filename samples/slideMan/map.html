@@ -16,37 +16,31 @@
 
   <script type="text/javascript">
 (function(){
-  var xhr = new XMLHttpRequest();
-  xhr.addEventListener("load", function mapLoaded( e ){
-    var mapData     = JSON.parse(this.response);
-    var textureDom  = document.createElement("img");
-    var ounoSprite  = document.createElement("img");
-
-    ounoSprite.addEventListener("load", function(){
-      textureDom.src = mapData.tilesets[0].image;
-    });
-    ounoSprite.src = "../ouno.png";
-
-    textureDom.addEventListener("load", function(){
-      var m = cameraMap(mapData, textureDom);
-      var c = character(ounoSprite);
-      loop.registerAnimation( Loop.meta.all( m, c) ); 
-    });
+  var loading = Loop.text.loading({
+    img : ["../ouno.png", "textureMap.png"],
+    data : ["map.json"]
   });
-  xhr.open("GET", "map.json", true);
-  xhr.send();
+
+  var m = cameraMap();
+  var c = character();
+  var game = Loop.meta.all( m, c); 
+
+  loop.registerAnimation(Loop.meta.andThen(loading, game));
 
   loop.addIO(Loop.io.keyboard({"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32}) );
   loop.start();
 
-  function character(sprite){
+  function character(){
     return {
       pos     : {
         x : 4,
         y : 95
       },
+      _init : function(w, h, sys, ioState, resources){
+        this.sprite = resources["../ouno.png"];
+      },
       render  : function(ctx, w, h){
-        ctx.drawImage(sprite, w/2, h/2);
+        ctx.drawImage(this.sprite, w/2, h/2);
       },
       animate : function(ioState, w, h){
         return true; 
@@ -56,16 +50,21 @@
 
   //pattern application in an animation
   function cameraMap( mapData, texture ){
-    var txH = mapData.tileheight,
-        txW = mapData.tilewidth ;
     return {
       pos : {
         x :  4,
         y : 95
       },
+      _init : function(w,h,sys,ioState, resources){
+        var mapData = this.mapData = resources["map.json"];
+        this.texture = resources["textureMap.png"];
+        this.txH = mapData.tileheight;
+        this.txW = mapData.tilewidth ;
+        //FIXME : get resources
+      },
       render : function(ctx, width, height){
-        var xIt = Math.ceil( width / txW ),
-            yIt = Math.ceil( height/ txH );
+        var xIt = Math.ceil( width / this.txW ),
+            yIt = Math.ceil( height/ this.txH );
 
         var naturalPos = {
           x : Math.floor(this.pos.x),
@@ -77,20 +76,20 @@
           y : this.pos.y - Math.floor(this.pos.y)
         };
 
-        var translatePos = naturalPos.y * mapData.layers[0].width + naturalPos.x;
-        var mapWidth = mapData.layers[0].width;
+        var translatePos = naturalPos.y * this.mapData.layers[0].width + naturalPos.x;
+        var mapWidth = this.mapData.layers[0].width;
 
         for( i = -1; i < xIt + 1; i++){
           for( j = -1; j < yIt + 1; j++){
             var dataPos = translatePos + i + j * mapWidth,
-                imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : mapData.layers[0].data[ dataPos ] - 1,
+                imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : this.mapData.layers[0].data[ dataPos ] - 1,
                 imgY = 0;
-            ctx.drawImage(texture, imgX * txW, imgY * txH, 
-                                   txW, txH, 
-                                   (i - devPos.x) * txW, 
-                                   (j - devPos.y) * txH, 
-                                   txW , 
-                                   txH );
+            ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
+                                   this.txW, this.txH, 
+                                   (i - devPos.x) * this.txW, 
+                                   (j - devPos.y) * this.txH, 
+                                   this.txW , 
+                                   this.txH );
           }
         }
       },

@@ -14,9 +14,12 @@ Loop.meta = (function(){
         var isAlive = this.current.animate.apply(this.current, arguments);
         if( !isAlive ){
           if(animations.length > 0){
+            var lastResult = (function(a){
+              if(a.result && typeof a.result === "function") return a.result();
+            })(this.current);
             this.current = animations.shift();
             //FIXME : loop might not be defined
-            this.current._init(w, h, loop, ioState);
+            this.current._init(w, h, loop, ioState, lastResult);
           }
           else{
             return false;

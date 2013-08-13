@@ -3,11 +3,11 @@ An animation system : this is the todo
 
 ## Features
  [ ] test if required IO are provided by IO manager before start
- [ ] Loading animation
+ [ ] Bind model data
  [-] Text animations 
- [+]  - simple
  [ ]  - complex
- [-]  - loading
+ [+]  - simple
+ [+]  - loading
  [+] Map based on Tiled file (basic version)
  [ ] Map based on Tiled file (read all properties for square/flat map)
  [ ] Switch rendering on the fly for particles ? 
@@ -24,6 +24,7 @@ An animation system : this is the todo
 ## Cleanup 
  [+] Remove datastore
  [+] Main loop as a function to be used multiple time
+ [ ] Refactor and generalize results/andThen
 
 ## FIX
  [ ] Particles creation time should be added by the particle system.
