@@ -23,21 +23,49 @@
 
   var m = cameraMap();
   var c = character();
-  var game = Loop.meta.all( m, c); 
+  var game = gameScreen( m, c ); 
 
-  loop.registerAnimation(Loop.meta.andThen(loading, game));
-
-  loop.addIO(Loop.io.keyboard({"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32}) );
+  loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
+  loop.registerAnimation( Loop.meta.andThen(loading, game) );
   loop.start();
+
+  function gameScreen(){
+    var allAnimations   = Loop.meta.all.apply(window, arguments);
+    var gameScreenAnim  = {
+      _init   : function(w, h, sys, ioState, resources){
+        var newArgs = Array.prototype.splice.call(arguments, 0);
+        this.player = this.createPlayer(resources["map.json"]);
+        newArgs.push( this.player );
+        allAnimations._init.apply(allAnimations, newArgs);
+      },
+      render  : allAnimations.render.bind(allAnimations),
+      animate : function(ioState, width, height){ 
+        if(ioState.keys.LEFT)  this.player.position.x -= 0.1;
+        if(ioState.keys.RIGHT) this.player.position.x += 0.1;
+        if(ioState.keys.UP)    this.player.position.y -= 0.1;
+        if(ioState.keys.DOWN)  this.player.position.y += 0.1;
+        return allAnimations.animate.apply(allAnimations, arguments);
+      },
+      createPlayer : function(mapData){
+        var charLayer = mapData.layers.filter(function(l){ return l.name === "character" });
+        var start     = charLayer[0].objects.filter( function(o){ return o.name === "start" } )[0];
+        return {
+          position : {
+            x : start.x / mapData.tilewidth,
+            y : start.y / mapData.tileheight
+          } 
+        };
+      }
+    };
+      
+    return gameScreenAnim;
+  }
 
   function character(){
     return {
-      pos     : {
-        x : 4,
-        y : 95
-      },
-      _init : function(w, h, sys, ioState, resources){
+      _init : function(w, h, sys, ioState, resources, character){
         this.sprite = resources["../ouno.png"];
+        this.model  = character;
       },
       render  : function(ctx, w, h){
         ctx.drawImage(this.sprite, w/2, h/2);
@@ -49,34 +77,35 @@
   }
 
   //pattern application in an animation
-  function cameraMap( mapData, texture ){
+  function cameraMap(){
     return {
-      pos : {
-        x :  4,
-        y : 95
-      },
-      _init : function(w,h,sys,ioState, resources){
+      _init : function(w,h,sys,ioState, resources, positionnable){
         var mapData = this.mapData = resources["map.json"];
         this.texture = resources["textureMap.png"];
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
+        this.center = positionnable;
         //FIXME : get resources
       },
       render : function(ctx, width, height){
         var xIt = Math.ceil( width / this.txW ),
             yIt = Math.ceil( height/ this.txH );
+        var cameraPosition = {
+          x : this.center.position.x - xIt/2,
+          y : this.center.position.y - yIt/2 
+        };
 
         var naturalPos = {
-          x : Math.floor(this.pos.x),
-          y : Math.floor(this.pos.y)
+          x : Math.floor(cameraPosition.x),
+          y : Math.floor(cameraPosition.y)
         };
 
         var devPos = {
-          x : this.pos.x - Math.floor(this.pos.x),
-          y : this.pos.y - Math.floor(this.pos.y)
+          x : cameraPosition.x - Math.floor(cameraPosition.x),
+          y : cameraPosition.y - Math.floor(cameraPosition.y)
         };
 
-        var translatePos = naturalPos.y * this.mapData.layers[0].width + naturalPos.x;
+        var translatePos = naturalPos.y * this.mapData.layers[0].width + naturalPos.x ;
         var mapWidth = this.mapData.layers[0].width;
 
         for( i = -1; i < xIt + 1; i++){
@@ -94,10 +123,6 @@
         }
       },
       animate: function(ioState, width, height){ 
-        if(ioState.keys.LEFT)  this.pos.x -= 0.1;
-        if(ioState.keys.RIGHT) this.pos.x += 0.1;
-        if(ioState.keys.UP)    this.pos.y -= 0.1;
-        if(ioState.keys.DOWN)  this.pos.y += 0.1;
         return true; 
       }
     };
