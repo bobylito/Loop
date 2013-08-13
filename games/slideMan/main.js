@@ -19,20 +19,28 @@
       _init   : function(w, h, sys, ioState, resources){
         var newArgs = Array.prototype.splice.call(arguments, 0);
         this.player = this.createPlayer(resources["map.json"]);
+        this.lastT  = ioState.time;
         newArgs.push( this.player );
         allAnimations._init.apply(allAnimations, newArgs);
       },
       render  : allAnimations.render.bind(allAnimations),
       animate : function(ioState, width, height){ 
+        var deltaT = ioState.time - this.lastT;
         if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -5);
         if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  5);
         if(!ioState.keys.LEFT && !ioState.keys.RIGHT) this.player.motion.x = Math.max(this.player.motion.x / 2, 0);
 
-        if( ioState.keys.UP   ) this.player.motion.y = Math.max( this.player.motion.y - 0.3, -5);
-        if( ioState.keys.DOWN ) this.player.motion.y = Math.min( this.player.motion.y + 0.3,  5);
-        if(!ioState.keys.UP && !ioState.keys.DOWN ) this.player.motion.y = Math.max(this.player.motion.y / 2, 0);
+        if( ioState.keys.UP && this.player.position.y === 96  ) this.player.motion.y = -1 * deltaT;
+        //if( ioState.keys.DOWN ) this.player.motion.y = Math.min( this.player.motion.y + 0.3,  5);
+        //if(!ioState.keys.UP && !ioState.keys.DOWN ) this.player.motion.y = Math.max(this.player.motion.y / 2, 0);
+        this.player.motion.y = this.player.motion.y + 0.05 * deltaT;
 
-        //collision
+        if(this.player.position.y > 96 ) {
+          this.player.position.y = 96;
+          this.player.motion.y = 0;
+        }
+        //collision+
+        this.lastT  = ioState.time;
         return allAnimations.animate.apply(allAnimations, arguments);
       },
       createPlayer : function(mapData){
@@ -72,6 +80,14 @@
         };
         this.lastT = ioState.time;
         return true; 
+      },
+      getHitbox : function(){
+        return {
+          top   : this.model.position.y - 0.2,
+          right : this.model.position.x + 0.2,
+          bottom: this.model.position.y + 0.2,
+          left  : this.model.position.x - 0.2 
+        };            
       }
     };
   }
