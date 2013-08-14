@@ -11,6 +11,7 @@ An animation system : this is the todo
  [-] Map based on Tiled file (read all properties for square/flat map)
  [+]  - character definition (position)
  [ ] Switch rendering on the fly for particles ? 
+ [+] Debug/logger to output stuff happening under the hood
  [+] Center tile rendering on position (or give a way to specify the placement in the screen?)
  [+] GameScreen extends Loop.meta.all
  [+] Particles : Image data rendering

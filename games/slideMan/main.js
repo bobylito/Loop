@@ -10,6 +10,7 @@
 
   loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
+  loop.registerAnimation( Loop.tools.debug() );
   loop.registerAnimation( Loop.meta.andThen(loading, game) );
   loop.start();
 
@@ -35,6 +36,7 @@
         if(this.player.motion.y != 0)this.player.motion.y = this.player.motion.y + 0.1;
 
         this.lastT  = ioState.time;
+        this.logPlayer(this.player);
         return allAnimations.animate.apply(allAnimations, arguments);
       },
       createPlayer : function(mapData){
@@ -62,6 +64,12 @@
             };                 
           }
         };
+      },
+      logPlayer : function( p ){
+        loop.debug( "position.x", p.position.x );
+        loop.debug( "position.y", p.position.y );
+        loop.debug( "motion.x"  , p.motion.x );
+        loop.debug( "motion.y"  , p.motion.y );
       }
     };
       
