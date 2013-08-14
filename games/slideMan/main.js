@@ -21,6 +21,7 @@
         this.player = this.createPlayer(resources["map.json"]);
         this.lastT  = ioState.time;
         newArgs.push( this.player );
+        newArgs.push( mapAnim );
         allAnimations._init.apply(allAnimations, newArgs);
       },
       render  : allAnimations.render.bind(allAnimations),
@@ -30,13 +31,9 @@
         if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  5);
         if(!ioState.keys.LEFT && !ioState.keys.RIGHT) this.player.motion.x = Math.max(this.player.motion.x / 2, 0);
 
-        if( ioState.keys.UP ) this.player.motion.y = -15;
-        //if( ioState.keys.DOWN ) this.player.motion.y = Math.min( this.player.motion.y + 0.3,  5);
-        //if(!ioState.keys.UP && !ioState.keys.DOWN ) this.player.motion.y = Math.max(this.player.motion.y / 2, 0);
-        this.player.motion.y = this.player.motion.y + 30 * deltaT;
+        if( ioState.keys.UP ) this.player.motion.y = -5;
+        if(this.player.motion.y != 0)this.player.motion.y = this.player.motion.y + 0.1;
 
-
-        //collision+
         this.lastT  = ioState.time;
         return allAnimations.animate.apply(allAnimations, arguments);
       },
@@ -51,6 +48,18 @@
           motion : {
             x : 0,
             y : 0
+          },
+          size : {
+            h : 0.5,
+            w : 0.5       
+          },
+          getBoundingBox : function(){
+            return {
+              top   : this.y,
+              right : this.x + 0.5,
+              bottom: this.y + 0.5,
+              left  : this.x
+            };                 
           }
         };
       }
@@ -76,7 +85,10 @@
           x : this.model.position.x + this.model.motion.x * deltaT,
           y : this.model.position.y + this.model.motion.y * deltaT
         };
-        this.model.position = this.map.moveTo( this.model, computedPosition );
+        var correctedPosition = this.map.moveTo( this.model, computedPosition );
+        if( correctedPosition.x != computedPosition.x ) this.model.motion.x = 0;
+        if( correctedPosition.y != computedPosition.y ) this.model.motion.y = 0;
+        this.model.position = correctedPosition;
         this.lastT = ioState.time;
         return true; 
       }
@@ -138,10 +150,16 @@
         var tileAtPos = map.data[ mapX + mapY * map.width];
         if(tileAtPos === 0) return newPosition;
         else{
-          if( positionnable.motion.x < 0 ){}
-          if( positionnable.motion.x > 0 ){}
-          if( positionnable.motion.y < 0 ){}
-          if( positionnable.motion.y > 0 ){}
+          var bBox = positionnable.getBoundingBox();
+          if( positionnable.motion.y ){
+            if( positionnable.motion.y < 0 ){ newPosition.y = mapY + 1}
+            if( positionnable.motion.y > 0 ){ newPosition.y = mapY - 0.1}
+          }
+          else{
+            if( positionnable.motion.x < 0 ){ newPosition.x = mapX + 1; }
+            if( positionnable.motion.x > 0 ){ newPosition.x = mapX - 0.1}
+          }
+          return newPosition;
         }
       }
     };
