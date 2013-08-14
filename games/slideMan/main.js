@@ -13,7 +13,7 @@
   loop.registerAnimation( Loop.meta.andThen(loading, game) );
   loop.start();
 
-  function gameScreen(){
+  function gameScreen(mapAnim, characterAnim){
     var allAnimations   = Loop.meta.all.apply(window, arguments);
     var gameScreenAnim  = {
       _init   : function(w, h, sys, ioState, resources){
@@ -25,20 +25,17 @@
       },
       render  : allAnimations.render.bind(allAnimations),
       animate : function(ioState, width, height){ 
-        var deltaT = ioState.time - this.lastT;
+        var deltaT = (ioState.time - this.lastT) / 1000;
         if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -5);
         if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  5);
         if(!ioState.keys.LEFT && !ioState.keys.RIGHT) this.player.motion.x = Math.max(this.player.motion.x / 2, 0);
 
-        if( ioState.keys.UP && this.player.position.y === 96  ) this.player.motion.y = -1 * deltaT;
+        if( ioState.keys.UP ) this.player.motion.y = -15;
         //if( ioState.keys.DOWN ) this.player.motion.y = Math.min( this.player.motion.y + 0.3,  5);
         //if(!ioState.keys.UP && !ioState.keys.DOWN ) this.player.motion.y = Math.max(this.player.motion.y / 2, 0);
-        this.player.motion.y = this.player.motion.y + 0.05 * deltaT;
+        this.player.motion.y = this.player.motion.y + 30 * deltaT;
 
-        if(this.player.position.y > 96 ) {
-          this.player.position.y = 96;
-          this.player.motion.y = 0;
-        }
+
         //collision+
         this.lastT  = ioState.time;
         return allAnimations.animate.apply(allAnimations, arguments);
@@ -64,30 +61,24 @@
 
   function character(){
     return {
-      _init : function(w, h, sys, ioState, resources, character){
+      _init : function(w, h, sys, ioState, resources, character, map){
         this.sprite = resources["ouno.png"];
         this.model  = character;
         this.lastT  = ioState.time;
+        this.map    = map;
       },
       render  : function(ctx, w, h){
         ctx.drawImage(this.sprite, w/2, h/2);
       },
       animate : function(ioState, w, h){
         var deltaT = (ioState.time - this.lastT) / 1000;
-        this.model.position = {
+        var computedPosition = {
           x : this.model.position.x + this.model.motion.x * deltaT,
           y : this.model.position.y + this.model.motion.y * deltaT
         };
+        this.model.position = this.map.moveTo( this.model, computedPosition );
         this.lastT = ioState.time;
         return true; 
-      },
-      getHitbox : function(){
-        return {
-          top   : this.model.position.y - 0.2,
-          right : this.model.position.x + 0.2,
-          bottom: this.model.position.y + 0.2,
-          left  : this.model.position.x - 0.2 
-        };            
       }
     };
   }
@@ -139,6 +130,19 @@
       },
       animate: function(ioState, width, height){ 
         return true; 
+      }, 
+      moveTo : function(positionnable, newPosition){
+        var map  = this.mapData.layers[0];
+        var mapX = Math.floor(newPosition.x);
+        var mapY = Math.floor(newPosition.y);
+        var tileAtPos = map.data[ mapX + mapY * map.width];
+        if(tileAtPos === 0) return newPosition;
+        else{
+          if( positionnable.motion.x < 0 ){}
+          if( positionnable.motion.x > 0 ){}
+          if( positionnable.motion.y < 0 ){}
+          if( positionnable.motion.y > 0 ){}
+        }
       }
     };
   }
