@@ -11,9 +11,8 @@ An animation system : this is the todo
  [-] Map based on Tiled file (read all properties for square/flat map)
  [+]  - character definition (position)
  [ ] Switch rendering on the fly for particles ? 
- [+] Debug/logger to output stuff happening under the hood
  [+] Center tile rendering on position (or give a way to specify the placement in the screen?)
- [+] GameScreen extends Loop.meta.all
+ [+] GameScreen enhance Loop.meta.all
  [+] Particles : Image data rendering
  [+] Control time
  [+] Pluggable IO on animation system
@@ -23,6 +22,11 @@ An animation system : this is the todo
  [+] Meta animations : 
  [+]  - a then b animation
  [+]  - all a,b,c animations at the same time 
+
+## Tools
+ [+] Count particles 
+ [+] Debug/logger to output stuff happening under the hood
+ [ ] Make a consolidated debug and display graph over time with jsPlot
 
 ## Cleanup 
  [+] Remove datastore

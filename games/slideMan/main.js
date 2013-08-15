@@ -30,14 +30,18 @@
         var deltaT = (ioState.time - this.lastT) / 1000;
         if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -10);
         if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  10);
-        if(!ioState.keys.LEFT && !ioState.keys.RIGHT) this.player.motion.x = Math.max(this.player.motion.x / 2, 0);
+        if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
+          var newXMotion = this.player.motion.x / 2;
+          this.player.motion.x = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
+        }
 
-        if( ioState.keys.UP ) this.player.motion.y = -5;
+        if( ioState.keys.UP ) this.player.motion.y = -10;
 
         this.lastT  = ioState.time;
         this.logPlayer(this.player);
         var resAnim = allAnimations.animate.apply(allAnimations, arguments);
-        this.player.motion.y = this.player.motion.y + 0.1;
+        //Gravity
+        this.player.motion.y = this.player.motion.y + 0.3;
         return resAnim;
       },
       createPlayer : function(mapData){
@@ -56,14 +60,35 @@
             h : 0.5,
             w : 0.5       
           },
-          getBoundingBox : function(){
+          getBoundingBoxAt : function( position ){
             return {
-              top   : this.y,
-              right : this.x + 0.5,
-              bottom: this.y + 0.5,
-              left  : this.x
+              top   : position.y,
+              right : position.x + 0.5,
+              bottom: position.y + 0.5,
+              left  : position.x
             };                 
-          }
+          },
+          direction : function(){
+            if(this.motion.x=0 && this.motion.y<0){ return 0;}
+            if(this.motion.x>0 && this.motion.y<0){ return 1;}
+            if(this.motion.x>0 && this.motion.y=0){ return 2;}
+            if(this.motion.x>0 && this.motion.y>0){ return 3;}
+            if(this.motion.x=0 && this.motion.y>0){ return 4;}
+            if(this.motion.x<0 && this.motion.y>0){ return 5;}
+            if(this.motion.x<0 && this.motion.y=0){ return 6;}
+            if(this.motion.x<0 && this.motion.y<0){ return 7;}
+          },
+          meaningfulPoints : function(direction, destinationPoints){
+            var firstPointIdx   = Math.floor(direction / 2); 
+            var secondPointIdx  = firstPointIdx + (direction % 2) + 1;
+            return [ destinationsPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
+          },
+          collidingPoints  : function(meaningfulPoints, tileAt){
+            return meaningfulPoints.filter(function(p){ return tileAt(p) != 0; });
+          },
+          indicesOfPoints : function( points, pointsSubset ){
+            return pointsSubset.map(function(p){ points.indexOf(p); }); 
+          },
         };
       },
       logPlayer : function( p ){
@@ -159,7 +184,6 @@
         var tileAtPos = map.data[ mapX + mapY * map.width];
         if(tileAtPos === 0) return newPosition;
         else{
-          var bBox = positionnable.getBoundingBox();
           var correctedPosition = {
             x : newPosition.x,
             y : newPosition.y
