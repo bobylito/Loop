@@ -61,27 +61,27 @@
             w : 0.5       
           },
           getBoundingBoxAt : function( position ){
-            return {
-              top   : position.y,
-              right : position.x + 0.5,
-              bottom: position.y + 0.5,
-              left  : position.x
-            };                 
+            return [
+              { x : position.x, y : position.y},
+              { x : position.x + 0.5, y : position.y},
+              { x : position.y + 0.5, y : position.y + 0.5},
+              { x : position.x, y : position.y + 0.5}
+            ];                 
           },
           direction : function(){
-            if(this.motion.x=0 && this.motion.y<0){ return 0;}
+            if(this.motion.x===0 && this.motion.y<0){ return 0;}
             if(this.motion.x>0 && this.motion.y<0){ return 1;}
-            if(this.motion.x>0 && this.motion.y=0){ return 2;}
+            if(this.motion.x>0 && this.motion.y===0){ return 2;}
             if(this.motion.x>0 && this.motion.y>0){ return 3;}
-            if(this.motion.x=0 && this.motion.y>0){ return 4;}
+            if(this.motion.x===0 && this.motion.y>0){ return 4;}
             if(this.motion.x<0 && this.motion.y>0){ return 5;}
-            if(this.motion.x<0 && this.motion.y=0){ return 6;}
+            if(this.motion.x<0 && this.motion.y===0){ return 6;}
             if(this.motion.x<0 && this.motion.y<0){ return 7;}
           },
           meaningfulPoints : function(direction, destinationPoints){
             var firstPointIdx   = Math.floor(direction / 2); 
             var secondPointIdx  = firstPointIdx + (direction % 2) + 1;
-            return [ destinationsPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
+            return [ destinationPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
           },
           collidingPoints  : function(meaningfulPoints, tileAt){
             return meaningfulPoints.filter(function(p){ return tileAt(p) != 0; });
@@ -89,6 +89,21 @@
           indicesOfPoints : function( points, pointsSubset ){
             return pointsSubset.map(function(p){ points.indexOf(p); }); 
           },
+          correctionVector : function(points, direction, correctPoint){
+            var motion = this.motion;
+            return points.map(function(p, i){
+                var correctedPoint = correctPoint(p, motion);
+                return {
+                  x : correctedPoint.x - p.x,
+                  y : correctedPoint.y - p.y
+                };
+              }).reduce(function(vectorSum, v){
+                  return {
+                    x : vectorSum.x + v.x,
+                    y : vectorSum.y + v.y
+                  }
+                }, {x : 0, y : 0});
+          }
         };
       },
       logPlayer : function( p ){
@@ -177,27 +192,38 @@
       animate: function(ioState, width, height){ 
         return true; 
       }, 
-      moveTo : function(positionnable, newPosition){
+      tileAt : function( position ){
         var map  = this.mapData.layers[0];
-        var mapX = Math.floor(newPosition.x);
-        var mapY = Math.floor(newPosition.y);
-        var tileAtPos = map.data[ mapX + mapY * map.width];
-        if(tileAtPos === 0) return newPosition;
-        else{
-          var correctedPosition = {
-            x : newPosition.x,
-            y : newPosition.y
-          }
-          if( positionnable.motion.y ){
-            if( positionnable.motion.y < 0 ){ correctedPosition.y = mapY + 1}
-            if( positionnable.motion.y > 0 ){ correctedPosition.y = mapY}
-          }
-          else{
-            if( positionnable.motion.x < 0 ){ correctedPosition.x = mapX + 1; }
-            if( positionnable.motion.x > 0 ){ correctedPosition.x = mapX}
-          }
-          return correctedPosition;
+        var mapX = Math.floor(position.x);
+        var mapY = Math.floor(position.y);
+        return map.data[ mapX + mapY * map.width];
+      },
+      correctPoint : function( newPosition, motion ){
+        var correctedPosition = {
+          x : newPosition.x,
+          y : newPosition.y
         }
+        if( motion.y ){
+          if( motion.y < 0 ){ correctedPosition.y = Math.ceil(newPosition.y); }
+          if( motion.y > 0 ){ correctedPosition.y = Math.floor(newPosition.y); }
+        }
+        else{
+          if( motion.x < 0 ){ correctedPosition.x = Math.ceil(newPosition.x); }
+          if( motion.x > 0 ){ correctedPosition.x = Math.floor(newPosition.x);}
+        }
+        return correctedPosition;
+      },
+      moveTo : function(positionnable, newPosition){
+        var d = positionnable.direction();
+        if( !d ) return newPosition;
+        var bBox = positionnable.getBoundingBoxAt(newPosition);
+        var meaningfulP = positionnable.meaningfulPoints(d, bBox);
+        var collidingP  = positionnable.collidingPoints(meaningfulP, this.tileAt.bind(this));
+        var correction  = positionnable.correctionVector(collidingP, d, this.correctPoint);
+        return {
+          x : newPosition.x + correction.x,
+          y : newPosition.y + correction.y
+        };
       }
     };
   }
