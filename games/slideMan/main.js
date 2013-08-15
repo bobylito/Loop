@@ -28,16 +28,17 @@
       render  : allAnimations.render.bind(allAnimations),
       animate : function(ioState, width, height){ 
         var deltaT = (ioState.time - this.lastT) / 1000;
-        if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -5);
-        if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  5);
+        if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -10);
+        if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  10);
         if(!ioState.keys.LEFT && !ioState.keys.RIGHT) this.player.motion.x = Math.max(this.player.motion.x / 2, 0);
 
         if( ioState.keys.UP ) this.player.motion.y = -5;
-        if(this.player.motion.y != 0)this.player.motion.y = this.player.motion.y + 0.1;
 
         this.lastT  = ioState.time;
         this.logPlayer(this.player);
-        return allAnimations.animate.apply(allAnimations, arguments);
+        var resAnim = allAnimations.animate.apply(allAnimations, arguments);
+        this.player.motion.y = this.player.motion.y + 0.1;
+        return resAnim;
       },
       createPlayer : function(mapData){
         var charLayer = mapData.layers.filter(function(l){ return l.name === "character" });
@@ -159,15 +160,19 @@
         if(tileAtPos === 0) return newPosition;
         else{
           var bBox = positionnable.getBoundingBox();
+          var correctedPosition = {
+            x : newPosition.x,
+            y : newPosition.y
+          }
           if( positionnable.motion.y ){
-            if( positionnable.motion.y < 0 ){ newPosition.y = mapY + 1}
-            if( positionnable.motion.y > 0 ){ newPosition.y = mapY - 0.1}
+            if( positionnable.motion.y < 0 ){ correctedPosition.y = mapY + 1}
+            if( positionnable.motion.y > 0 ){ correctedPosition.y = mapY}
           }
           else{
-            if( positionnable.motion.x < 0 ){ newPosition.x = mapX + 1; }
-            if( positionnable.motion.x > 0 ){ newPosition.x = mapX - 0.1}
+            if( positionnable.motion.x < 0 ){ correctedPosition.x = mapX + 1; }
+            if( positionnable.motion.x > 0 ){ correctedPosition.x = mapX}
           }
-          return newPosition;
+          return correctedPosition;
         }
       }
     };
