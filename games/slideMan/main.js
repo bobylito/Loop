@@ -62,10 +62,10 @@
           },
           getBoundingBoxAt : function( position ){
             return [
-              { x : position.x, y : position.y},
+              { x : position.x      , y : position.y},
               { x : position.x + 0.5, y : position.y},
-              { x : position.y + 0.5, y : position.y + 0.5},
-              { x : position.x, y : position.y + 0.5}
+              { x : position.x + 0.5, y : position.y + 0.5},
+              { x : position.x      , y : position.y + 0.5}
             ];                 
           },
           direction : function(){
@@ -84,7 +84,9 @@
             return [ destinationPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
           },
           collidingPoints  : function(meaningfulPoints, tileAt){
-            return meaningfulPoints.filter(function(p){ return tileAt(p) != 0; });
+            return meaningfulPoints.filter(function(p){ 
+              return tileAt(p) != 0; 
+            });
           },
           indicesOfPoints : function( points, pointsSubset ){
             return pointsSubset.map(function(p){ points.indexOf(p); }); 
@@ -206,14 +208,10 @@
           x : newPosition.x,
           y : newPosition.y
         }
-        if( motion.y ){
-          if( motion.y < 0 ){ correctedPosition.y = Math.ceil(newPosition.y); }
-          if( motion.y > 0 ){ correctedPosition.y = Math.floor(newPosition.y); }
-        }
-        else{
-          if( motion.x < 0 ){ correctedPosition.x = Math.ceil(newPosition.x); }
-          if( motion.x > 0 ){ correctedPosition.x = Math.floor(newPosition.x);}
-        }
+        if( motion.y < 0 ){ correctedPosition.y = Math.ceil(newPosition.y); }
+        if( motion.y > 0 ){ correctedPosition.y = Math.floor(newPosition.y); }
+        if( motion.x < 0 ){ correctedPosition.x = Math.ceil(newPosition.x); }
+        if( motion.x > 0 ){ correctedPosition.x = Math.floor(newPosition.x);}
         return correctedPosition;
       },
       moveTo : function(positionnable, newPosition){
