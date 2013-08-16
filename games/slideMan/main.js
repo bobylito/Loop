@@ -80,7 +80,7 @@
           },
           meaningfulPoints : function(direction, destinationPoints){
             var firstPointIdx   = Math.floor(direction / 2); 
-            var secondPointIdx  = firstPointIdx + (direction % 2) + 1;
+            var secondPointIdx  = (firstPointIdx + (direction % 2) + 1) % 4;
             return [ destinationPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
           },
           collidingPoints  : function(meaningfulPoints, tileAt){
@@ -193,6 +193,9 @@
         return true; 
       }, 
       tileAt : function( position ){
+        if(!position){
+          console.log("");
+        }
         var map  = this.mapData.layers[0];
         var mapX = Math.floor(position.x);
         var mapY = Math.floor(position.y);
