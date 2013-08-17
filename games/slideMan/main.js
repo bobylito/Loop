@@ -69,14 +69,14 @@
             ];                 
           },
           direction : function(){
-            if(this.motion.x===0 && this.motion.y<0){ return 0;}
-            if(this.motion.x>0 && this.motion.y<0){ return 1;}
-            if(this.motion.x>0 && this.motion.y===0){ return 2;}
-            if(this.motion.x>0 && this.motion.y>0){ return 3;}
-            if(this.motion.x===0 && this.motion.y>0){ return 4;}
-            if(this.motion.x<0 && this.motion.y>0){ return 5;}
-            if(this.motion.x<0 && this.motion.y===0){ return 6;}
-            if(this.motion.x<0 && this.motion.y<0){ return 7;}
+            if(this.motion.x===0  && this.motion.y<0)   { return 0;}
+            if(this.motion.x>0    && this.motion.y<0)   { return 1;}
+            if(this.motion.x>0    && this.motion.y===0) { return 2;}
+            if(this.motion.x>0    && this.motion.y>0)   { return 3;}
+            if(this.motion.x===0  && this.motion.y>0)   { return 4;}
+            if(this.motion.x<0    && this.motion.y>0)   { return 5;}
+            if(this.motion.x<0    && this.motion.y===0) { return 6;}
+            if(this.motion.x<0    && this.motion.y<0)   { return 7;}
           },
           meaningfulPoints : function(direction, destinationPoints){
             var firstPointIdx   = Math.floor(direction / 2); 
@@ -94,15 +94,15 @@
           correctionVector : function(points, direction, correctPoint){
             var motion = this.motion;
             return points.map(function(p, i){
-                var correctedPoint = correctPoint(p, motion);
+                var correctedPoint = correctPoint(p, motion, direction);
                 return {
                   x : correctedPoint.x - p.x,
                   y : correctedPoint.y - p.y
                 };
               }).reduce(function(vectorSum, v){
                   return {
-                    x : vectorSum.x + v.x,
-                    y : vectorSum.y + v.y
+                    x : vectorSum.x === 0 ? v.x: vectorSum.x,
+                    y : vectorSum.y === 0 ? v.y: vectorSum.y
                   }
                 }, {x : 0, y : 0});
           }
@@ -203,15 +203,21 @@
         var mapY = Math.floor(position.y);
         return map.data[ mapX + mapY * map.width];
       },
-      correctPoint : function( newPosition, motion ){
+      correctPoint : function( newPosition, motion, direction){
         var correctedPosition = {
           x : newPosition.x,
           y : newPosition.y
         }
-        if( motion.y < 0 ){ correctedPosition.y = Math.ceil(newPosition.y); }
+/*        if( direction === 0 ){
+          if(ptIdx === 0 || ptIdx == 1) ;
+        }
+        else if(direction === 1){
+          if(ptIdx === 0 )
+        }*/
+        if( motion.y < 0 ){ correctedPosition.y = Math.ceil( newPosition.y); }
         if( motion.y > 0 ){ correctedPosition.y = Math.floor(newPosition.y); }
-        if( motion.x < 0 ){ correctedPosition.x = Math.ceil(newPosition.x); }
-        if( motion.x > 0 ){ correctedPosition.x = Math.floor(newPosition.x);}
+        if( motion.x < 0 ){ correctedPosition.x = Math.ceil( newPosition.x); }
+        if( motion.x > 0 ){ correctedPosition.x = Math.floor(newPosition.x); }
         return correctedPosition;
       },
       moveTo : function(positionnable, newPosition){
