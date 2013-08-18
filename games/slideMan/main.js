@@ -11,6 +11,7 @@
   loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
   loop.registerAnimation( Loop.tools.debug() );
+  loop.registerAnimation( Loop.tools.debugGraph() );
   loop.registerAnimation( Loop.meta.andThen(loading, game) );
   loop.start();
 
@@ -36,6 +37,12 @@
         }
 
         if( ioState.keys.UP ) this.player.motion.y = -10;
+        /*if( ioState.keys.UP )   this.player.motion.y -= 0.3;
+        if( ioState.keys.DOWN ) this.player.motion.y += 0.3;
+        if(!ioState.keys.UP && !ioState.keys.DOWN) {
+          var newYMotion = this.player.motion.y / 2;
+          this.player.motion.y = Math.max(Math.abs(newYMotion) < 0.001 ? 0 : newYMotion, 0);
+        }*/
 
         this.lastT  = ioState.time;
         this.logPlayer(this.player);
@@ -88,8 +95,6 @@
             var res = meaningfulPoints.filter(function(p){ 
               return tileAt(p) != 0; 
             });
-            if(res.length > 0)
-              console.log(res);
             return res;
           },
           indicesOfPoints : function( points, pointsSubset ){
@@ -103,23 +108,20 @@
             else if(collidingPts.length >= 2){
               var p = collidingPts;
               var pIdx;
-              if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { faces.push( [0, p[pIdx].y] ); }
+              if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { 
+                faces.push( [0, p[pIdx].y] ); 
+              }
               if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { faces.push( [1, p[pIdx].x] ); }
               if( (pIdx = indices.indexOf(2))!=-1 &&  indices.indexOf(3)!=-1 ) { faces.push( [2, p[pIdx].y] ); }
               if( (pIdx = indices.indexOf(3))!=-1 &&  indices.indexOf(0)!=-1 ) { faces.push( [3, p[pIdx].x] ); }
             }
-            loop.debug("nb of faces ", faces.length)
-            loop.debug("collidingPts ", collidingPts.length)
             return faces;
           },
           correctionVector : function(bBox, collidingPts, direction, correctingVectorFromFace){
             var motion = this.motion;
             var indices= this.indicesOfPoints(bBox, collidingPts);
-            if(indices.length > 0)
-              console.log("Index" , indices );
             var faces = this.getCollisioningFaces( collidingPts, indices );
 
-            console.log("faces", faces);
             return faces.map( correctingVectorFromFace ).reduce(function(vectorSum, v){
                   return {
                     x : v.x + vectorSum.x,
@@ -216,49 +218,25 @@
         return true; 
       }, 
       tileAt : function( position ){
-        if(!position){
-          console.log("");
-        }
         var map  = this.mapData.layers[0];
         var mapX = Math.floor(position.x);
         var mapY = Math.floor(position.y);
         return map.data[ mapX + mapY * map.width];
       },
-      correctX : function( newPosition, motion, direction){
-        var correctedPosition = {
-          x : newPosition.x,
-          y : newPosition.y
-        }
-/*        if( direction === 0 ){
-          if(ptIdx === 0 || ptIdx == 1) ;
-        }
-        else if(direction === 1){
-          if(ptIdx === 0 )
-        }*/
-        if( direction === 0 ) correctedPosition.y = Math.ceil(newPosition.y);
-        if( direction === 1 ) correctedPosition.y = Math.ceil(newPosition.y);
-        if( direction === 2 ) correctedPosition.x = Math.floor(newPosition.x);
-        if( direction === 3 ) correctedPosition.x = Math.floor(newPosition.x);
-        if( direction === 4 ) correctedPosition.y = Math.floor(newPosition.y);
-        if( direction === 5 ) correctedPosition.y = Math.floor(newPosition.y);
-        if( direction === 6 ) correctedPosition.x = Math.ceil(newPosition.x);
-        if( direction === 7 ) correctedPosition.x = Math.ceil(newPosition.x);
-          
-        return correctedPosition;
-      },
       correctFace : function( face ){
-        //if( face[0] === 0 ) return { x: 0, y : Math.floor( face[1]) - face[1] }
-        //if( face[0] === 1 ) return { y: 0, x : Math.floor(face[1]) - face[1] }
+        if( face[0] === 0 ) 
+          return { x: 0, y : Math.ceil( face[1]) - face[1] }
+        if( face[0] === 1 ) return { y: 0, x : Math.floor(face[1]) - face[1] }
         if( face[0] === 2 ) 
           return { x: 0, y : (Math.floor(face[1]) - face[1]) }
-        //if( face[0] === 3 ) return { y: 0, x : Math.ceil( face[1]) - face[1]}
+        if( face[0] === 3 ) return { y: 0, x : Math.ceil( face[1]) - face[1]}
         return {x:0, y:0}
       },
       moveTo : function(positionnable, newPosition){
         var d = positionnable.direction();
-        if( !d ) return newPosition;
+        if( d === undefined) 
+          return newPosition;
         var bBox = positionnable.getBoundingBoxAt(newPosition);
-        //var meaningfulP = positionnable.meaningfulPoints(d, bBox);
         var collidingP  = positionnable.collidingPoints(bBox, this.tileAt.bind(this));
         var correction  = positionnable.correctionVector(bBox, collidingP, d, this.correctFace);
         return {
