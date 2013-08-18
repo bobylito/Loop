@@ -81,6 +81,7 @@
           meaningfulPoints : function(direction, destinationPoints){
             var firstPointIdx   = Math.floor(direction / 2); 
             var secondPointIdx  = (firstPointIdx + (direction % 2) + 1) % 4;
+
             return [ destinationPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
           },
           collidingPoints  : function(meaningfulPoints, tileAt){
@@ -89,30 +90,46 @@
             });
           },
           indicesOfPoints : function( points, pointsSubset ){
-            return pointsSubset.map(function(p){ points.indexOf(p); }); 
+            return pointsSubset.map(function(p){ return points.indexOf(p); }); 
           },
-          correctionVector : function(points, direction, correctPoint){
+          getCollisioningFaces : function(collidingPts, indices){
+            var faces = [];
+            if( collidingPts.length === 1){
+              console.log("bip");
+            }
+            else if(collidingPts.length >= 2){
+              var p = collidingPts;
+              var pIdx;
+              if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { faces.push( [0, p[pIdx].y] ); }
+              if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { faces.push( [1, p[pIdx].x] ); }
+              if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(3)!=-1 ) { faces.push( [2, p[pIdx].y] ); }
+              if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(0)!=-1 ) { faces.push( [3, p[pIdx].x] ); }
+            }
+            loop.debug("nb of faces ", faces.length)
+            loop.debug("collidingPts ", collidingPts.length)
+            return faces;
+          },
+          correctionVector : function(bBox, collidingPts, direction, correctingVectorFromFace){
             var motion = this.motion;
-            return points.map(function(p, i){
-                var correctedPoint = correctPoint(p, motion, direction);
-                return {
-                  x : correctedPoint.x - p.x,
-                  y : correctedPoint.y - p.y
-                };
-              }).reduce(function(vectorSum, v){
+            var indices= this.indicesOfPoints(bBox, collidingPts);
+            if(indices.length > 0)
+              console.log();
+            var faces = this.getCollisioningFaces( collidingPts, indices );
+
+            return faces.map( correctingVectorFromFace ).reduce(function(vectorSum, v){
                   return {
-                    x : vectorSum.x === 0 ? v.x: vectorSum.x,
-                    y : vectorSum.y === 0 ? v.y: vectorSum.y
+                    x : v.x + vectorSum.x,
+                    y : v.y + vectorSum.y
                   }
                 }, {x : 0, y : 0});
           }
         };
       },
       logPlayer : function( p ){
-        loop.debug( "position.x", p.position.x );
-        loop.debug( "position.y", p.position.y );
-        loop.debug( "motion.x"  , p.motion.x );
-        loop.debug( "motion.y"  , p.motion.y );
+        loop.debug( "position.x", p.position.x.toFixed(4) );
+        loop.debug( "position.y", p.position.y.toFixed(4) );
+        loop.debug( "motion.x"  , p.motion.x.toFixed(4) );
+        loop.debug( "motion.y"  , p.motion.y.toFixed(4) );
       }
     };
       
@@ -203,7 +220,7 @@
         var mapY = Math.floor(position.y);
         return map.data[ mapX + mapY * map.width];
       },
-      correctPoint : function( newPosition, motion, direction){
+      correctX : function( newPosition, motion, direction){
         var correctedPosition = {
           x : newPosition.x,
           y : newPosition.y
@@ -214,19 +231,31 @@
         else if(direction === 1){
           if(ptIdx === 0 )
         }*/
-        if( motion.y < 0 ){ correctedPosition.y = Math.ceil( newPosition.y); }
-        if( motion.y > 0 ){ correctedPosition.y = Math.floor(newPosition.y); }
-        if( motion.x < 0 ){ correctedPosition.x = Math.ceil( newPosition.x); }
-        if( motion.x > 0 ){ correctedPosition.x = Math.floor(newPosition.x); }
+        if( direction === 0 ) correctedPosition.y = Math.ceil(newPosition.y);
+        if( direction === 1 ) correctedPosition.y = Math.ceil(newPosition.y);
+        if( direction === 2 ) correctedPosition.x = Math.floor(newPosition.x);
+        if( direction === 3 ) correctedPosition.x = Math.floor(newPosition.x);
+        if( direction === 4 ) correctedPosition.y = Math.floor(newPosition.y);
+        if( direction === 5 ) correctedPosition.y = Math.floor(newPosition.y);
+        if( direction === 6 ) correctedPosition.x = Math.ceil(newPosition.x);
+        if( direction === 7 ) correctedPosition.x = Math.ceil(newPosition.x);
+          
         return correctedPosition;
+      },
+      correctFace : function( face ){
+        if( face[0] === 0 ) return { x: 0, y : Math.floor( face[1]) - face[1] }
+        //if( face[0] === 1 ) return { y: 0, x : Math.floor(face[1]) - face[1] }
+        if( face[0] === 2 ) return { x: 0, y : (Math.floor(face[1]) - face[1]) }
+        //if( face[0] === 3 ) return { y: 0, x : Math.ceil( face[1]) - face[1]}
+        return {x:0, y:0}
       },
       moveTo : function(positionnable, newPosition){
         var d = positionnable.direction();
         if( !d ) return newPosition;
         var bBox = positionnable.getBoundingBoxAt(newPosition);
-        var meaningfulP = positionnable.meaningfulPoints(d, bBox);
-        var collidingP  = positionnable.collidingPoints(meaningfulP, this.tileAt.bind(this));
-        var correction  = positionnable.correctionVector(collidingP, d, this.correctPoint);
+        //var meaningfulP = positionnable.meaningfulPoints(d, bBox);
+        var collidingP  = positionnable.collidingPoints(bBox, this.tileAt.bind(this));
+        var correction  = positionnable.correctionVector(bBox, collidingP, d, this.correctFace);
         return {
           x : newPosition.x + correction.x,
           y : newPosition.y + correction.y
