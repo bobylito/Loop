@@ -26,7 +26,8 @@ An animation system : this is the todo
 ## Tools
  [+] Count particles 
  [+] Debug/logger to output stuff happening under the hood
- [ ] Make a consolidated debug and display graph over time with jsPlot
+ [+] Make a consolidated debug and display graph over time with jsPlot
+ [ ] Enhance graphical debugger to change time resolution
 
 ## Cleanup 
  [+] Remove datastore
