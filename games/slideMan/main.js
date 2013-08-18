@@ -85,9 +85,12 @@
             return [ destinationPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
           },
           collidingPoints  : function(meaningfulPoints, tileAt){
-            return meaningfulPoints.filter(function(p){ 
+            var res = meaningfulPoints.filter(function(p){ 
               return tileAt(p) != 0; 
             });
+            if(res.length > 0)
+              console.log(res);
+            return res;
           },
           indicesOfPoints : function( points, pointsSubset ){
             return pointsSubset.map(function(p){ return points.indexOf(p); }); 
@@ -102,8 +105,8 @@
               var pIdx;
               if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { faces.push( [0, p[pIdx].y] ); }
               if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { faces.push( [1, p[pIdx].x] ); }
-              if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(3)!=-1 ) { faces.push( [2, p[pIdx].y] ); }
-              if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(0)!=-1 ) { faces.push( [3, p[pIdx].x] ); }
+              if( (pIdx = indices.indexOf(2))!=-1 &&  indices.indexOf(3)!=-1 ) { faces.push( [2, p[pIdx].y] ); }
+              if( (pIdx = indices.indexOf(3))!=-1 &&  indices.indexOf(0)!=-1 ) { faces.push( [3, p[pIdx].x] ); }
             }
             loop.debug("nb of faces ", faces.length)
             loop.debug("collidingPts ", collidingPts.length)
@@ -113,9 +116,10 @@
             var motion = this.motion;
             var indices= this.indicesOfPoints(bBox, collidingPts);
             if(indices.length > 0)
-              console.log();
+              console.log("Index" , indices );
             var faces = this.getCollisioningFaces( collidingPts, indices );
 
+            console.log("faces", faces);
             return faces.map( correctingVectorFromFace ).reduce(function(vectorSum, v){
                   return {
                     x : v.x + vectorSum.x,
@@ -243,9 +247,10 @@
         return correctedPosition;
       },
       correctFace : function( face ){
-        if( face[0] === 0 ) return { x: 0, y : Math.floor( face[1]) - face[1] }
+        //if( face[0] === 0 ) return { x: 0, y : Math.floor( face[1]) - face[1] }
         //if( face[0] === 1 ) return { y: 0, x : Math.floor(face[1]) - face[1] }
-        if( face[0] === 2 ) return { x: 0, y : (Math.floor(face[1]) - face[1]) }
+        if( face[0] === 2 ) 
+          return { x: 0, y : (Math.floor(face[1]) - face[1]) }
         //if( face[0] === 3 ) return { y: 0, x : Math.ceil( face[1]) - face[1]}
         return {x:0, y:0}
       },
