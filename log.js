@@ -110,7 +110,7 @@
           if( !data[k] ){
             data[k] = [];
           }
-          if(data[k].length >= 100){
+          if(data[k].length >= 200){
             data[k].shift();
           }
           data[k].push([t / 10, v]);
