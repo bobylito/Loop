@@ -10,6 +10,7 @@ An animation system : this is the todo
  [+] Map based on Tiled file (basic version)
  [-] Map based on Tiled file (read all properties for square/flat map)
  [+]  - character definition (position)
+ [ ] KeyboardIO : some buttons need autofire some not
  [ ] Switch rendering on the fly for particles ? 
  [+] Center tile rendering on position (or give a way to specify the placement in the screen?)
  [+] GameScreen enhance Loop.meta.all
