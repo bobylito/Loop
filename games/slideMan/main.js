@@ -36,7 +36,15 @@
           this.player.motion.x = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
         }
 
-        if( ioState.keys.UP ) this.player.motion.y = -10;
+        if( ioState.keys.SPACE && this.player.colliding[2] ) this.player.motion.y = -10;
+        if( ioState.keys.SPACE && this.player.colliding[1] ) {
+          this.player.motion.y = -8;
+          this.player.motion.x = -5;
+        }
+        if( ioState.keys.SPACE && this.player.colliding[3] ) {
+          this.player.motion.y = -8;
+          this.player.motion.x = 5;
+        }
         /*if( ioState.keys.UP )   this.player.motion.y -= 0.3;
         if( ioState.keys.DOWN ) this.player.motion.y += 0.3;
         if(!ioState.keys.UP && !ioState.keys.DOWN) {
@@ -64,15 +72,16 @@
             y : 0
           },
           size : {
-            h : 0.5,
-            w : 0.5       
+            h : 0.4,
+            w : 0.4       
           },
+          colliding : [false, false, false, false],
           getBoundingBoxAt : function( position ){
             return [
-              { x : position.x      , y : position.y},
-              { x : position.x + 0.5, y : position.y},
-              { x : position.x + 0.5, y : position.y + 0.5},
-              { x : position.x      , y : position.y + 0.5}
+              { x : position.x              , y : position.y},
+              { x : position.x + this.size.w, y : position.y},
+              { x : position.x + this.size.w, y : position.y + this.size.h},
+              { x : position.x              , y : position.y + this.size.h}
             ];                 
           },
           direction : function(){
@@ -102,6 +111,7 @@
           },
           getCollisioningFaces : function(collidingPts, indices){
             var faces = [];
+            this.colliding=[false, false, false, false];
             if( collidingPts.length === 1){
               console.log("bip");
             }
@@ -109,18 +119,28 @@
               var p = collidingPts;
               var pIdx;
               if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { 
+                this.colliding[0]=true; 
                 faces.push( [0, p[pIdx].y] ); 
               }
-              if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { faces.push( [1, p[pIdx].x] ); }
-              if( (pIdx = indices.indexOf(2))!=-1 &&  indices.indexOf(3)!=-1 ) { faces.push( [2, p[pIdx].y] ); }
-              if( (pIdx = indices.indexOf(3))!=-1 &&  indices.indexOf(0)!=-1 ) { faces.push( [3, p[pIdx].x] ); }
+              if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { 
+                this.colliding[1]=true; 
+                faces.push( [1, p[pIdx].x] ); 
+              }
+              if( (pIdx = indices.indexOf(2))!=-1 &&  indices.indexOf(3)!=-1 ) { 
+                this.colliding[2]=true; 
+                faces.push( [2, p[pIdx].y] ); 
+              }
+              if( (pIdx = indices.indexOf(3))!=-1 &&  indices.indexOf(0)!=-1 ) { 
+                this.colliding[3]=true; 
+                faces.push( [3, p[pIdx].x] ); 
+              }
             }
             return faces;
           },
           correctionVector : function(bBox, collidingPts, direction, correctingVectorFromFace){
-            var motion = this.motion;
-            var indices= this.indicesOfPoints(bBox, collidingPts);
-            var faces = this.getCollisioningFaces( collidingPts, indices );
+            var motion  = this.motion;
+            var indices = this.indicesOfPoints(bBox, collidingPts);
+            var faces   = this.getCollisioningFaces( collidingPts, indices );
 
             return faces.map( correctingVectorFromFace ).reduce(function(vectorSum, v){
                   return {
@@ -219,6 +239,10 @@
       }, 
       tileAt : function( position ){
         var map  = this.mapData.layers[0];
+        if(position.y <= 0) return 10;
+        if(position.x <= 0) return 10;
+        if(position.x > map.width) return 10;
+
         var mapX = Math.floor(position.x);
         var mapY = Math.floor(position.y);
         return map.data[ mapX + mapY * map.width];

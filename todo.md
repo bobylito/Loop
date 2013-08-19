@@ -54,3 +54,8 @@ An animation system : this is the todo
  [+] Reorganize folders
  [~] Make exp2 starfield tangent direction
  [+] Port bezier under the sea
+
+## Slideman - game 
+ [ ] Collision with only one point
+ [+] Change character state depending on its position / map (on the ground, hitting a wall...)
+ [ ] Split into several files
