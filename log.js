@@ -4,6 +4,7 @@
    */
   var debug = function(){
     var outDom = document.createElement("div");
+    outDom.id="debugData";
     document.body.appendChild(outDom);
     return { 
       _out : outDom,
@@ -95,7 +96,7 @@
                 }
                 return v;
               })(this._dataSets, delta);
-          jsPlot("debugGraph", {Xmin : minT, Xmax: delta, Ymin: -10, Ymax: 10, canvasHeight: 100, canvasWidth: 500, gridVisible:false}, fs);
+          jsPlot("debugGraph", {Xmin : minT, Xmax: delta, Ymin: -10, Ymax: 10, canvasHeight: 250, canvasWidth: 500, gridVisible:false}, fs);
         }
       },
       animate: function(ioState){ 
