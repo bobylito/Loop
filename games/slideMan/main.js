@@ -109,15 +109,23 @@
           indicesOfPoints : function( points, pointsSubset ){
             return pointsSubset.map(function(p){ return points.indexOf(p); }); 
           },
-          getCollisioningFaces : function(collidingPts, indices){
+          getCollisioningFaces : function(collidingPts, indices, direction){
             var faces = [];
+            var pIdx;
+            var p = collidingPts;
             this.colliding=[false, false, false, false];
             if( collidingPts.length === 1){
               console.log("bip");
+              if( ( (pIdx = indices.indexOf(2))!=-1 || (pIdx = indices.indexOf(3))!=-1 ) && (direction === 3 || direction === 4 || direction === 5) ){
+                this.colliding[2]=true; 
+                faces.push( [2, p[pIdx].y] ); 
+              }
+              else if( ( (pIdx = indices.indexOf(0))!=-1 || (pIdx = indices.indexOf(1))!=-1 ) && (direction === 7 || direction === 0 || direction === 1) ){
+                this.colliding[0]=true; 
+                faces.push( [0, p[pIdx].y] ); 
+              }
             }
             else if(collidingPts.length >= 2){
-              var p = collidingPts;
-              var pIdx;
               if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { 
                 this.colliding[0]=true; 
                 faces.push( [0, p[pIdx].y] ); 
@@ -140,7 +148,7 @@
           correctionVector : function(bBox, collidingPts, direction, correctingVectorFromFace){
             var motion  = this.motion;
             var indices = this.indicesOfPoints(bBox, collidingPts);
-            var faces   = this.getCollisioningFaces( collidingPts, indices );
+            var faces   = this.getCollisioningFaces( collidingPts, indices, direction );
 
             return faces.map( correctingVectorFromFace ).reduce(function(vectorSum, v){
                   return {

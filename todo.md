@@ -57,6 +57,6 @@ An animation system : this is the todo
  [+] Port bezier under the sea
 
 ## Slideman - game 
- [ ] Collision with only one point
+ [+] Collision with only one point
  [+] Change character state depending on its position / map (on the ground, hitting a wall...)
  [ ] Split into several files
