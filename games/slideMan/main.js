@@ -45,6 +45,14 @@
           this.player.motion.y = -8;
           this.player.motion.x = 5;
         }
+        if( ioState.keys.RIGHT && this.player.colliding[1] ) {
+          var tmp = this.player.motion.y - 0.2
+          this.player.motion.y -= Math.max(tmp, 0);
+        }
+        if( ioState.keys.LEFT && this.player.colliding[3] ) {
+          var tmp = this.player.motion.y - 0.2
+          this.player.motion.y -= Math.max(tmp, 0);
+        }
   
         if( !(ioState.keys.UP && this.player.colliding[0]) ){
           this.player.motion.y = this.player.motion.y + 0.3;
