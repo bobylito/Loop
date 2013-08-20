@@ -60,3 +60,5 @@ An animation system : this is the todo
  [+] Collision with only one point
  [+] Change character state depending on its position / map (on the ground, hitting a wall...)
  [ ] Split into several files
+ [ ] Friction when sliding on walls
+ [ ] Hide under the ceiling

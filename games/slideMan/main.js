@@ -45,6 +45,10 @@
           this.player.motion.y = -8;
           this.player.motion.x = 5;
         }
+  
+        if( !(ioState.keys.UP && this.player.colliding[0]) ){
+          this.player.motion.y = this.player.motion.y + 0.3;
+        }
         /*if( ioState.keys.UP )   this.player.motion.y -= 0.3;
         if( ioState.keys.DOWN ) this.player.motion.y += 0.3;
         if(!ioState.keys.UP && !ioState.keys.DOWN) {
@@ -56,7 +60,7 @@
         this.logPlayer(this.player);
         var resAnim = allAnimations.animate.apply(allAnimations, arguments);
         //Gravity
-        this.player.motion.y = this.player.motion.y + 0.3;
+
         return resAnim;
       },
       createPlayer : function(mapData){
