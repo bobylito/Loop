@@ -5,8 +5,9 @@
   });
 
   var m = cameraMap();
+  var b = backgroundMap();
   var c = character();
-  var game = gameScreen( m, c ); 
+  var game = gameScreen( b, m, c ); 
 
   loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
@@ -15,7 +16,7 @@
   loop.registerAnimation( Loop.meta.andThen(loading, game) );
   loop.start();
 
-  function gameScreen(mapAnim, characterAnim){
+  function gameScreen(backgroundAnim,mapAnim, characterAnim){
     var allAnimations   = Loop.meta.all.apply(window, arguments);
     var gameScreenAnim  = {
       _init   : function(w, h, sys, ioState, resources){
@@ -218,6 +219,7 @@
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
         this.center = positionnable;
+        this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Map" })[0];
       },
       render : function(ctx, width, height){
         var xIt = Math.ceil( width / this.txW ),
@@ -237,13 +239,13 @@
           y : cameraPosition.y - Math.floor(cameraPosition.y)
         };
 
-        var translatePos = naturalPos.y * this.mapData.layers[0].width + naturalPos.x ;
-        var mapWidth = this.mapData.layers[0].width;
+        var translatePos = naturalPos.y * this.mapLayer.width + naturalPos.x ;
+        var mapWidth = this.mapLayer.width;
 
         for( i = -1; i < xIt + 1; i++){
           for( j = -1; j < yIt + 1; j++){
             var dataPos = translatePos + i + j * mapWidth,
-                imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : this.mapData.layers[0].data[ dataPos ] - 1,
+                imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : this.mapLayer.data[ dataPos ] - 1,
                 imgY = 0;
             ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
                                    this.txW, this.txH, 
@@ -258,7 +260,7 @@
         return true; 
       }, 
       tileAt : function( position ){
-        var map  = this.mapData.layers[0];
+        var map  = this.mapLayer;
         if(position.y <= 0) return 10;
         if(position.x <= 0) return 10;
         if(position.x > map.width) return 10;
@@ -268,12 +270,10 @@
         return map.data[ mapX + mapY * map.width];
       },
       correctFace : function( face ){
-        if( face[0] === 0 ) 
-          return { x: 0, y : Math.ceil( face[1]) - face[1] }
-        if( face[0] === 1 ) return { y: 0, x : Math.floor(face[1]) - face[1] }
-        if( face[0] === 2 ) 
-          return { x: 0, y : (Math.floor(face[1]) - face[1]) }
-        if( face[0] === 3 ) return { y: 0, x : Math.ceil( face[1]) - face[1]}
+        if( face[0] === 0 ) return { x: 0, y :  Math.ceil( face[1]) - face[1] };
+        if( face[0] === 1 ) return { y: 0, x :  Math.floor(face[1]) - face[1] };
+        if( face[0] === 2 ) return { x: 0, y : (Math.floor(face[1]) - face[1])};
+        if( face[0] === 3 ) return { y: 0, x :  Math.ceil( face[1]) - face[1] };
         return {x:0, y:0}
       },
       moveTo : function(positionnable, newPosition){
@@ -286,6 +286,73 @@
         return {
           x : newPosition.x + correction.x,
           y : newPosition.y + correction.y
+        };
+      }
+    };
+  }
+
+  function backgroundMap(){
+    return {
+      _init : function(w,h,sys,ioState, resources, positionnable){
+        var mapData = this.mapData = resources["map.json"];
+        this.texture = resources["textureMap.png"];
+        this.txH = mapData.tileheight;
+        this.txW = mapData.tilewidth ;
+        this.center = positionnable;
+        this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
+      },
+      render : function(ctx, width, height){
+        var xIt = Math.ceil( width / this.txW ),
+            yIt = Math.ceil( height/ this.txH );
+        var cameraPosition = {
+          x : this.center.position.x - xIt/2,
+          y : this.center.position.y - yIt/2 
+        };
+
+        var naturalPos = {
+          x : Math.floor(cameraPosition.x),
+          y : Math.floor(cameraPosition.y)
+        };
+
+        var devPos = {
+          x : cameraPosition.x - Math.floor(cameraPosition.x),
+          y : cameraPosition.y - Math.floor(cameraPosition.y)
+        };
+
+        var translatePos = naturalPos.y * this.mapLayer.width + naturalPos.x ;
+        var mapWidth = this.mapLayer.width;
+
+        for( i = -1; i < xIt + 1; i++){
+          for( j = -1; j < yIt + 1; j++){
+            var dataPos = translatePos + i + j * mapWidth,
+                imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : this.mapLayer.data[ dataPos ] - 1,
+                imgY = 0;
+            ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
+                                   this.txW, this.txH, 
+                                   (i - devPos.x) * this.txW, 
+                                   (j - devPos.y) * this.txH, 
+                                   this.txW , 
+                                   this.txH );
+          }
+        }
+      },
+      animate: function(ioState, width, height){ 
+        return true; 
+      }, 
+      tileAt : function( position ){
+        var map  = this.mapLayer;
+        if(position.y <= 0) return 10;
+        if(position.x <= 0) return 10;
+        if(position.x > map.width) return 10;
+
+        var mapX = Math.floor(position.x);
+        var mapY = Math.floor(position.y);
+        return map.data[ mapX + mapY * map.width];
+      },
+      moveTo : function(positionnable, newPosition){
+        return {
+          x : newPosition.x ,
+          y : newPosition.y 
         };
       }
     };
