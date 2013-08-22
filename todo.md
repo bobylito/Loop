@@ -36,7 +36,7 @@ An animation system : this is the todo
  [ ] Refactor and generalize results/andThen
  [+] Move library source in src folder
  [+] Gruntify lib
- [-] Update samples to use gruntified concated version of the lib 
+ [+] Update samples to use gruntified concated version of the lib 
 
 ## FIX
  [ ] Particles creation time should be added by the particle system.
@@ -55,6 +55,9 @@ An animation system : this is the todo
  [+] Reorganize folders
  [~] Make exp2 starfield tangent direction
  [+] Port bezier under the sea
+
+## Documentation
+ [ ] README.md
 
 ## Slideman - game 
  [+] Collision with only one point
