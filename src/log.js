@@ -1,4 +1,4 @@
-(function(){
+(function( Loop, tools){
   /*
    * Provides an efficient way to log stuff about what is happening in the animation
    */
@@ -132,8 +132,10 @@
     };
   };
 
-  Loop.tools = {
-    debug : debug,
-    debugGraph : graph
-  };
-})();
+  //Module exports
+  tools.debug       = debug;
+  tools.debugGraph  = graph;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.tools = window.Loop.tools || {}
+  );

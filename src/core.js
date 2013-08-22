@@ -1,4 +1,4 @@
-window.Loop = (function(){
+(function( loopModule ){
   var requestAnimFrame = (function(){
     return  window.requestAnimationFrame || 
     window.webkitRequestAnimationFrame   || 
@@ -119,9 +119,14 @@ window.Loop = (function(){
     }
   };
 
-  Loop.animations = {};
+  loopModule.create = function( canvas, fadeoutf){
+    return new Loop(canvas, fadeoutf);
+  };
 
   return Loop;
-})();
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.animations = window.Loop.animations || {}
+  );
 
-window.loop = new Loop( document.getElementById("scene") );
+window.loop = Loop.create( document.getElementById("scene") );

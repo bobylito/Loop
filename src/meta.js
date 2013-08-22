@@ -1,4 +1,4 @@
-Loop.meta = (function(){
+(function(Loop, meta){
   /***
    * Meta animation that takes at least two animations and display them sequentially
    */
@@ -65,8 +65,10 @@ Loop.meta = (function(){
     };
   };
 
-  return {
-    andThen : andThen,
-    all : all
-  };
-})();
+  //Module exports
+  meta.andThen  = andThen;
+  meta.all      = all;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.meta = window.Loop.meta || {}
+  );

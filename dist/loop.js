@@ -11,7 +11,32 @@ a.xscale,c*a.yscale),b.lineTo(a.Xmax*a.xscale,c*a.yscale);b.stroke();b.save();b.
 g;b.moveTo(c,d(c));for(b.beginPath();c<=e;c++){var h=d(c/a.xscale),h=h<a.Ymin?a.Ymin-1:h,h=h>a.Ymax?a.Ymax+1:h;b.lineTo(c,h*a.yscale)}b.stroke()}catch(m){}finally{b.stokeStyle=f}}},l={Xmin:0,Xmax:10,Ymin:0,Ymax:3,xLabel:"x",yLabel:"y",canvasHeight:500,canvasWidth:500,gridVisible:!0},g=function(b,a,d){var a=f.extend({},l,a),c=a.X=a.Xmax-a.Xmin,e=a.Y=a.Ymax-a.Ymin,c=a.xscale=a.canvasWidth/c,e=a.yscale=a.canvasHeight/e,b=f.createCanvas(b,a);b.scale(1,-1);b.translate(0,-a.canvasHeight);b.translate(-(a.Xmin*
 c),-(a.Ymin*e));a.gridVisible&&f.drawGrid(b,a);f.drawAxes(b,a);for(c=0;c<d.length;c++)f.drawFunction(b,a,d[c])};g.tools={datasetToFunc:function(b){return b.reduce(function(a,b,c,e){c=e[c+1];if(void 0===c)return function(c){return c>b[0]?void 0:a(c)};var f=(c[1]-b[1])/(c[0]-b[0]),g=b[1]-f*b[0],h=b[0];return function(b){return b>=h?f*b+g:a(b)}},function(){})},funcToDataset:function(b,a){for(var d=f.findNiceRoundStep(a.Xmax-a.Xmin,15),c=[],e=a.Xmin-a.Xmin%d;e<a.Xmax;e+=d)c.push(b(e));return c}};return g}(window,
 document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i)g[key]=i[key]});return g});
-;window.Loop = (function(){
+;(function( Loop, benchmark){
+  benchmark.particles = function(){
+    var nbParticles = document.createElement("div");
+    nbParticles.innerHTML = 0;
+    document.body.appendChild(nbParticles);
+    
+    return {
+      _init:function(w, h, animationSystem){
+        var bench = this;
+        animationSystem.on("start", function(){
+          bench.pf = animationSystem._animations.filter(function(f){
+            return !!f.getParticleCount;
+          });
+        });
+      },
+      animate:function(){ return true;},
+      render:function(){
+        nbParticles.innerHTML = this.pf.reduce(function(m, e){ return m + e.getParticleCount();}, 0);
+      }
+    };
+  };
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.benchmark = window.Loop.benchmark || {}
+  );
+;(function( loopModule ){
   var requestAnimFrame = (function(){
     return  window.requestAnimationFrame || 
     window.webkitRequestAnimationFrame   || 
@@ -52,7 +77,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       this.ctxOff.globalCompositeOperation = "source-over";
       this.ctxOff.fillStyle = "#000000";
       this.ctxOff.fillRect(0,0,this.width,this.height);
-    }
+    };
     this.status = null;
     this.stats = (function(){
       var s = new Stats();
@@ -132,40 +157,22 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     }
   };
 
-  Loop.animations = {};
+  loopModule.create = function( canvas, fadeoutf){
+    return new Loop(canvas, fadeoutf);
+  };
 
   return Loop;
-})();
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.animations = window.Loop.animations || {}
+  );
 
-window.loop = new Loop( document.getElementById("scene") );
-;window.Loop.animations.bench = 
-(function(){
-  return function(){
-    var nbParticles = document.createElement("div");
-    nbParticles.innerHTML = 0;
-    document.body.appendChild(nbParticles);
-    
-    return {
-      _init:function(w, h, animationSystem){
-        var bench = this;
-        animationSystem.on("start", function(){
-          bench.pf = animationSystem._animations.filter(function(f){
-            return !!f.getParticleCount;
-          });
-        });
-      },
-      animate:function(){ return true;},
-      render:function(){
-        nbParticles.innerHTML = this.pf.reduce(function(m, e){ return m + e.getParticleCount();}, 0);
-      }
-    };
-  };
-})()
-;Loop.io = (function(){
+window.loop = Loop.create( document.getElementById("scene") );
+;(function( Loop, io){
   function IOManager( ioStateModifier, variables ){
     this.update     = ioStateModifier.bind(this);
     this.variables  = variables;
-  };
+  }
 
   IOManager.prototype = {
     _init : function( sceneDom ){
@@ -182,7 +189,7 @@ window.loop = new Loop( document.getElementById("scene") );
  
     io._keys = {};
     io._inversedConfig = {};
-    for(k in watchedKeys ){
+    for(var k in watchedKeys ){
       io._keys[k] = false;
       io._inversedConfig[ watchedKeys[k] ] = k;
     }
@@ -202,16 +209,16 @@ window.loop = new Loop( document.getElementById("scene") );
       });
       io._currentKeys = function(){
         return this._keys;
-      }
+      };
       return this._keys;
     };
 
     return io;
-  }
+  };
 
   var mouseIO = function(){
     var io = new IOManager( function(ioState){
-      var pos = this._positionValue()
+      var pos = this._positionValue();
       ioState.position = {
         x : pos.x ? pos.x - this.elPos.left : pos.x,
         y : pos.y ? pos.y - this.elPos.top  : pos.y
@@ -239,12 +246,12 @@ window.loop = new Loop( document.getElementById("scene") );
       this._position = {
         x : null,
         y : null
-      }
+      };
       return this._position;
     };
 
     return io;
-  }
+  };
 
   var timeIO = new IOManager( function(ioState){
     ioState.time = Date.now();
@@ -261,7 +268,7 @@ window.loop = new Loop( document.getElementById("scene") );
         var d = document.createElement("input");
         d.setAttribute("type", "range");
         d.setAttribute("min", "0");
-        d.setAttribute("max", timeLength)
+        d.setAttribute("max", timeLength);
         d.addEventListener("change", function(){
            self._time = parseInt(this.value, 10) ;
         });
@@ -275,19 +282,20 @@ window.loop = new Loop( document.getElementById("scene") );
         return this._time;
       };
       return this._time;
-    }
+    };
     return io;
   };
 
-
-  return {
-    mouse : mouseIO,
-    time : timeIO,
-    keyboard : keyboardIO,
-    controlTime : controledTimeIO
-  };
-})();
-;(function(){
+  //Module exports
+  io.mouse        = mouseIO;
+  io.time         = timeIO;
+  io.keyboard     = keyboardIO;
+  io.controlTime  = controledTimeIO;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.io = window.Loop.io || {}
+  );
+;(function( Loop, tools){
   /*
    * Provides an efficient way to log stuff about what is happening in the animation
    */
@@ -313,11 +321,11 @@ window.loop = new Loop( document.getElementById("scene") );
           };
         }
       },
-      animate   : function(){ return true},
+      animate   : function(){ return true;},
       render    : function(){
         var orderedMessages = this._messages.sort( function(m1, m2){ return m1[0].localeCompare(m2[0]); });
         this._out.innerHTML = orderedMessages.reduce( function(msg, m){
-          return msg + m[0] + " : " + m[1] + "<br/>"
+          return msg + m[0] + " : " + m[1] + "<br/>";
         }, "");
         this._messages=[];
       }
@@ -409,7 +417,7 @@ window.loop = new Loop( document.getElementById("scene") );
         if(typeof n === "string") {
           try {
             var p = parseFloat(n);
-            if(p === NaN) return undefined;
+            if( isNaN(p) ) return undefined;
             return p;
           }
           catch(e){
@@ -421,12 +429,14 @@ window.loop = new Loop( document.getElementById("scene") );
     };
   };
 
-  Loop.tools = {
-    debug : debug,
-    debugGraph : graph
-  };
-})();
-;Loop.meta = (function(){
+  //Module exports
+  tools.debug       = debug;
+  tools.debugGraph  = graph;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.tools = window.Loop.tools || {}
+  );
+;(function(Loop, meta){
   /***
    * Meta animation that takes at least two animations and display them sequentially
    */
@@ -458,7 +468,7 @@ window.loop = new Loop( document.getElementById("scene") );
       render  : function(){
         this.current.render.apply(this.current, arguments);
       }
-    }
+    };
   };
 
   /**
@@ -491,14 +501,16 @@ window.loop = new Loop( document.getElementById("scene") );
         return this.animations.length > 0;
       }
     };
-  }
-
-  return {
-    andThen : andThen,
-    all : all
   };
-})();
-;(function(){
+
+  //Module exports
+  meta.andThen  = andThen;
+  meta.all      = all;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.meta = window.Loop.meta || {}
+  );
+;(function(Loop, particles){
   /**
    * Renderings are pluggable rendering for particles systems
    * Parameters : 
@@ -601,7 +613,7 @@ window.loop = new Loop( document.getElementById("scene") );
       }
       context.putImageData(imgData, 0,0);
     },
-  }
+  };
 
 
   /**
@@ -677,7 +689,7 @@ window.loop = new Loop( document.getElementById("scene") );
       system._createParticlef = createParticlef;
       return system;
     }
-  }
+  };
   
   var circleParticleGenerator     = new ParticleField(rendering.circle);
   var lineParticleGenerator       = new ParticleField(rendering.line);
@@ -685,16 +697,18 @@ window.loop = new Loop( document.getElementById("scene") );
   var textureParticleGenerator    = new ParticleField(rendering.texture);
   var imageDataParticleGenerator  = new ParticleField(rendering.imageData);
 
-  window.Loop.animations.particle         = circleParticleGenerator.createField.bind(circleParticleGenerator);
-  window.Loop.animations.particleLasso    = lineParticleGenerator.createField.bind(lineParticleGenerator);
-  window.Loop.animations.particleLasso2   = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
-  window.Loop.animations.particleTexture  = textureParticleGenerator.createField.bind(textureParticleGenerator);
-  window.Loop.animations.particleImageData= imageDataParticleGenerator.createField.bind(imageDataParticleGenerator);
+  //Module exports
+  particles.circle   = circleParticleGenerator.createField.bind(circleParticleGenerator);
+  particles.lasso    = lineParticleGenerator.createField.bind(lineParticleGenerator);
+  particles.lasso2   = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
+  particles.texture  = textureParticleGenerator.createField.bind(textureParticleGenerator);
+  particles.imageData= imageDataParticleGenerator.createField.bind(imageDataParticleGenerator);
 })( 
-    window
+    window.Loop = window.Loop || {},
+    window.Loop.particles = window.Loop.particles = {}
   );
 
-;Loop.text = (function( ){
+;(function( Loop, text ){
   var simple = function(text, duration){
     return {
       _init   : function(w, h, sys, ioState){
@@ -706,7 +720,7 @@ window.loop = new Loop( document.getElementById("scene") );
           ctx.fillStyle="white";
           ctx.fillText(text, w/2-m.width/2, h/2);
       }
-    }
+    };
   };
 
   /**
@@ -757,11 +771,12 @@ window.loop = new Loop( document.getElementById("scene") );
       result : function(){
         return this.loaded;          
       }
-    }
+    };
   };
 
-  return {
-    simple: simple,
-    loading : loading
-  };
-})();;
+  text.simple   = simple;
+  text.loading  = loading;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.text = window.Loop.text || {}
+  );

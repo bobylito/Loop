@@ -1,4 +1,4 @@
-(function(){
+(function(Loop, particles){
   /**
    * Renderings are pluggable rendering for particles systems
    * Parameters : 
@@ -185,12 +185,14 @@
   var textureParticleGenerator    = new ParticleField(rendering.texture);
   var imageDataParticleGenerator  = new ParticleField(rendering.imageData);
 
-  window.Loop.animations.particle         = circleParticleGenerator.createField.bind(circleParticleGenerator);
-  window.Loop.animations.particleLasso    = lineParticleGenerator.createField.bind(lineParticleGenerator);
-  window.Loop.animations.particleLasso2   = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
-  window.Loop.animations.particleTexture  = textureParticleGenerator.createField.bind(textureParticleGenerator);
-  window.Loop.animations.particleImageData= imageDataParticleGenerator.createField.bind(imageDataParticleGenerator);
+  //Module exports
+  particles.circle   = circleParticleGenerator.createField.bind(circleParticleGenerator);
+  particles.lasso    = lineParticleGenerator.createField.bind(lineParticleGenerator);
+  particles.lasso2   = quadraticParticleGenerator.createField.bind(quadraticParticleGenerator);
+  particles.texture  = textureParticleGenerator.createField.bind(textureParticleGenerator);
+  particles.imageData= imageDataParticleGenerator.createField.bind(imageDataParticleGenerator);
 })( 
-    window
+    window.Loop = window.Loop || {},
+    window.Loop.particles = window.Loop.particles = {}
   );
 

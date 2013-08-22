@@ -1,6 +1,5 @@
-window.Loop.animations.bench = 
-(function(){
-  return function(){
+(function( Loop, benchmark){
+  benchmark.particles = function(){
     var nbParticles = document.createElement("div");
     nbParticles.innerHTML = 0;
     document.body.appendChild(nbParticles);
@@ -20,4 +19,7 @@ window.Loop.animations.bench =
       }
     };
   };
-})();
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.benchmark = window.Loop.benchmark || {}
+  );

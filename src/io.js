@@ -1,4 +1,4 @@
-Loop.io = (function(){
+(function( Loop, io){
   function IOManager( ioStateModifier, variables ){
     this.update     = ioStateModifier.bind(this);
     this.variables  = variables;
@@ -116,11 +116,12 @@ Loop.io = (function(){
     return io;
   };
 
-
-  return {
-    mouse : mouseIO,
-    time : timeIO,
-    keyboard : keyboardIO,
-    controlTime : controledTimeIO
-  };
-})();
+  //Module exports
+  io.mouse        = mouseIO;
+  io.time         = timeIO;
+  io.keyboard     = keyboardIO;
+  io.controlTime  = controledTimeIO;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.io = window.Loop.io || {}
+  );

@@ -26,28 +26,23 @@ module.exports = function(grunt) {
 
     jshint : {
       all : ['src/**/*.js']         
-    }
+    },
 
-//  watch: {
-//    assets : {
-//      files : ['src/**/*.*'],
-//      tasks : ['default']
-//    },
-//    html : {
-//      files   : ['index.min.html', 'src/js/audio.js'],
-//      options : {
-//        livereload : true
-//      }
-//    }
-//  }
+    watch: {
+      assets : {
+        files : ['src/**/*.js'],
+        tasks : ['default']
+      }
+    }
   });
 
   // Load the plugin that provides the "uglify" task.
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
   // Default task(s).
-  grunt.registerTask('default', ['concat', 'uglify']);
+  grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
   grunt.registerTask('auto', ['default', 'watch']);
 };

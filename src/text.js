@@ -1,4 +1,4 @@
-Loop.text = (function( ){
+(function( Loop, text ){
   var simple = function(text, duration){
     return {
       _init   : function(w, h, sys, ioState){
@@ -64,8 +64,9 @@ Loop.text = (function( ){
     };
   };
 
-  return {
-    simple: simple,
-    loading : loading
-  };
-})();
+  text.simple   = simple;
+  text.loading  = loading;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.text = window.Loop.text || {}
+  );
