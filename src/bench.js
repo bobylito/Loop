@@ -1,4 +1,4 @@
-window.Loop.animations.particle.bench = 
+window.Loop.animations.bench = 
 (function(){
   return function(){
     var nbParticles = document.createElement("div");
