@@ -26,7 +26,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   /**
    * Stats.js "polyfill"
    */
-  var Stats = Stats || function(){
+  var Stats = window.Stats || function(){
     this.setMode = function(){};
     this.begin = function(){};
     this.end = function(){};
@@ -325,11 +325,6 @@ window.loop = new Loop( document.getElementById("scene") );
   };
 
   var graph = function(){
-    var jsPlotLib = document.createElement("script");
-    jsPlotLib.type = "text\/javascript";
-    //jsPlotLib.src =  "http://bobylito.me/jsPlot/plot.js";
-    jsPlotLib.src =  "http://localhost:7000/plot.js";
-    document.body.appendChild(jsPlotLib);
     var container = document.createElement("div");
     container.id = "debugGraph"; 
     document.body.appendChild(container);

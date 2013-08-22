@@ -125,7 +125,7 @@
     explosionPF.create(500);
   }, 2000);
 
-  loop.registerAnimation(Loop.animations.particle.bench());
+  loop.registerAnimation(Loop.animations.bench());
 
   //Start the loop
   loop.start();

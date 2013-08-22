@@ -13,7 +13,7 @@ window.Loop = (function(){
   /**
    * Stats.js "polyfill"
    */
-  var Stats = Stats || function(){
+  var Stats = window.Stats || function(){
     this.setMode = function(){};
     this.begin = function(){};
     this.end = function(){};

@@ -36,11 +36,6 @@
   };
 
   var graph = function(){
-    var jsPlotLib = document.createElement("script");
-    jsPlotLib.type = "text\/javascript";
-    //jsPlotLib.src =  "http://bobylito.me/jsPlot/plot.js";
-    jsPlotLib.src =  "http://localhost:7000/plot.js";
-    document.body.appendChild(jsPlotLib);
     var container = document.createElement("div");
     container.id = "debugGraph"; 
     document.body.appendChild(container);

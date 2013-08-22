@@ -21,11 +21,7 @@ ul li{list-style-type:none;}
   </div>
 </body>
 
-<script src="../Stats.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-<script src="../lib.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-<script src="../io.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-<script src="../particles.js" type="text/javascript" language="javascript" charset="utf-8"></script>
-<script src="../bench.js" type="text/javascript" language="javascript" charset="utf-8"></script>
+<script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function(){
   var maxWithSign = function(val, max){
@@ -73,7 +69,7 @@ ul li{list-style-type:none;}
   loop.addIO(Loop.io.time);
 
   loop.registerAnimation(fireFP);
-  loop.registerAnimation(Loop.animations.particle.bench());
+  loop.registerAnimation(Loop.animations.bench());
 
   loop.start();
 })();
