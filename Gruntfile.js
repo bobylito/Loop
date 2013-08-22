@@ -22,6 +22,10 @@ module.exports = function(grunt) {
         src: ['dist/<%= pkg.name %>.js'],
         dest: 'dist/<%= pkg.name %>.min.js'
       }
+    },
+
+    jshint : {
+      all : ['src/**/*.js']         
     }
 
 //  watch: {
@@ -41,15 +45,9 @@ module.exports = function(grunt) {
   // Load the plugin that provides the "uglify" task.
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Default task(s).
   grunt.registerTask('default', ['concat', 'uglify']);
   grunt.registerTask('auto', ['default', 'watch']);
-
-  grunt.registerMultiTask("shadercompile", function(){
-    this.files.forEach(function(f){
-      grunt.log.writeln(f.src)
-    });
-  } );
-
 };

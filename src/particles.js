@@ -101,7 +101,7 @@
       }
       context.putImageData(imgData, 0,0);
     },
-  }
+  };
 
 
   /**
@@ -177,7 +177,7 @@
       system._createParticlef = createParticlef;
       return system;
     }
-  }
+  };
   
   var circleParticleGenerator     = new ParticleField(rendering.circle);
   var lineParticleGenerator       = new ParticleField(rendering.line);

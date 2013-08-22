@@ -24,11 +24,11 @@
           };
         }
       },
-      animate   : function(){ return true},
+      animate   : function(){ return true;},
       render    : function(){
         var orderedMessages = this._messages.sort( function(m1, m2){ return m1[0].localeCompare(m2[0]); });
         this._out.innerHTML = orderedMessages.reduce( function(msg, m){
-          return msg + m[0] + " : " + m[1] + "<br/>"
+          return msg + m[0] + " : " + m[1] + "<br/>";
         }, "");
         this._messages=[];
       }
@@ -120,7 +120,7 @@
         if(typeof n === "string") {
           try {
             var p = parseFloat(n);
-            if(p === NaN) return undefined;
+            if( isNaN(p) ) return undefined;
             return p;
           }
           catch(e){

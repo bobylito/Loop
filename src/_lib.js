@@ -39,7 +39,7 @@ window.Loop = (function(){
       this.ctxOff.globalCompositeOperation = "source-over";
       this.ctxOff.fillStyle = "#000000";
       this.ctxOff.fillRect(0,0,this.width,this.height);
-    }
+    };
     this.status = null;
     this.stats = (function(){
       var s = new Stats();

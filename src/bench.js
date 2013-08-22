@@ -20,4 +20,4 @@ window.Loop.animations.bench =
       }
     };
   };
-})()
+})();

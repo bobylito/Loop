@@ -30,7 +30,7 @@ Loop.meta = (function(){
       render  : function(){
         this.current.render.apply(this.current, arguments);
       }
-    }
+    };
   };
 
   /**
@@ -63,7 +63,7 @@ Loop.meta = (function(){
         return this.animations.length > 0;
       }
     };
-  }
+  };
 
   return {
     andThen : andThen,

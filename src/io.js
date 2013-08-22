@@ -2,7 +2,7 @@ Loop.io = (function(){
   function IOManager( ioStateModifier, variables ){
     this.update     = ioStateModifier.bind(this);
     this.variables  = variables;
-  };
+  }
 
   IOManager.prototype = {
     _init : function( sceneDom ){
@@ -19,7 +19,7 @@ Loop.io = (function(){
  
     io._keys = {};
     io._inversedConfig = {};
-    for(k in watchedKeys ){
+    for(var k in watchedKeys ){
       io._keys[k] = false;
       io._inversedConfig[ watchedKeys[k] ] = k;
     }
@@ -39,16 +39,16 @@ Loop.io = (function(){
       });
       io._currentKeys = function(){
         return this._keys;
-      }
+      };
       return this._keys;
     };
 
     return io;
-  }
+  };
 
   var mouseIO = function(){
     var io = new IOManager( function(ioState){
-      var pos = this._positionValue()
+      var pos = this._positionValue();
       ioState.position = {
         x : pos.x ? pos.x - this.elPos.left : pos.x,
         y : pos.y ? pos.y - this.elPos.top  : pos.y
@@ -76,12 +76,12 @@ Loop.io = (function(){
       this._position = {
         x : null,
         y : null
-      }
+      };
       return this._position;
     };
 
     return io;
-  }
+  };
 
   var timeIO = new IOManager( function(ioState){
     ioState.time = Date.now();
@@ -98,7 +98,7 @@ Loop.io = (function(){
         var d = document.createElement("input");
         d.setAttribute("type", "range");
         d.setAttribute("min", "0");
-        d.setAttribute("max", timeLength)
+        d.setAttribute("max", timeLength);
         d.addEventListener("change", function(){
            self._time = parseInt(this.value, 10) ;
         });
@@ -112,7 +112,7 @@ Loop.io = (function(){
         return this._time;
       };
       return this._time;
-    }
+    };
     return io;
   };
 

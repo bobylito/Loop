@@ -10,7 +10,7 @@ Loop.text = (function( ){
           ctx.fillStyle="white";
           ctx.fillText(text, w/2-m.width/2, h/2);
       }
-    }
+    };
   };
 
   /**
@@ -61,11 +61,11 @@ Loop.text = (function( ){
       result : function(){
         return this.loaded;          
       }
-    }
+    };
   };
 
   return {
     simple: simple,
     loading : loading
   };
-})();;
+})();
