@@ -24,9 +24,34 @@ ul li{list-style-type:none;}
 
 <script src="../../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
-(function(){
+(function( Loop, particles, io, benchmark){
   var nbFireballs = 2,
       fireballs = [];
+
+  for(var i = nbFireballs-1 ; i >= 0; i--){
+    var fireballFP = particles.circle(
+        function(){return []},
+        createFireballGenerator( (i+1) * loop.width/(nbFireballs+1), loop.height * 0.8),
+        physic,
+        {
+          compositionMethod: "lighter",
+          color: "hsl(100, 100%, 1%)",
+          size:  85
+        });
+    loop.registerAnimation(fireballFP);
+    fireballs.push(fireballFP);
+  }
+
+  setInterval(function(){
+    for(var i = 0; i < nbFireballs; i++){
+      fireballs[i].create(25);
+    }
+  }, 20)
+
+  loop.addIO( io.keyboard({"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32}) );
+  loop.addIO( io.time );
+  loop.registerAnimation( benchmark.particles());
+  loop.start();
 
   function createFireballGenerator(x, y){
     return function(ioState, width, height){
@@ -58,31 +83,11 @@ ul li{list-style-type:none;}
     return p;
   } 
 
-  for(var i = nbFireballs-1 ; i >= 0; i--){
-    var fireballFP = Loop.animations.particle(
-        function(){return []},
-        createFireballGenerator( (i+1) * loop.width/(nbFireballs+1), loop.height * 0.8),
-        physic,
-        {
-          compositionMethod: "lighter",
-          color: "hsl(100, 100%, 1%)",
-          size:  85
-        });
-    loop.registerAnimation(fireballFP);
-    fireballs.push(fireballFP);
-  }
-
-  setInterval(function(){
-    for(var i = 0; i < nbFireballs; i++){
-      fireballs[i].create(25);
-    }
-  }, 20)
-
-  //FIXME Does not work yet
-  loop.addIO( Loop.io.keyboard({"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32}) );
-  loop.addIO( Loop.io.time );
-  loop.registerAnimation(Loop.animations.bench());
-  loop.start();
-})();
+})(
+    window.Loop,
+    window.Loop.particles,
+    window.Loop.io,
+    window.Loop.benchmark
+  );
 </script>
 </html>

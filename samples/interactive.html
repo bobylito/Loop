@@ -23,11 +23,11 @@ ul li{list-style-type:none;}
 
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
-(function(){
+(function( Loop, io, particles, benchmark){
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
-      fireFP = Loop.animations.particle(
+      fireFP = particles.circle(
       function(){return []},
       function(ioState, width, height){
         return [  
@@ -78,10 +78,15 @@ ul li{list-style-type:none;}
     fireFP.create(4000);
   }, 0)
 
-  loop.addIO(Loop.io.time);
+  loop.addIO(io.time);
   loop.registerAnimation(fireFP);
 
   loop.start();
-})();
+})(
+    window.Loop,
+    window.Loop.io,
+    window.Loop.particles,
+    window.Loop.benchmark
+  );
 </script>
 </html>

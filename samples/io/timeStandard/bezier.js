@@ -1,6 +1,6 @@
 //Exp2 : come get some bezier
 
-(function(){
+(function(Loop, io){
   var utilMvt = {
     f1: function(t, tn, d, seed){
       var x = t/tn;
@@ -81,7 +81,7 @@
     return res;
   }
 
-  var loop = window.loop = new Loop(document.getElementById("scene"), function(context, width, height){
+  var loop = window.loop = Loop.create(document.getElementById("scene"), function(context, width, height){
     context.save();
     var lineargradient = context.createLinearGradient(0,0,0,height);  
     lineargradient.addColorStop(0,'rgba(0,0,30,0.1)');  
@@ -90,7 +90,7 @@
     context.fillRect(0,0,width,height);
     context.restore();
   });
-  loop.addIO(Loop.io.time);
+  loop.addIO(io.time);
   loop.registerAnimation(createBlob({y:-50, x:100}, 10, 20, 20));
 
   for(var i = 0; i < 10; i++){
@@ -108,4 +108,7 @@
   }, 1000);
 
   loop.start();
-})();
+})(
+    window.Loop,
+    window.Loop.io
+  );

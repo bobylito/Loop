@@ -34,9 +34,9 @@ An animation system : this is the todo
  [+] Remove datastore
  [+] Main loop as a function to be used multiple time
  [ ] Refactor and generalize results/andThen
- [ ] Move library source in src folder
- [ ] Gruntify lib
- [ ] Update samples to use gruntified concated version of the lib 
+ [+] Move library source in src folder
+ [+] Gruntify lib
+ [-] Update samples to use gruntified concated version of the lib 
 
 ## FIX
  [ ] Particles creation time should be added by the particle system.

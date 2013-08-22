@@ -23,9 +23,32 @@ ul li{list-style-type:none;}
 
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
-(function(){
+(function( Loop, particles, benchmark, io){
   var nbFireballs = 10,
       fireballs = [];
+
+  loop.addIO(io.time);
+  loop.registerAnimation(benchmark.particles());
+  
+  for(var i = nbFireballs-1 ; i > 0; i--){
+    var fireballFP = particles.circle(
+            function(){ return []},
+            createFireballGenerator( i * loop.width / nbFireballs, loop.height/2),
+            physic,
+            {
+              compositionMethod:"lighter",
+              color:"hsl(30, 100%, 5%)",
+              size:7
+            });
+    loop.registerAnimation(fireballFP);
+    fireballs.push(fireballFP);
+  }
+
+  setInterval(function(){
+    fireballs.forEach(function(f){f.create(16)});
+  }, 20)
+
+  loop.start();
 
   function createFireballGenerator(x, y){
     return function(ioState, width, height){
@@ -53,31 +76,11 @@ ul li{list-style-type:none;}
     return p;
   } 
 
-  loop.addIO(Loop.io.time);
-  
-  for(var i = nbFireballs-1 ; i >= 0; i--){
-    var fireballFP = Loop.animations.particle(
-            function(){ return []},
-            createFireballGenerator( i * loop.width / nbFireballs, loop.height/2),
-            physic,
-            {
-              compositionMethod:"lighter",
-              color:"hsl(30, 100%, 5%)",
-              size:7
-            });
-    loop.registerAnimation(fireballFP);
-    fireballs.push(fireballFP);
-  }
-
-  loop.registerAnimation(Loop.animations.bench());
-
-  setInterval(function(){
-    for(var i = 0; i < nbFireballs; i++){
-      fireballs[i].create(16);
-    }
-  }, 20)
-
-  loop.start();
-})();
+})(
+    window.Loop,
+    window.Loop.particles,
+    window.Loop.benchmark,
+    window.Loop.io
+  );
 </script>
 </html>

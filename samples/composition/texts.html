@@ -10,13 +10,20 @@
   <canvas id="scene" height=500 width=500></canvas>
 <script src="../../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript">
-  var t1 = Loop.text.simple("White Peacok presents", 3000);
-  var t2 = Loop.text.simple("A game!", 3000);
-  var title = Loop.meta.andThen(t1, t2);
+(function(Loop, text, io, meta){
+  var t1 = text.simple("White Peacok presents", 3000);
+  var t2 = text.simple("A game!", 3000);
+  var title = meta.andThen(t1, t2);
 
-  loop.addIO(Loop.io.time);
+  loop.addIO(io.time);
   loop.registerAnimation(title);
   loop.start(); 
+})(
+    window.Loop,
+    window.Loop.text,
+    window.Loop.io,
+    window.Loop.meta
+  );
 </script>
 </body>
 </html>

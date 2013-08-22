@@ -23,7 +23,7 @@ ul li{list-style-type:none;}
 
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
-(function(){
+(function( Loop, io, particles, benchmark ){
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
@@ -32,11 +32,12 @@ ul li{list-style-type:none;}
         i.src="ouno.png";
         return i;
       })(),
-      fireFP = Loop.animations.particleTexture(
+      fireFP = particles.texture(
       function(){ return [];},
       function(ioState, width, height){
         return [  
           // x 
+
           (0.49 + 0.02 * Math.random()) * width,
           // y
           (0.49 + 0.02 * Math.random()) * height ,
@@ -81,10 +82,15 @@ ul li{list-style-type:none;}
     fireFP.create(1000);
   }, 0)
 
-  loop.addIO(Loop.io.time);
+  loop.addIO(io.time);
   loop.registerAnimation(fireFP);
 
   loop.start();
-})();
+})(
+    window.Loop, 
+    window.Loop.io,
+    window.Loop.particles,
+    window.Loop.benchmark 
+  );
 </script>
 </html>

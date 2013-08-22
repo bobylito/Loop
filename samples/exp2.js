@@ -1,5 +1,5 @@
-(function(){
-  var sunPF = Loop.animations.particleLasso(
+(function( Loop, particles, io, benchmark){
+  var sunPF = particles.lasso(
     function(){return [];},
     function(ioState, width, height){
       var r = Math.random();
@@ -27,7 +27,7 @@
     });
 
  
-  var starfieldPF = Loop.animations.particle(
+  var starfieldPF = particles.circle(
     function(){return [];},
     function(ioState, width, height){
       var r = Math.random(),
@@ -78,7 +78,7 @@
       size: 2
     });
 
-  var explosionPF = Loop.animations.particle(
+  var explosionPF = particles.circle(
     function(){return [];},
     function(ioState, width, height){
       var r = Math.random();
@@ -107,7 +107,7 @@
       size: 5
     });
 
-  loop.addIO(Loop.io.time);
+  loop.addIO(io.time);
 
   loop.registerAnimation(starfieldPF);
   loop.registerAnimation(sunPF);
@@ -125,8 +125,13 @@
     explosionPF.create(500);
   }, 2000);
 
-  loop.registerAnimation(Loop.animations.bench());
+  loop.registerAnimation(benchmark.particles());
 
   //Start the loop
   loop.start();
-})();
+})(
+    window.Loop,
+    window.Loop.particles, 
+    window.Loop.io,
+    window.Loop.benchmark
+  );

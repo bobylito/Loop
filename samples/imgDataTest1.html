@@ -10,11 +10,11 @@
 </div>
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
-(function(){
+(function( Loop, io, particles, benchmark ){
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
-      fireFP = Loop.animations.particleImageData(
+      fireFP = particles.imageData(
       function(){ return []; },
       function(ioState, width, height){
         return [  
@@ -48,12 +48,17 @@
     fireFP.create(4000);
   }, 500)
 
-  loop.addIO(Loop.io.time);
+  loop.addIO(io.time);
   loop.registerAnimation(fireFP);
-  loop.registerAnimation(Loop.animations.bench());
+  loop.registerAnimation(benchmark.particles());
 
   loop.start();
-})();
+})(
+    window.Loop,
+    window.Loop.io,
+    window.Loop.particles,
+    window.Loop.benchmark
+  );
 </script>
 </body>
 </html>

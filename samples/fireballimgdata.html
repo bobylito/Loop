@@ -23,22 +23,45 @@ ul li{list-style-type:none;}
 
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
-(function(){
+(function( Loop, particles, io, benchmark){
   var nbFireballs = 20,
       fireballs = [];
+
+  loop.addIO( io.time );
+  loop.registerAnimation( benchmark.particles() );
+
+  for(var i = nbFireballs-1 ; i >= 0; i--){
+    var fireballFP = particles.imageData(
+            function(){ return []},
+            createFireballGenerator( i * loop.width/nbFireballs, loop.height/2),
+            physic,
+            {
+              compositionMethod:"lighter",
+              color:"hsl(30, 100%, 5%)",
+              size:7
+            });
+    loop.registerAnimation( fireballFP );
+    fireballs.push( fireballFP );
+  }
+
+  setInterval(function(){
+    fireballs.forEach(function(f){f.create(30)});
+  }, 20)
+
+  loop.start();
 
   function createFireballGenerator(x, y){
     return function(ioState, width, height){
       return [  
-      x,
-      y,
-      // Date d'expiration
-      ioState.time + 500 + Math.random()*300,
-      // Valeur de déplacement sur x
-      0.25 - Math.random()/2,
-      // Valeur de deplacement sur y
-      0.25 - Math.random()/2,
-      ioState.time
+        x,
+        y,
+        // Date d'expiration
+        ioState.time + 500 + Math.random()*300,
+        // Valeur de déplacement sur x
+        0.25 - Math.random()/2,
+        // Valeur de deplacement sur y
+        0.25 - Math.random()/2,
+        ioState.time
       ];
     };
   }
@@ -53,30 +76,11 @@ ul li{list-style-type:none;}
     return p;
   } 
 
-  loop.addIO(Loop.io.time);
-  for(var i = nbFireballs-1 ; i >= 0; i--){
-    var fireballFP = Loop.animations.particleImageData(
-            function(){ return []},
-            createFireballGenerator( i * loop.width/nbFireballs, loop.height/2),
-            physic,
-            {
-              compositionMethod:"lighter",
-              color:"hsl(30, 100%, 5%)",
-              size:7
-            });
-    loop.registerAnimation(fireballFP);
-    fireballs.push(fireballFP);
-  }
-
-  loop.registerAnimation(Loop.animations.bench());
-
-  setInterval(function(){
-    for(var i = 0; i < nbFireballs; i++){
-      fireballs[i].create(30);
-    }
-  }, 20)
-
-  loop.start();
-})();
+})(
+    window.Loop, 
+    window.Loop.particles, 
+    window.Loop.io,
+    window.Loop.benchmark
+  );
 </script>
 </html>
