@@ -96,6 +96,10 @@
       this._animations.push(animation);
     },
     addIO : function( ioManager ){
+      if(!ioManager._init){
+        console.log( "Wrong IOManager : ",ioManager );
+        throw new Error("IOmanagers should have _init method");
+      }
       ioManager._init( this.canvas );
       this._io.push( ioManager );
     },
