@@ -1,0 +1,142 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Prohibition : the shadows for the war against alcohol traffic</title>
+  <style type="text/css">
+    body{
+     /* background:#000;*/
+    } 
+
+    #scene {
+      cursor : none
+    }
+    #debugData{
+      color:#eee
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+  	<canvas id="scene" height=600 width=500></canvas>
+  </div>
+  <script src="../../dist/loop.js" type="text/javascript"></script>
+  <script type="text/javascript">
+(function( Loop, io, meta, text, tools ){
+  loop.addIO( io.time );
+  loop.addIO( io.mouse());
+
+  var resourcesConfig = {
+    img : ["foreground.png", "baddy.png", "cursor.png"],
+    data : []
+  };
+  var l = text.loading( resourcesConfig );
+  var f = foreground();
+  var c = cursor();
+  var b = baddies( [
+    [100, 40],
+    [300, 40],
+    [100, 260],
+    [300, 260]
+  ]);
+  loop.registerAnimation( meta.andThen(l, gameScreen(c, b, f)) );
+  loop.registerAnimation( tools.debug() );
+  loop.start();
+
+  function gameScreen( cursor, baddies, foreground ){
+    var all = meta.all( baddies,foreground, cursor);//, foreground, baddies);
+    var allRender = all.render.bind(all);
+    var allAnimate= all.animate.bind(all);
+    var allInit   = all._init;
+    return {
+      _init   : function(w, h, sys, ioState, resources){
+        allInit.apply(all, arguments );
+      },
+      animate : function(ioState, width, height){
+        return allAnimate.apply(all, arguments); 
+      },
+      render  : allRender
+    };
+  }
+
+  function cursor(){
+    return {
+      _init   : function(w,h,sys,ioState, resources){
+        this.img = resources["cursor.png"];
+        this.pos = {
+          x : -30, 
+          y : -30
+        };
+      },
+      animate : function( ioState, w, h ){ 
+        this.pos = {
+          x : ioState.position.x || w,
+          y : ioState.position.y || h
+        };
+        loop.debug("x", ioState.position.x);
+        loop.debug("y", ioState.position.y);
+
+        return true; 
+      },
+      render  : function(ctx, w, h){
+        ctx.drawImage(this.img,this.pos.x, this.pos.y); 
+      }
+    };
+  }
+
+  function foreground(){
+    return {
+      _init   : function(w,h,sys,ioState, resources){
+        this.img = resources["foreground.png"];
+      },
+      animate : function(){ return true; },
+      render  : function(ctx, w, h){
+        ctx.drawImage(this.img, 0, 0, w, h, 0, 0, w, h); 
+      }
+    };
+  }
+
+  function baddies( windowsConfig ){
+    return {
+      _init   : function(w, h, sys, ioState, resources){
+        this.config = windowsConfig;
+        this.windowsState = windowsConfig.map(function(w){ return 1;});
+        this.img = resources["baddy.png"];
+      },
+      animate : function(ioState, w, h){
+        if( ioState.actions.left ){
+          var self = this;
+          var windowID = this.windowsState.reduce( function(foundWindowID, windowState, i){
+              if( foundWindowID != -1 ) return foundWindowID;
+              if( windowState === 1 ){
+                var winConfig = self.config[i];
+                var pos = ioState.position;
+                if(    pos.x > winConfig[0] && pos.x < (winConfig[0]+100) 
+                    && pos.y > winConfig[1] && pos.y < (winConfig[1]+100) ){
+                  return i;
+                }else{
+                  return -1;
+                }
+              }
+            }, -1);
+          if(windowID != -1){
+            this.config[windowID] = 0;
+          }
+        }
+        return true; 
+      },
+      render  : function(ctx, w, h){
+        this.windowsState.forEach(function(w, i){ 
+          var c = this.config[i];
+          if(w === 1) ctx.drawImage(this.img, c[0], c[1]);
+        }, this);
+      }
+    };
+  
+  }
+})(
+    window.Loop, window.Loop.io, window.Loop.meta, window.Loop.text, window.Loop.tools
+  );
+  </script>
+</body>
+</html>
