@@ -134,6 +134,10 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       this._animations.push(animation);
     },
     addIO : function( ioManager ){
+      if(!ioManager._init){
+        console.log( "Wrong IOManager : ",ioManager );
+        throw new Error("IOmanagers should have _init method");
+      }
       ioManager._init( this.canvas );
       this._io.push( ioManager );
     },
@@ -223,8 +227,31 @@ window.loop = Loop.create( document.getElementById("scene") );
         x : pos.x ? pos.x - this.elPos.left : pos.x,
         y : pos.y ? pos.y - this.elPos.top  : pos.y
       };
+      ioState.actions = this._buttonsValue();
       return ioState;
-    }, ["position"]);
+    }, ["position", "buttons"]);
+
+    io._buttonsValue = function(){
+      var self = this;
+      this.el.addEventListener("mousedown", function(e){
+        self._buttons = {
+          left  : self._buttons.left  || (e.button === 0),
+          right : self._buttons.right || (e.button === 2)
+        };
+      });
+      this._buttonsValue = function(){
+        var btnVal = this._buttons;
+        this._buttons = {
+          left : false,
+          right: false
+        };
+        return btnVal;
+      };
+      this._buttons = {
+        left  : false,
+        right : false,
+      };
+    };
 
     io._positionValue = function(){
       var self = this;

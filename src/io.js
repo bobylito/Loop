@@ -53,8 +53,31 @@
         x : pos.x ? pos.x - this.elPos.left : pos.x,
         y : pos.y ? pos.y - this.elPos.top  : pos.y
       };
+      ioState.actions = this._buttonsValue();
       return ioState;
-    }, ["position"]);
+    }, ["position", "buttons"]);
+
+    io._buttonsValue = function(){
+      var self = this;
+      this.el.addEventListener("mousedown", function(e){
+        self._buttons = {
+          left  : self._buttons.left  || (e.button === 0),
+          right : self._buttons.right || (e.button === 2)
+        };
+      });
+      this._buttonsValue = function(){
+        var btnVal = this._buttons;
+        this._buttons = {
+          left : false,
+          right: false
+        };
+        return btnVal;
+      };
+      this._buttons = {
+        left  : false,
+        right : false,
+      };
+    };
 
     io._positionValue = function(){
       var self = this;

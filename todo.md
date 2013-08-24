@@ -18,6 +18,7 @@ An animation system : this is the todo
  [+] Control time
  [+] Pluggable IO on animation system
  [+] Mouse IO manager
+ [+] Mouse CLICKS!!!
  [+] Keyboard IO manager
  [+] Hierarchical animations >> Meta animations
  [+] Meta animations : 
