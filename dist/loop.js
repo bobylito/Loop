@@ -474,6 +474,7 @@ window.loop = Loop.create( document.getElementById("scene") );
       _init:  function(){
         this.current = animations.shift();
         this.current._init.apply(this.current, arguments);
+        this._result = null;
       },
       animate : function(ioState, w, h){
         var isAlive = this.current.animate.apply(this.current, arguments);
@@ -481,7 +482,9 @@ window.loop = Loop.create( document.getElementById("scene") );
           if(animations.length > 0){
             var lastResult = (function(a){
               if(a.result && typeof a.result === "function") return a.result();
+              else return null;
             })(this.current);
+            this._result = lastResult;
             this.current = animations.shift();
             //FIXME : loop might not be defined
             this.current._init(w, h, loop, ioState, lastResult);
@@ -494,6 +497,9 @@ window.loop = Loop.create( document.getElementById("scene") );
       },
       render  : function(){
         this.current.render.apply(this.current, arguments);
+      },
+      result : function(){
+        return this._result;         
       }
     };
   };
@@ -508,6 +514,7 @@ window.loop = Loop.create( document.getElementById("scene") );
       animations : Array.prototype.slice.call(arguments, 0),
       _init   : function(){
         var args = arguments;
+        this._results= [];
         this.animations.forEach(function(a){
           if(a._init && typeof a._init === "function") a._init.apply(a, args);
         });          
@@ -520,19 +527,55 @@ window.loop = Loop.create( document.getElementById("scene") );
       },
       animate : function(ioState, w, h){
         var args = arguments;
+        var self = this;
         this.animations = this.animations.reduce(function(memo, a){
           var isAlive = a.animate.apply(a, args);
           if(isAlive) memo.push(a);
+          else if(a.result) {
+            self._results.push( a.result() );
+          }
           return memo;
         }, []);
         return this.animations.length > 0;
+      },
+      result : function(){
+        return this._results.filter(function(e){ return !!e; })
+                            .reduce(function(m, r){
+          for(var k in r){
+            if(r.hasOwnProperty(k)) m[k] = r[k];
+          }
+          return m;
+        }, {});         
       }
     };
+  };
+
+  var some = function(){
+    var a = all.apply(window, arguments);
+    var newAnimate = function(ioState, w, h){
+      var args = arguments;
+      var self = this;
+      this.animations = this.animations.reduce(function(memo, a){
+        var isAlive = a.animate.apply(a, args);
+        if(isAlive) memo.push(a);
+        else if(a.result) {
+          self._results.push( a.result() );
+        } 
+        else {
+          self._results.push( null );
+        }
+        return memo;
+      }, []);
+      return this._results.length === 0;
+    };
+    a.animate = newAnimate.bind(a);
+    return a;
   };
 
   //Module exports
   meta.andThen  = andThen;
   meta.all      = all;
+  meta.some     = some;
 })(
     window.Loop = window.Loop || {},
     window.Loop.meta = window.Loop.meta || {}
