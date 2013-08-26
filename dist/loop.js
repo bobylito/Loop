@@ -479,12 +479,12 @@ window.loop = Loop.create( document.getElementById("scene") );
       animate : function(ioState, w, h){
         var isAlive = this.current.animate.apply(this.current, arguments);
         if( !isAlive ){
+          var lastResult = (function(a){
+            if(a.result && typeof a.result === "function") return a.result();
+            else return null;
+          })(this.current);
+          this._result = lastResult;
           if(animations.length > 0){
-            var lastResult = (function(a){
-              if(a.result && typeof a.result === "function") return a.result();
-              else return null;
-            })(this.current);
-            this._result = lastResult;
             this.current = animations.shift();
             //FIXME : loop might not be defined
             this.current._init(w, h, loop, ioState, lastResult);
@@ -558,12 +558,9 @@ window.loop = Loop.create( document.getElementById("scene") );
       this.animations = this.animations.reduce(function(memo, a){
         var isAlive = a.animate.apply(a, args);
         if(isAlive) memo.push(a);
-        else if(a.result) {
-          self._results.push( a.result() );
-        } 
         else {
-          self._results.push( null );
-        }
+          self._results = self.animations.map(function(anim){ return anim.result ? anim.result() : {}; });
+        } 
         return memo;
       }, []);
       return this._results.length === 0;
@@ -572,10 +569,43 @@ window.loop = Loop.create( document.getElementById("scene") );
     return a;
   };
 
+  var until = function(animationGenƒ, untilƒ){
+    return {
+      _init   : function(){
+        this._initArgs = arguments;
+        this.initSubAnimation();
+      },
+      animate : function(){
+        var res = this._anim.animate.apply(this._anim, arguments);
+        if(!res){
+          var untilRes = untilƒ( this._anim.result() );
+          if( !untilRes ) {
+            this.initSubAnimation();
+          }
+          else {
+            return false;
+          }
+        }
+        return true;
+      },
+      render  : function(){
+        this._anim.render.apply(this._anim, arguments);
+      },
+      result  : function(){
+        return this._anim.result.apply(this._anim);          
+      },
+      initSubAnimation : function(){
+        this._anim = animationGenƒ();
+        this._anim._init.apply(this._anim, this._initArgs);
+      }
+    };
+  };
+
   //Module exports
   meta.andThen  = andThen;
   meta.all      = all;
   meta.some     = some;
+  meta.until    = until;
 })(
     window.Loop = window.Loop || {},
     window.Loop.meta = window.Loop.meta || {}
