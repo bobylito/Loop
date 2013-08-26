@@ -1,4 +1,5 @@
 (function( Loop, io, meta, textM, tools ){
+
   loop.addIO( io.time );
   loop.addIO( io.mouse());
   loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
@@ -55,9 +56,18 @@
 
         var rank = "RANK : "+this._rank;
         var rankSize = ctx.measureText(rank).width;
-        ctx.fillText(rank, w / 2 - rankSize/2, h /2 + 100);
+        ctx.fillText(rank, w / 2 - rankSize/2, h /2 + 30);
+
+        var spaceToRestart = "Press space to play again";
+        var spaceSize = ctx.measureText(spaceToRestart).width;
+        ctx.fillText( spaceToRestart, w/2 - spaceSize/2, h/2 + 200 );
       },
-      animate:function(){return true;}
+      animate:function(ioState){
+        if(ioState.keys.SPACE) {
+          window.location = window.location;
+        }
+        return true;
+      }
     };
   }
 
@@ -223,7 +233,6 @@
       }
     };
   }
-
 })(
   window.Loop, window.Loop.io, window.Loop.meta, window.Loop.text, window.Loop.tools
   );
