@@ -106,8 +106,8 @@
       },
       animate : function(ioState, w, h){
         var deltaT = ioState.time  - this._timeStart;
-        this._chartAt = Math.floor(sentence.length * (deltaT / 500)), sentence.length;
-        return deltaT < 500 + 500 ;
+        this._chartAt = Math.floor(sentence.length * (deltaT / 800)), sentence.length;
+        return deltaT < 1000 ;
       },
       render : function(ctx, w, h){
         var s = sentence.substring(0, this._chartAt);
@@ -137,8 +137,8 @@
       },
       animate : function(ioState, w, h){
         var deltaT = ioState.time  - this._timeStart;
-        this._chartAt = Math.floor(this.answer.text.length * (deltaT / 500));
-        return (deltaT < (500 + 500));
+        this._chartAt = Math.floor(this.answer.text.length * (deltaT / 800));
+        return (deltaT < (1000));
       },
       render : function(ctx, w, h){
         var s = this.answer.text.substring(0, this._chartAt);
