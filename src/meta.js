@@ -6,10 +6,11 @@
     if(arguments.length < 1) throw new Error("andThen must have at least one animation");
     var animations = Array.prototype.slice.call(arguments, 0);
     return {
-      _init:  function(){
-        this.current = animations.shift();
+      _init:function(w, h, sys, ioState){
+        this._loop    = sys;
+        this._result  = null;
+        this.current  = animations.shift();
         this.current._init.apply(this.current, arguments);
-        this._result = null;
       },
       animate : function(ioState, w, h){
         var isAlive = this.current.animate.apply(this.current, arguments);
@@ -19,14 +20,11 @@
             else return null;
           })(this.current);
           this._result = lastResult;
-          if(animations.length > 0){
-            this.current = animations.shift();
-            //FIXME : loop might not be defined
-            this.current._init(w, h, loop, ioState, lastResult);
-          }
-          else{
+          if(animations.length < 0){
             return false;
           }
+          this.current = animations.shift();
+          this.current._init(w, h, this._loop, ioState, lastResult);
         }
         return true;
       },
