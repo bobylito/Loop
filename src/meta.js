@@ -114,12 +114,10 @@
         var res = this._anim.animate.apply(this._anim, arguments);
         if(!res){
           var untilRes = untilƒ( this._anim.result() );
-          if( !untilRes ) {
-            this.initSubAnimation();
-          }
-          else {
+          if( untilRes ) {
             return false;
           }
+          this.initSubAnimation();
         }
         return true;
       },
