@@ -24,6 +24,8 @@ An animation system : this is the todo
  [+] Meta animations : 
  [+]  - a then b animation
  [+]  - all a,b,c animations at the same time 
+ [+]  - some of a and b
+ [+]  - unless predicate do a
 
 ## Tools
  [+] Count particles 

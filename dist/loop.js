@@ -471,10 +471,11 @@ window.loop = Loop.create( document.getElementById("scene") );
     if(arguments.length < 1) throw new Error("andThen must have at least one animation");
     var animations = Array.prototype.slice.call(arguments, 0);
     return {
-      _init:  function(){
-        this.current = animations.shift();
+      _init:function(w, h, sys, ioState){
+        this._loop    = sys;
+        this._result  = null;
+        this.current  = animations.shift();
         this.current._init.apply(this.current, arguments);
-        this._result = null;
       },
       animate : function(ioState, w, h){
         var isAlive = this.current.animate.apply(this.current, arguments);
@@ -484,14 +485,11 @@ window.loop = Loop.create( document.getElementById("scene") );
             else return null;
           })(this.current);
           this._result = lastResult;
-          if(animations.length > 0){
-            this.current = animations.shift();
-            //FIXME : loop might not be defined
-            this.current._init(w, h, loop, ioState, lastResult);
-          }
-          else{
+          if(animations.length < 0){
             return false;
           }
+          this.current = animations.shift();
+          this.current._init(w, h, this._loop, ioState, lastResult);
         }
         return true;
       },
@@ -579,12 +577,10 @@ window.loop = Loop.create( document.getElementById("scene") );
         var res = this._anim.animate.apply(this._anim, arguments);
         if(!res){
           var untilRes = untilƒ( this._anim.result() );
-          if( !untilRes ) {
-            this.initSubAnimation();
-          }
-          else {
+          if( untilRes ) {
             return false;
           }
+          this.initSubAnimation();
         }
         return true;
       },
@@ -808,6 +804,31 @@ window.loop = Loop.create( document.getElementById("scene") );
     window.Loop.particles = window.Loop.particles = {}
   );
 
+;(function( Loop, sprite ){
+  var introScreen = function intro( resourceId, time ){
+    return {
+      _init:function(w, h, sys, ioState, resources){
+        this.img = resources["title.png"];
+        this.start = ioState.time;
+        this.resources = resources;
+      },
+      render:function(ctx, w, h){
+        ctx.drawImage(this.img, 0, 0); 
+      },
+      animate:function(ioState){
+        return (ioState.time - this.start) < 1000;
+      },
+      result:function(){
+        return this.resources;       
+      }
+    };
+  };
+
+  sprite.intro = introScreen;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.sprite = window.Loop.sprite || {}
+  );
 ;(function( Loop, text ){
   var simple = function(text, duration){
     return {
