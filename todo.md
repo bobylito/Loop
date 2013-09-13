@@ -4,14 +4,16 @@ An animation system : this is the todo
 ## Features
  [ ] test if required IO are provided by IO manager before start
  [ ] Bind model data
+ [-] WebGL/GLSL filters
+ [ ] Animated sprites
  [+] Text animations 
  [+]  - simple
  [+]  - loading
  [+] Map based on Tiled file (basic version)
- [-] Map based on Tiled file (read all properties for square/flat map)
+ [+] Map based on Tiled file (read all properties for square/flat map)
  [+]  - character definition (position)
  [ ] KeyboardIO : some buttons need autofire some not
- [ ] Switch rendering on the fly for particles ? 
+ [ ] Switch rendering on the fly for particles ? What would be the purpose?
  [+] Center tile rendering on position (or give a way to specify the placement in the screen?)
  [+] GameScreen enhance Loop.meta.all
  [+] Particles : Image data rendering
@@ -36,7 +38,7 @@ An animation system : this is the todo
 ## Cleanup 
  [+] Remove datastore
  [+] Main loop as a function to be used multiple time
- [ ] Refactor and generalize results/andThen
+ [+] Refactor and generalize results/andThen
  [+] Move library source in src folder
  [+] Gruntify lib
  [+] Update samples to use gruntified concated version of the lib 
