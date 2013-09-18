@@ -20,7 +20,7 @@
             else return null;
           })(this.current);
           this._result = lastResult;
-          if(animations.length < 0){
+          if(animations.length <= 0){
             return false;
           }
           this.current = animations.shift();
@@ -132,11 +132,16 @@
     };
   };
 
+  var while1 = function(animationGenƒ){
+      return until(animationGenƒ, function(){ return false;});
+  };
+
   //Module exports
   meta.andThen  = andThen;
   meta.all      = all;
   meta.some     = some;
   meta.until    = until;
+  meta.while1   = while1;
 })(
     window.Loop = window.Loop || {},
     window.Loop.meta = window.Loop.meta || {}
