@@ -8,26 +8,46 @@
   var b = backgroundMap();
   var c = character();
   var game = gameScreen( b, m, c ); 
+  var end  = finishScreen();
 
   loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
   loop.registerAnimation( Loop.tools.debug() );
   loop.registerAnimation( Loop.tools.debugGraph() );
-  loop.registerAnimation( Loop.meta.andThen(loading, game) );
+  loop.registerAnimation( Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) );
   loop.start();
 
+  function finishScreen(){
+    return {
+      _init   : function(w, h, sys, ioState){
+      },
+      animate : function(ioState){ return !ioState.keys["SPACE"] ;},
+      render: function(ctx, w, h){
+          ctx.fillStyle="white";
+
+          var m1 = ctx.measureText("GAME OVER");
+          ctx.fillText("GAME OVER", w/2-m1.width/2, h * 0.33);
+
+          var m2 = ctx.measureText("press >space< to restart");
+          ctx.fillText("press >space< to restart", w/2-m2.width/2, h * 0.66);
+      }
+    };
+  }
+
   function gameScreen(backgroundAnim,mapAnim, characterAnim){
-    var allAnimations   = Loop.meta.all.apply(window, arguments);
     var gameScreenAnim  = {
       _init   : function(w, h, sys, ioState, resources){
+        var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim);
+        this.render = allAnimations.render.bind(allAnimations);
+
         var newArgs = Array.prototype.splice.call(arguments, 0);
         this.player = this.createPlayer(resources["map.json"]);
         this.lastT  = ioState.time;
         newArgs.push( this.player );
         newArgs.push( mapAnim );
+
         allAnimations._init.apply(allAnimations, newArgs);
       },
-      render  : allAnimations.render.bind(allAnimations),
       animate : function(ioState, width, height){ 
         var deltaT = (ioState.time - this.lastT) / 1000;
         if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -10);
@@ -67,10 +87,10 @@
 
         this.lastT  = ioState.time;
         this.logPlayer(this.player);
-        var resAnim = allAnimations.animate.apply(allAnimations, arguments);
+        var resAnim = this.allAnimations.animate.apply(this.allAnimations, arguments);
         //Gravity
 
-        return resAnim;
+        return resAnim ;
       },
       createPlayer : function(mapData){
         var charLayer = mapData.layers.filter(function(l){ return l.name === "character" });
@@ -88,6 +108,7 @@
             h : 0.4,
             w : 0.4       
           },
+          isAlive : true,
           colliding : [false, false, false, false],
           getBoundingBoxAt : function( position ){
             return [
@@ -202,10 +223,13 @@
         };
         var correctedPosition = this.map.moveTo( this.model, computedPosition );
         if( correctedPosition.x != computedPosition.x ) this.model.motion.x = 0;
-        if( correctedPosition.y != computedPosition.y ) this.model.motion.y = 0;
+        if( correctedPosition.y != computedPosition.y ) {
+          if(this.model.motion.y > 15) this.model.isAlive = false;
+          this.model.motion.y = 0;
+        }
         this.model.position = correctedPosition;
         this.lastT = ioState.time;
-        return true; 
+        return this.model.isAlive; 
       }
     };
   }
