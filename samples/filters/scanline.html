@@ -73,13 +73,13 @@ void main(){
       })(),
       {
         compositionMethod : "lighter",
-        color : "hsl(230, 100%, 50%)"
+        color : "hsl(230, 100%, 20%)"
       });
 
   var filter = Loop.filters.glsl( document.getElementById("filter").innerText );
-  var fireFPWithFilter = Loop.meta.all(fireFP,filter);
+  var fireFPWithFilter = Loop.meta.all(fireFP, filter);
   setTimeout(function(){
-    fireFP.create(4000);
+    fireFP.create(100);
   }, 0);
 
   loop.addIO(Loop.io.time);
