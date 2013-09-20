@@ -12,6 +12,7 @@ An animation system : this is the todo
  [+] Map based on Tiled file (basic version)
  [+] Map based on Tiled file (read all properties for square/flat map)
  [+]  - character definition (position)
+ [ ]  - pickups
  [ ] KeyboardIO : some buttons need autofire some not
  [ ] Switch rendering on the fly for particles ? What would be the purpose?
  [+] Center tile rendering on position (or give a way to specify the placement in the screen?)
@@ -28,6 +29,7 @@ An animation system : this is the todo
  [+]  - all a,b,c animations at the same time 
  [+]  - some of a and b
  [+]  - unless predicate do a
+ [+]  - loop a 
 
 ## Tools
  [+] Count particles 
@@ -51,7 +53,8 @@ An animation system : this is the todo
 ## Investigate 
  [ ] Particle system over time (pure function, reproductibility)?
  [ ] Time control for particles
- [ ] Animation context >> meta animations?
+ [ ] Sound output?
+ [+] Animation context >> meta animations?
  [ ] Rendering engine with filled triangles
  [+] Rendering engine with filled line and curve => boring...
 
@@ -68,5 +71,7 @@ An animation system : this is the todo
  [+] Collision with only one point
  [+] Change character state depending on its position / map (on the ground, hitting a wall...)
  [ ] Split into several files
+ [ ] Camera
+ [ ] Camera with zoom
  [+] Friction when sliding on walls
  [+] Hide under the ceiling
