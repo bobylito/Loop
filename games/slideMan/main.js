@@ -35,18 +35,19 @@
   }
 
   function gameScreen(backgroundAnim,mapAnim, characterAnim){
-    var gameScreenAnim  = {
-      _init   : function(w, h, sys, ioState, resources){
+    var gameScreenAnim  = simpleCamera({
+      _init   : function(w, h, sys, ioState, resources, trackPositionƒ, mapConfigƒ){
         var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim);
         this.render = allAnimations.render.bind(allAnimations);
+        this.track = trackPositionƒ;
 
-        var newArgs = Array.prototype.splice.call(arguments, 0);
         this.player = this.createPlayer(resources["map.json"]);
         this.lastT  = ioState.time;
-        newArgs.push( this.player );
-        newArgs.push( mapAnim );
 
-        allAnimations._init.apply(allAnimations, newArgs);
+        mapConfigƒ( resources["map.json"] );
+        this.track( this.player );
+
+        allAnimations._init.call(allAnimations, w, h, sys, ioState, resources, this.player, mapAnim);
       },
       animate : function(ioState, width, height){ 
         var deltaT = (ioState.time - this.lastT) / 1000;
@@ -89,6 +90,8 @@
         this.logPlayer(this.player);
         var resAnim = this.allAnimations.animate.apply(this.allAnimations, arguments);
         //Gravity
+
+        this.track( this.player );
 
         return resAnim ;
       },
@@ -199,7 +202,7 @@
         loop.debug( "motion.x"  , p.motion.x.toFixed(4) );
         loop.debug( "motion.y"  , p.motion.y.toFixed(4) );
       }
-    };
+    });
       
     return gameScreenAnim;
   }
@@ -212,7 +215,7 @@
         this.lastT  = ioState.time;
         this.map    = map;
       },
-      render  : function(ctx, w, h){
+      render  : function(ctx, w, h, camera){
         ctx.drawImage(this.sprite, w/2, h/2);
       },
       animate : function(ioState, w, h){
@@ -245,37 +248,23 @@
         this.center = positionnable;
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Map" })[0];
       },
-      render : function(ctx, width, height){
-        var xIt = Math.ceil( width / this.txW ),
-            yIt = Math.ceil( height/ this.txH );
-        var cameraPosition = {
-          x : this.center.position.x - xIt/2,
-          y : this.center.position.y - yIt/2 
-        };
-
-        var naturalPos = {
-          x : Math.floor(cameraPosition.x),
-          y : Math.floor(cameraPosition.y)
-        };
-
-        var devPos = {
-          x : cameraPosition.x - Math.floor(cameraPosition.x),
-          y : cameraPosition.y - Math.floor(cameraPosition.y)
-        };
-
-        var translatePos = naturalPos.y * this.mapLayer.width + naturalPos.x ;
+      render : function(ctx, width, height, camera){
         var mapWidth = this.mapLayer.width;
-
-        for( i = -1; i < xIt + 1; i++){
-          for( j = -1; j < yIt + 1; j++){
-            var dataPos = translatePos + i + j * mapWidth,
-                imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : this.mapLayer.data[ dataPos ] - 1,
-                imgY = 0;
+        var deltaI = camera.left  - Math.floor(camera.left);
+        var deltaJ = camera.top   - Math.floor(camera.top);
+        for( var i = Math.floor(camera.left) , x = 0; i < Math.ceil(camera.right) ; i++, x++){
+          for( var j = Math.floor(camera.top), y = 0; j < Math.ceil(camera.bottom); j++, y++){
+            var imgX = -1;
+            var imgY =  0;
+            if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
+              var dataPos = i + j * mapWidth;
+              imgX = this.mapLayer.data[ dataPos ] - 1;
+            }
             ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
                                    this.txW, this.txH, 
-                                   (i - devPos.x) * this.txW, 
-                                   (j - devPos.y) * this.txH, 
-                                   this.txW , 
+                                   (x - deltaI) * this.txW, 
+                                   (y - deltaJ) * this.txH, 
+                                   this.txW, 
                                    this.txH );
           }
         }
@@ -325,37 +314,23 @@
         this.center = positionnable;
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
       },
-      render : function(ctx, width, height){
-        var xIt = Math.ceil( width / this.txW ),
-            yIt = Math.ceil( height/ this.txH );
-        var cameraPosition = {
-          x : this.center.position.x - xIt/2,
-          y : this.center.position.y - yIt/2 
-        };
-
-        var naturalPos = {
-          x : Math.floor(cameraPosition.x),
-          y : Math.floor(cameraPosition.y)
-        };
-
-        var devPos = {
-          x : cameraPosition.x - Math.floor(cameraPosition.x),
-          y : cameraPosition.y - Math.floor(cameraPosition.y)
-        };
-
-        var translatePos = naturalPos.y * this.mapLayer.width + naturalPos.x ;
+      render : function(ctx, width, height, camera){
         var mapWidth = this.mapLayer.width;
-
-        for( i = -1; i < xIt + 1; i++){
-          for( j = -1; j < yIt + 1; j++){
-            var dataPos = translatePos + i + j * mapWidth,
-                imgX = Math.floor(dataPos / mapWidth) != (j + naturalPos.y)  ? -1 : this.mapLayer.data[ dataPos ] - 1,
-                imgY = 0;
+        var deltaI = camera.left  - Math.floor(camera.left);
+        var deltaJ = camera.top   - Math.floor(camera.top);
+        for( var i = Math.floor(camera.left) , x = 0; i < Math.ceil(camera.right) ; i++, x++){
+          for( var j = Math.floor(camera.top), y = 0; j < Math.ceil(camera.bottom); j++, y++){
+            var imgX = -1;
+            var imgY =  0;
+            if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
+              var dataPos = i + j * mapWidth;
+              imgX = this.mapLayer.data[ dataPos ] - 1;
+            }
             ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
                                    this.txW, this.txH, 
-                                   (i - devPos.x) * this.txW, 
-                                   (j - devPos.y) * this.txH, 
-                                   this.txW , 
+                                   (x - deltaI) * this.txW, 
+                                   (y - deltaJ) * this.txH, 
+                                   this.txW, 
                                    this.txH );
           }
         }
@@ -380,5 +355,51 @@
         };
       }
     };
+  }
+
+  /**
+   * Adds more parameter to the render function of a given animation
+   */
+  function simpleCamera( animation ){
+    var trackedPosition = {
+      x:0,
+      y:0
+    };
+    var map = {
+      width   : 0,
+      height  : 0
+    };
+    var oldInit   = animation._init.bind(animation);
+    animation._init   = function initWithCamera(w, h, sys, ioState, resources){
+      oldInit(w, h, sys, ioState, resources, function setTrackedPosition( positionnable ){
+        trackedPosition = {
+          x : positionnable.position.x,
+          y : positionnable.position.y
+        }
+      }, function mapConfig(mapData){
+        map.tileheight  = mapData.tileheight;
+        map.tilewidth   = mapData.tilewidth ;
+      });
+      var oldRender = animation.render.bind(animation);
+      animation.render  = function renderWithCamera(ctx, w, h){
+        var args    = Array.prototype.splice.call(arguments, 0);
+        var mapH2   = h / (2 * map.tileheight);
+        var mapW2   = w / (2 * map.tilewidth);
+        var zoom    = 1;
+        var camera  = {
+          top     : trackedPosition.y - mapH2,
+          right   : trackedPosition.x + mapW2,
+          bottom  : trackedPosition.y + mapH2,
+          left    : trackedPosition.x - mapW2
+        };
+        loop.debug( "camera.top", camera.top.toFixed(4) );
+        loop.debug( "camera.right", camera.right.toFixed(4) );
+        loop.debug( "camera.bottom", camera.bottom.toFixed(4) );
+        loop.debug( "camera.left", camera.left.toFixed(4) );
+        args.push( camera );
+        return oldRender.apply( animation, args );
+      };
+    };
+    return animation;
   }
 })();
