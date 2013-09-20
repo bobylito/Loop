@@ -91,7 +91,7 @@
         var resAnim = this.allAnimations.animate.apply(this.allAnimations, arguments);
         //Gravity
 
-        this.track( this.player );
+        this.track( this.player, 1 - Math.abs( this.player.motion.x / 70) );
 
         return resAnim ;
       },
@@ -216,7 +216,7 @@
         this.map    = map;
       },
       render  : function(ctx, w, h, camera){
-        ctx.drawImage(this.sprite, w/2, h/2);
+        ctx.drawImage(this.sprite, 0,0, 20, 20,w/2 , h/2, 20 * camera.zoom , 20 * camera.zoom);
       },
       animate : function(ioState, w, h){
         var deltaT = (ioState.time - this.lastT) / 1000;
@@ -262,10 +262,10 @@
             }
             ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
                                    this.txW, this.txH, 
-                                   (x - deltaI) * this.txW, 
-                                   (y - deltaJ) * this.txH, 
-                                   this.txW, 
-                                   this.txH );
+                                   (x - deltaI) * this.txW * camera.zoom, 
+                                   (y - deltaJ) * this.txH * camera.zoom, 
+                                   this.txW * camera.zoom, 
+                                   this.txH * camera.zoom);
           }
         }
       },
@@ -328,10 +328,10 @@
             }
             ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
                                    this.txW, this.txH, 
-                                   (x - deltaI) * this.txW, 
-                                   (y - deltaJ) * this.txH, 
-                                   this.txW, 
-                                   this.txH );
+                                   (x - deltaI) * this.txW * camera.zoom, 
+                                   (y - deltaJ) * this.txH * camera.zoom, 
+                                   this.txW * camera.zoom, 
+                                   this.txH * camera.zoom);
           }
         }
       },
@@ -371,10 +371,12 @@
     };
     var oldInit   = animation._init.bind(animation);
     animation._init   = function initWithCamera(w, h, sys, ioState, resources){
-      oldInit(w, h, sys, ioState, resources, function setTrackedPosition( positionnable ){
+      oldInit(w, h, sys, ioState, resources, function setTrackedPosition( positionnable, zoom ){
+        var z = zoom || 1;
         trackedPosition = {
           x : positionnable.position.x,
-          y : positionnable.position.y
+          y : positionnable.position.y,
+          z : z
         }
       }, function mapConfig(mapData){
         map.tileheight  = mapData.tileheight;
@@ -383,14 +385,15 @@
       var oldRender = animation.render.bind(animation);
       animation.render  = function renderWithCamera(ctx, w, h){
         var args    = Array.prototype.splice.call(arguments, 0);
-        var mapH2   = h / (2 * map.tileheight);
-        var mapW2   = w / (2 * map.tilewidth);
-        var zoom    = 1;
+        var zoom    = trackedPosition.z;
+        var mapH2   = h / (2 * map.tileheight * zoom);
+        var mapW2   = w / (2 * map.tilewidth * zoom);
         var camera  = {
-          top     : trackedPosition.y - mapH2,
-          right   : trackedPosition.x + mapW2,
-          bottom  : trackedPosition.y + mapH2,
-          left    : trackedPosition.x - mapW2
+          top     : (trackedPosition.y - mapH2) ,
+          right   : (trackedPosition.x + mapW2) ,
+          bottom  : (trackedPosition.y + mapH2) ,
+          left    : (trackedPosition.x - mapW2) ,
+          zoom    : zoom
         };
         loop.debug( "camera.top", camera.top.toFixed(4) );
         loop.debug( "camera.right", camera.right.toFixed(4) );
