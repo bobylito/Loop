@@ -1,13 +1,14 @@
-(function(){
+(function( micromando, models ){
   var loading = Loop.text.loading({
     img : ["ouno.png", "textureMap.png"],
     data : ["map.json"]
   });
 
-  var m = cameraMap();
-  var b = backgroundMap();
+  var m = foreground();
+  var b = background();
   var c = character();
-  var game = gameScreen( b, m, c ); 
+  var i = items();
+  var game = gameScreen( b, m, c, i ); 
   var end  = finishScreen();
 
   loop.addIO( Loop.io.time );
@@ -15,6 +16,7 @@
   loop.registerAnimation( Loop.tools.debug() );
   loop.registerAnimation( Loop.tools.debugGraph() );
   loop.registerAnimation( Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) );
+
   loop.start();
 
   function finishScreen(){
@@ -34,14 +36,14 @@
     };
   }
 
-  function gameScreen(backgroundAnim,mapAnim, characterAnim){
+  function gameScreen(backgroundAnim,mapAnim, characterAnim, itemsAnim){
     var gameScreenAnim  = simpleCamera({
       _init   : function(w, h, sys, ioState, resources, trackPositionƒ, mapConfigƒ){
-        var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim);
+        var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim, itemsAnim);
         this.render = allAnimations.render.bind(allAnimations);
         this.track = trackPositionƒ;
 
-        this.player = this.createPlayer(resources["map.json"]);
+        this.player = micromando.models.Player.create(resources["map.json"]);
         this.lastT  = ioState.time;
 
         mapConfigƒ( resources["map.json"] );
@@ -95,107 +97,6 @@
 
         return resAnim ;
       },
-      createPlayer : function(mapData){
-        var charLayer = mapData.layers.filter(function(l){ return l.name === "character" });
-        var start     = charLayer[0].objects.filter( function(o){ return o.name === "start" } )[0];
-        return {
-          position : {
-            x : start.x / mapData.tilewidth,
-            y : start.y / mapData.tileheight
-          },
-          motion : {
-            x : 0,
-            y : 0
-          },
-          size : {
-            h : 0.4,
-            w : 0.4       
-          },
-          isAlive : true,
-          colliding : [false, false, false, false],
-          getBoundingBoxAt : function( position ){
-            return [
-              { x : position.x              , y : position.y},
-              { x : position.x + this.size.w, y : position.y},
-              { x : position.x + this.size.w, y : position.y + this.size.h},
-              { x : position.x              , y : position.y + this.size.h}
-            ];                 
-          },
-          direction : function(){
-            if(this.motion.x===0  && this.motion.y<0)   { return 0;}
-            if(this.motion.x>0    && this.motion.y<0)   { return 1;}
-            if(this.motion.x>0    && this.motion.y===0) { return 2;}
-            if(this.motion.x>0    && this.motion.y>0)   { return 3;}
-            if(this.motion.x===0  && this.motion.y>0)   { return 4;}
-            if(this.motion.x<0    && this.motion.y>0)   { return 5;}
-            if(this.motion.x<0    && this.motion.y===0) { return 6;}
-            if(this.motion.x<0    && this.motion.y<0)   { return 7;}
-          },
-          meaningfulPoints : function(direction, destinationPoints){
-            var firstPointIdx   = Math.floor(direction / 2); 
-            var secondPointIdx  = (firstPointIdx + (direction % 2) + 1) % 4;
-
-            return [ destinationPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
-          },
-          collidingPoints  : function(meaningfulPoints, tileAt){
-            var res = meaningfulPoints.filter(function(p){ 
-              return tileAt(p) != 0; 
-            });
-            return res;
-          },
-          indicesOfPoints : function( points, pointsSubset ){
-            return pointsSubset.map(function(p){ return points.indexOf(p); }); 
-          },
-          getCollisioningFaces : function(collidingPts, indices, direction){
-            var faces = [];
-            var pIdx;
-            var p = collidingPts;
-            this.colliding=[false, false, false, false];
-            if( collidingPts.length === 1){
-              console.log("bip");
-              if( ( (pIdx = indices.indexOf(2))!=-1 || (pIdx = indices.indexOf(3))!=-1 ) && (direction === 3 || direction === 4 || direction === 5) ){
-                this.colliding[2]=true; 
-                faces.push( [2, p[pIdx].y] ); 
-              }
-              else if( ( (pIdx = indices.indexOf(0))!=-1 || (pIdx = indices.indexOf(1))!=-1 ) && (direction === 7 || direction === 0 || direction === 1) ){
-                this.colliding[0]=true; 
-                faces.push( [0, p[pIdx].y] ); 
-              }
-            }
-            else if(collidingPts.length >= 2){
-              if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { 
-                this.colliding[0]=true; 
-                faces.push( [0, p[pIdx].y] ); 
-              }
-              if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { 
-                this.colliding[1]=true; 
-                faces.push( [1, p[pIdx].x] ); 
-              }
-              if( (pIdx = indices.indexOf(2))!=-1 &&  indices.indexOf(3)!=-1 ) { 
-                this.colliding[2]=true; 
-                faces.push( [2, p[pIdx].y] ); 
-              }
-              if( (pIdx = indices.indexOf(3))!=-1 &&  indices.indexOf(0)!=-1 ) { 
-                this.colliding[3]=true; 
-                faces.push( [3, p[pIdx].x] ); 
-              }
-            }
-            return faces;
-          },
-          correctionVector : function(bBox, collidingPts, direction, correctingVectorFromFace){
-            var motion  = this.motion;
-            var indices = this.indicesOfPoints(bBox, collidingPts);
-            var faces   = this.getCollisioningFaces( collidingPts, indices, direction );
-
-            return faces.map( correctingVectorFromFace ).reduce(function(vectorSum, v){
-                  return {
-                    x : v.x + vectorSum.x,
-                    y : v.y + vectorSum.y
-                  }
-                }, {x : 0, y : 0});
-          }
-        };
-      },
       logPlayer : function( p ){
         loop.debug( "position.x", p.position.x.toFixed(4) );
         loop.debug( "position.y", p.position.y.toFixed(4) );
@@ -238,7 +139,7 @@
   }
 
   //pattern application in an animation
-  function cameraMap(){
+  function foreground(){
     return {
       _init : function(w,h,sys,ioState, resources, positionnable){
         var mapData = this.mapData = resources["map.json"];
@@ -304,7 +205,7 @@
     };
   }
 
-  function backgroundMap(){
+  function background(){
     return {
       _init : function(w,h,sys,ioState, resources, positionnable){
         var mapData = this.mapData = resources["map.json"];
@@ -337,22 +238,45 @@
       },
       animate: function(ioState, width, height){ 
         return true; 
-      }, 
-      tileAt : function( position ){
-        var map  = this.mapLayer;
-        if(position.y <= 0) return 10;
-        if(position.x <= 0) return 10;
-        if(position.x > map.width) return 10;
+      }
+    };
+  }
 
-        var mapX = Math.floor(position.x);
-        var mapY = Math.floor(position.y);
-        return map.data[ mapX + mapY * map.width];
+  function items(){
+    return {
+      _init : function(w,h,sys,ioState, resources, positionnable){
+        var mapData = this.mapData = resources["map.json"];
+        this.texture = resources["textureMap.png"];
+        this.txH = mapData.tileheight;
+        this.txW = mapData.tilewidth ;
+        this.center = positionnable;
+        this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
       },
-      moveTo : function(positionnable, newPosition){
-        return {
-          x : newPosition.x ,
-          y : newPosition.y 
-        };
+      render : function(ctx, width, height, camera){
+                 /*
+        var mapWidth = this.mapLayer.width;
+        var deltaI = camera.left  - Math.floor(camera.left);
+        var deltaJ = camera.top   - Math.floor(camera.top);
+        for( var i = Math.floor(camera.left) , x = 0; i < Math.ceil(camera.right) ; i++, x++){
+          for( var j = Math.floor(camera.top), y = 0; j < Math.ceil(camera.bottom); j++, y++){
+            var imgX = -1;
+            var imgY =  0;
+            if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
+              var dataPos = i + j * mapWidth;
+              imgX = this.mapLayer.data[ dataPos ] - 1;
+            }
+            ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
+                                   this.txW, this.txH, 
+                                   (x - deltaI) * this.txW * camera.zoom, 
+                                   (y - deltaJ) * this.txH * camera.zoom, 
+                                   this.txW * camera.zoom, 
+                                   this.txH * camera.zoom);
+          }
+        }
+        */
+      },
+      animate: function(ioState, width, height){ 
+        return true; 
       }
     };
   }
@@ -405,4 +329,7 @@
     };
     return animation;
   }
-})();
+})(
+    window.micromando = window.micromando || {},
+    window.micromando.models = window.micromando.models || {}
+  );
