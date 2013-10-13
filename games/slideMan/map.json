@@ -38,38 +38,77 @@
                  "type":"Position",
                  "visible":true,
                  "width":0,
-                 "x":850,
-                 "y":200
-                }, 
-                {
-                 "gid":5,
-                 "height":0,
-                 "name":"",
-                 "properties":
-                    {
-
-                    },
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":950,
-                 "y":550
-                }, 
-                {
-                 "gid":5,
-                 "height":0,
-                 "name":"",
-                 "properties":
-                    {
-
-                    },
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
                  "x":1150,
-                 "y":550
+                 "y":300
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":30,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "height":100,
+         "name":"pickups",
+         "objects":[
+                {
+                 "gid":6,
+                 "height":50,
+                 "name":"Jump scroll",
+                 "properties":
+                    {
+                     "capability":"jump"
+                    },
+                 "rotation":0,
+                 "type":"scroll",
+                 "visible":true,
+                 "width":50,
+                 "x":750,
+                 "y":500
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "width":30,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "height":100,
+         "name":"badies",
+         "objects":[
+                {
+                 "gid":5,
+                 "height":50,
+                 "name":"r2",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"roomba",
+                 "visible":true,
+                 "width":50,
+                 "x":650,
+                 "y":750
+                }, 
+                {
+                 "gid":5,
+                 "height":1000,
+                 "name":"r1",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"roomba",
+                 "visible":true,
+                 "width":1000,
+                 "x":1000,
+                 "y":750
                 }],
          "opacity":1,
          "type":"objectgroup",

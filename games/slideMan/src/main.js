@@ -14,7 +14,7 @@
   loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
   loop.registerAnimation( Loop.tools.debug() );
-  loop.registerAnimation( Loop.tools.debugGraph() );
+  //loop.registerAnimation( Loop.tools.debugGraph() );
   loop.registerAnimation( Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) );
 
   loop.start();
@@ -245,40 +245,39 @@
   function items(){
     return {
       _init : function(w,h,sys,ioState, resources, positionnable){
-        var mapData = this.mapData = resources["map.json"];
-        this.texture = resources["textureMap.png"];
-        this.txH = mapData.tileheight;
-        this.txW = mapData.tilewidth ;
+        var mapData = this.mapData  = resources["map.json"];
+        var txH     = this.txH      = mapData.tileheight;
+        var txW     = this.txW      = mapData.tilewidth ;
+        var l       = this.pickupsLayer = mapData.layers.filter(function(l){ return l.name === "pickups" })[0];
+
+        this.texture= resources["textureMap.png"];
         this.center = positionnable;
-        this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
+        this.pickups = l.objects.map(function(o){
+          return models.Pickup.create(o, txW, txH);
+        });
       },
       render : function(ctx, width, height, camera){
-                 /*
-        var mapWidth = this.mapLayer.width;
-        var deltaI = camera.left  - Math.floor(camera.left);
-        var deltaJ = camera.top   - Math.floor(camera.top);
-        for( var i = Math.floor(camera.left) , x = 0; i < Math.ceil(camera.right) ; i++, x++){
-          for( var j = Math.floor(camera.top), y = 0; j < Math.ceil(camera.bottom); j++, y++){
-            var imgX = -1;
-            var imgY =  0;
-            if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
-              var dataPos = i + j * mapWidth;
-              imgX = this.mapLayer.data[ dataPos ] - 1;
-            }
-            ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
-                                   this.txW, this.txH, 
-                                   (x - deltaI) * this.txW * camera.zoom, 
-                                   (y - deltaJ) * this.txH * camera.zoom, 
-                                   this.txW * camera.zoom, 
-                                   this.txH * camera.zoom);
-          }
-        }
-        */
+        this.pickups.filter( isInCamera.bind(window, camera) ).forEach( function(p){
+          ctx.drawImage(this.texture, 0 , 50, 
+             p.size.w * this.txW , 
+             p.size.h * this.txH , 
+             (p.position.x - camera.left) * this.txW * camera.zoom, 
+             (p.position.y - camera.top) * this.txH * camera.zoom, 
+             p.size.w * this.txW * camera.zoom, 
+             p.size.h * this.txH * camera.zoom);
+        }, this);
       },
       animate: function(ioState, width, height){ 
         return true; 
       }
     };
+  }
+
+  function isInCamera(camera, positionnable){
+    return camera.bottom + 1 > positionnable.position.y + positionnable.size.h &&
+           camera.top - 1    < positionnable.position.y &&
+           camera.right + 1  > positionnable.position.x + positionnable.size.w &&
+           camera.left - 1   < positionnable.position.x;
   }
 
   /**
@@ -296,16 +295,16 @@
     var oldInit   = animation._init.bind(animation);
     animation._init   = function initWithCamera(w, h, sys, ioState, resources){
       oldInit(w, h, sys, ioState, resources, function setTrackedPosition( positionnable, zoom ){
-        var z = zoom || 1;
-        trackedPosition = {
-          x : positionnable.position.x,
-          y : positionnable.position.y,
-          z : z
-        }
-      }, function mapConfig(mapData){
-        map.tileheight  = mapData.tileheight;
-        map.tilewidth   = mapData.tilewidth ;
-      });
+          var z = zoom || 1;
+          trackedPosition = {
+            x : positionnable.position.x,
+            y : positionnable.position.y,
+            z : z
+          }
+        }, function mapConfig(mapData){
+          map.tileheight  = mapData.tileheight;
+          map.tilewidth   = mapData.tilewidth ;
+        });
       var oldRender = animation.render.bind(animation);
       animation.render  = function renderWithCamera(ctx, w, h){
         var args    = Array.prototype.splice.call(arguments, 0);

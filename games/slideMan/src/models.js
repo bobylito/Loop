@@ -1,6 +1,8 @@
 (function(m, models){
 
-   models.Player = Player;
+  models.Player = Player;
+  models.Pickup = Pickup;
+  models.CapacityPickup = CapacityPickup;
 
   function Player (x, y, w, h){
     this.position = {
@@ -17,17 +19,18 @@
     };
     this.isAlive = true;
     this.colliding = [false, false, false, false];
+    this.capacities = [];
   }
 
-  Player.create = function(mapData){
+  Player.create = function createPlayer(mapData){
     var charLayer = mapData.layers.filter(function(l){ return l.name === "character" });
     var start     = charLayer[0].objects.filter( function(o){ return o.name === "start" } )[0];
     return new Player(
-            start.x / mapData.tilewidth,
-            start.y / mapData.tileheight,
-            0.4,
-            0.4
-          );
+      start.x / mapData.tilewidth,
+      start.y / mapData.tileheight,
+      0.4,
+      0.4
+    );
   };
 
   Player.prototype = {
@@ -114,7 +117,75 @@
     }
   };
   
-  function createMap(){}
+  function Map( rawData ){
+  
+  }
+
+  Map.create = function createMap(){}
+
+  Map.prototype = {
+  };
+
+  function Pickup( x, y, w, h) {
+    this.position = {
+      x : x, 
+      y : y
+    }
+    this.size = {
+      w : w,
+      h : h
+    }
+  }
+
+  Pickup.knownPickups = {
+    "scroll" : CapacityPickup 
+  };
+  Pickup.create = function( objectData ){ 
+    if( !objectData ){
+      throw new Error("Pickup invalid : ", objectData);
+    }
+    if( objectData.type && this.knownPickups[objectData.type] ){
+      var t = this.knownPickups[objectData.type];
+      return t.create.apply( t, arguments );
+    }
+    else {
+      return new Pickup(
+        objectData.x,  
+        objectData.y,
+        objectData.width.    
+        objectData.height
+      );
+    }
+  };
+
+  Pickup.prototype = {
+    collideWith: function( positionnableWithSize ){
+                 
+    }
+  };
+
+  function CapacityPickup(x, y, w, h, cap){
+    Pickup.apply(this, arguments);
+    this.capacity = cap;
+  }
+
+  CapacityPickup.create = function( objectData, txW, txH ){
+    return new CapacityPickup(
+      objectData.x / txW,
+      objectData.y / txH,
+      objectData.width / txW,
+      objectData.height/ txH,
+      objectData.properties.capability   
+    );
+  };
+
+  CapacityPickup.prototype = new Pickup();
+  CapacityPickup.prototype.enhancePlayer = function( player ){
+    if(player.capabilities.indexOf() === -1){
+      player.capacities.push = this.capacity;
+    }
+  };
+
 
 })(
     window.micromando = window.micromando || {},
