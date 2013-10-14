@@ -52,12 +52,6 @@
       if(this.motion.x<0    && this.motion.y===0) { return 6;}
       if(this.motion.x<0    && this.motion.y<0)   { return 7;}
     },
-    meaningfulPoints : function(direction, destinationPoints){
-      var firstPointIdx   = Math.floor(direction / 2); 
-      var secondPointIdx  = (firstPointIdx + (direction % 2) + 1) % 4;
-
-      return [ destinationPoints[firstPointIdx], destinationPoints[secondPointIdx] ];
-    },
     collidingPoints  : function(meaningfulPoints, tileAt){
       var res = meaningfulPoints.filter(function(p){ 
         return tileAt(p) != 0; 
@@ -114,6 +108,9 @@
               y : v.y + vectorSum.y
             }
           }, {x : 0, y : 0});
+    },
+    can: function( capacity ){
+      return this.capacities.indexOf( capacity ) != -1;
     }
   };
   
@@ -127,14 +124,8 @@
   };
 
   function Pickup( x, y, w, h) {
-    this.position = {
-      x : x, 
-      y : y
-    }
-    this.size = {
-      w : w,
-      h : h
-    }
+    this.position = vec2.fromValues( x, y);
+    this.size     = vec2.fromValues( w, h);
   }
 
   Pickup.knownPickups = {
@@ -152,10 +143,18 @@
       return new Pickup(
         objectData.x,  
         objectData.y,
-        objectData.width.    
+        objectData.width, 
         objectData.height
       );
     }
+  };
+  Pickup.createAll = function(mapData){
+    var pickupsL = mapData.layers.filter(function(l){ 
+          return l.name === "pickups" 
+        })[0];
+    return pickupsL.objects.map(function(o){
+      return models.Pickup.create(o, mapData.tilewidth, mapData.tileheight);
+    });
   };
 
   Pickup.prototype = {
@@ -181,8 +180,8 @@
 
   CapacityPickup.prototype = new Pickup();
   CapacityPickup.prototype.enhancePlayer = function( player ){
-    if(player.capabilities.indexOf() === -1){
-      player.capacities.push = this.capacity;
+    if(player.capacities.indexOf( this.capacity ) === -1){
+      player.capacities.push(this.capacity);
     }
   };
 

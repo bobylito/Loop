@@ -1,4 +1,4 @@
-(function( micromando, models ){
+(function( micromando, models, box ){
   var loading = Loop.text.loading({
     img : ["ouno.png", "textureMap.png"],
     data : ["map.json"]
@@ -44,12 +44,17 @@
         this.track = trackPositionƒ;
 
         this.player = micromando.models.Player.create(resources["map.json"]);
+        this.pickups = micromando.models.Pickup.createAll(resources["map.json"]);
+
         this.lastT  = ioState.time;
 
         mapConfigƒ( resources["map.json"] );
         this.track( this.player );
 
-        allAnimations._init.call(allAnimations, w, h, sys, ioState, resources, this.player, mapAnim);
+        allAnimations._init.call(allAnimations, w, h, sys, ioState, resources, { 
+          player  : this.player,
+          pickups : this.pickups
+        }, mapAnim);
       },
       animate : function(ioState, width, height){ 
         var deltaT = (ioState.time - this.lastT) / 1000;
@@ -60,15 +65,18 @@
           this.player.motion.x = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
         }
 
-        if( ioState.keys.SPACE && this.player.colliding[2] ) this.player.motion.y = -10;
-        if( ioState.keys.SPACE && this.player.colliding[1] ) {
-          this.player.motion.y = -8;
-          this.player.motion.x = -5;
+        if( this.player.can("jump") && ioState.keys.SPACE ){
+          if( this.player.colliding[2] ) this.player.motion.y = -10;
+          if( this.player.colliding[1] ) {
+            this.player.motion.y = -8;
+            this.player.motion.x = -5;
+          }
+          if( this.player.colliding[3] ) {
+            this.player.motion.y = -8;
+            this.player.motion.x = 5;
+          }
         }
-        if( ioState.keys.SPACE && this.player.colliding[3] ) {
-          this.player.motion.y = -8;
-          this.player.motion.x = 5;
-        }
+
         if( ioState.keys.RIGHT && this.player.colliding[1] ) {
           var tmp = this.player.motion.y - 0.2
           this.player.motion.y -= Math.max(tmp, 0);
@@ -88,12 +96,27 @@
           this.player.motion.y = Math.max(Math.abs(newYMotion) < 0.001 ? 0 : newYMotion, 0);
         }*/
 
+        var playerBBox = box.getBoundingBoxAt(
+              vec2.fromValues(this.player.position.x, this.player.position.y),
+              vec2.fromValues(this.player.size.w, this.player.size.h)
+            );
+
+        var collidingPickups = this.pickups.filter(function(pick){
+          var pickBBox = box.getBoundingBoxAt(pick.position, pick.size);
+          return box.collide(playerBBox, pickBBox); 
+        });
+
+        collidingPickups.forEach(function(p){
+          p.enhancePlayer(this.player);
+          this.pickups.splice( this.pickups.indexOf(p) , 1);
+        }, this);
+
         this.lastT  = ioState.time;
         this.logPlayer(this.player);
+        
         var resAnim = this.allAnimations.animate.apply(this.allAnimations, arguments);
-        //Gravity
 
-        this.track( this.player, 1 - Math.abs( this.player.motion.x / 70) );
+        this.track( this.player );
 
         return resAnim ;
       },
@@ -110,9 +133,9 @@
 
   function character(){
     return {
-      _init : function(w, h, sys, ioState, resources, character, map){
+      _init : function(w, h, sys, ioState, resources, models, map){
         this.sprite = resources["ouno.png"];
-        this.model  = character;
+        this.model  = models["player"];
         this.lastT  = ioState.time;
         this.map    = map;
       },
@@ -141,12 +164,11 @@
   //pattern application in an animation
   function foreground(){
     return {
-      _init : function(w,h,sys,ioState, resources, positionnable){
+      _init : function(w,h,sys,ioState, resources, models){
         var mapData = this.mapData = resources["map.json"];
         this.texture = resources["textureMap.png"];
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
-        this.center = positionnable;
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Map" })[0];
       },
       render : function(ctx, width, height, camera){
@@ -207,12 +229,11 @@
 
   function background(){
     return {
-      _init : function(w,h,sys,ioState, resources, positionnable){
+      _init : function(w,h,sys,ioState, resources, models){
         var mapData = this.mapData = resources["map.json"];
         this.texture = resources["textureMap.png"];
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
-        this.center = positionnable;
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
       },
       render : function(ctx, width, height, camera){
@@ -244,27 +265,22 @@
 
   function items(){
     return {
-      _init : function(w,h,sys,ioState, resources, positionnable){
+      _init : function(w,h,sys,ioState, resources, models){
         var mapData = this.mapData  = resources["map.json"];
-        var txH     = this.txH      = mapData.tileheight;
-        var txW     = this.txW      = mapData.tilewidth ;
-        var l       = this.pickupsLayer = mapData.layers.filter(function(l){ return l.name === "pickups" })[0];
-
+        this.txH    = mapData.tileheight;
+        this.txW    = mapData.tilewidth ;
         this.texture= resources["textureMap.png"];
-        this.center = positionnable;
-        this.pickups = l.objects.map(function(o){
-          return models.Pickup.create(o, txW, txH);
-        });
+        this.pickups= models["pickups"];
       },
       render : function(ctx, width, height, camera){
         this.pickups.filter( isInCamera.bind(window, camera) ).forEach( function(p){
           ctx.drawImage(this.texture, 0 , 50, 
-             p.size.w * this.txW , 
-             p.size.h * this.txH , 
-             (p.position.x - camera.left) * this.txW * camera.zoom, 
-             (p.position.y - camera.top) * this.txH * camera.zoom, 
-             p.size.w * this.txW * camera.zoom, 
-             p.size.h * this.txH * camera.zoom);
+             p.size[0] * this.txW , 
+             p.size[1] * this.txH , 
+             (p.position[0] - camera.left) * this.txW * camera.zoom, 
+             (p.position[1] - camera.top ) * this.txH * camera.zoom, 
+             p.size[0] * this.txW * camera.zoom, 
+             p.size[1] * this.txH * camera.zoom);
         }, this);
       },
       animate: function(ioState, width, height){ 
@@ -274,10 +290,10 @@
   }
 
   function isInCamera(camera, positionnable){
-    return camera.bottom + 1 > positionnable.position.y + positionnable.size.h &&
-           camera.top - 1    < positionnable.position.y &&
-           camera.right + 1  > positionnable.position.x + positionnable.size.w &&
-           camera.left - 1   < positionnable.position.x;
+    return camera.bottom + 1 > positionnable.position[1] + positionnable.size[1] &&
+           camera.top - 1    < positionnable.position[1] &&
+           camera.right + 1  > positionnable.position[0] + positionnable.size[0] &&
+           camera.left - 1   < positionnable.position[0];
   }
 
   /**
@@ -329,6 +345,7 @@
     return animation;
   }
 })(
-    window.micromando = window.micromando || {},
-    window.micromando.models = window.micromando.models || {}
+    window.micromando         = window.micromando || {},
+    window.micromando.models  = window.micromando.models || {},
+    window.micromando.box     = window.micromando.box || {}
   );
