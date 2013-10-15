@@ -60,8 +60,8 @@
       },
       animate : function(ioState, width, height){ 
         var deltaT = ioState.deltaTime / 1000;
-        if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -10);
-        if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  10);
+        if( ioState.keys.LEFT ) this.player.motion.x = Math.min(0, Math.max( this.player.motion.x - 0.3, -10));
+        if( ioState.keys.RIGHT) this.player.motion.x = Math.max(0, Math.min( this.player.motion.x + 0.3,  10));
         if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
           var newXMotion = this.player.motion.x / 2;
           this.player.motion.x = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
