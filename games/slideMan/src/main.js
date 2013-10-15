@@ -291,7 +291,7 @@
   }
 
   function isInCamera(camera, positionnable){
-    return box.inside(camera.box, 
+    return box.collide(camera.box, 
         box.getBoundingBoxTopLeft( positionnable.position, positionnable.size ) 
       );
   }
