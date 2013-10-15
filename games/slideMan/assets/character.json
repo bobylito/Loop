@@ -1,0 +1,26 @@
+{
+  "standing":[{
+    "position":[1,2],
+    "size":[14, 37]
+  }],
+  "run.left":[{
+    "position":[87, 2],
+    "size":[16, 37]
+  },{
+    "position":[107, 2],
+    "size":[16, 37]
+  },{
+    "position":[130, 2],
+    "size":[16, 37]
+  }],
+  "run.right":[{
+    "position":[21, 2],
+    "size":[16, 37]
+  },{
+    "position":[41, 2],
+    "size":[16, 37]
+  },{
+    "position":[64, 2],
+    "size":[16, 37]
+  }]
+}

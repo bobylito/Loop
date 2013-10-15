@@ -1,7 +1,7 @@
 (function( micromando, models, camera, box ){
   var loading = Loop.text.loading({
-    img : ["ouno.png", "textureMap.png"],
-    data : ["map.json"]
+    img : ["ouno.png", "textureMap.png", "assets/character.png"],
+    data : ["map.json", "assets/character.json"]
   });
 
   var m = foreground();
@@ -141,16 +141,38 @@
   function character(){
     return {
       _init : function(w, h, sys, ioState, resources, models, map){
-        this.sprite = resources["ouno.png"];
+        this.sprite = resources["assets/character.png"];
+        this.spriteDef = resources["assets/character.json"];
+        this.currentSprite = this.spriteDef.standing;
+        this.currentFrame = 0;
         this.model  = models["player"];
         this.lastT  = ioState.time;
         this.map    = map;
       },
       render  : function(ctx, w, h, camera){
-        ctx.drawImage(this.sprite, 0,0, this.model.size.w * 50, this.model.size.h * 50, w/2 , h/2, this.model.size.w * 50 * camera.zoom , this.model.size.h *50 * camera.zoom);
+        var frame = ~~(this.currentFrame/10 )%this.currentSprite.length;
+        ctx.drawImage(this.sprite, 
+          this.currentSprite[frame].position[0],
+          this.currentSprite[frame].position[1], 
+          this.currentSprite[frame].size[0],
+          this.currentSprite[frame].size[1], 
+          w/2 , h/2, 
+          this.currentSprite[frame].size[0] * camera.zoom,
+          this.currentSprite[frame].size[1] * camera.zoom 
+        );
       },
       animate : function(ioState, w, h){
         var deltaT = ioState.deltaTime / 1000;
+        this.currentFrame++;
+        var currentState = "standing";
+        if(this.model.motion.x > 0){
+          currentState = "run.right";
+        }
+        else if(this.model.motion.x < 0){
+          currentState = "run.left";
+        }
+        var currentDef = this.currentSprite = this.spriteDef[currentState];
+
         var computedPosition = {
           x : this.model.position.x + this.model.motion.x * deltaT,
           y : this.model.position.y + this.model.motion.y * deltaT
