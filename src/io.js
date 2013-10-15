@@ -13,7 +13,15 @@
 
   var keyboardIO = function( watchedKeys ){
     var io = new IOManager(function(ioState){
-      ioState.keys = this._currentKeys();
+      if(ioState.keys){
+        var currentK = this._currentKeys();
+        for(var k in currentK){
+          ioState.keys[k] = currentK[k];
+        }
+      }
+      else{
+        ioState.keys = this._currentKeys();
+      }
       return ioState;
     });
  
@@ -41,6 +49,62 @@
         return this._keys;
       };
       return this._keys;
+    };
+
+    return io;
+  };
+
+  var noAutoKeyboardIO = function( watchedKeys ){
+    var io = new IOManager(function(ioState){
+      if(ioState.keys){
+        var currentK = this._currentKeys();
+        for(var k in currentK){
+          ioState.keys[k] = currentK[k];
+        }
+      }
+      else{
+        ioState.keys = this._currentKeys();
+      }
+      this._resetKeys();
+      return ioState;
+    });
+ 
+    io._keys = {};
+    io._firedKeys = {};
+    io._inversedConfig = {};
+
+    for(var k in watchedKeys ){
+      io._keys[k] = false;
+      io._firedKeys[k] = false;
+      io._inversedConfig[ watchedKeys[k] ] = k;
+    }
+
+    io._currentKeys = function(){
+      document.addEventListener("keydown", function(e){
+        var code = e.keyCode;
+        if( code in io._inversedConfig && 
+              !io._firedKeys[ io._inversedConfig[code] ] ){
+          io._keys[ io._inversedConfig[code] ] = true;
+          io._firedKeys[ io._inversedConfig[code] ] = true;
+        }
+      });
+      document.addEventListener("keyup", function(e){
+        var code = e.keyCode;
+        if( code in io._inversedConfig ){
+          io._keys[ io._inversedConfig[code] ] = false;
+          io._firedKeys[ io._inversedConfig[code] ] = false;
+        }
+      });
+      io._currentKeys = function(){
+        return this._keys;
+      };
+      return this._keys;
+    };
+
+    io._resetKeys = function(){
+      for( var code in this._keys ){
+        this._keys[ code ] = false;
+      }
     };
 
     return io;
@@ -150,11 +214,12 @@
   };
 
   //Module exports
-  io.mouse        = mouseIO;
-  io.time         = timeIO;
-  io.deltaTime    = deltaTimeIO;
-  io.controlTime  = controledTimeIO;
-  io.keyboard     = keyboardIO;
+  io.mouse          = mouseIO;
+  io.time           = timeIO;
+  io.deltaTime      = deltaTimeIO;
+  io.controlTime    = controledTimeIO;
+  io.keyboard       = keyboardIO;
+  io.noAutoKeyboard = noAutoKeyboardIO;
 })(
     window.Loop = window.Loop || {},
     window.Loop.io = window.Loop.io || {}

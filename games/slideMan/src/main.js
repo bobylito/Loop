@@ -13,7 +13,8 @@
 
   loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.deltaTime );
-  loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
+  loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39} ) );
+  loop.addIO( Loop.io.noAutoKeyboard( {"SPACE":32} ) );
   loop.registerAnimation( Loop.tools.debug() );
   //loop.registerAnimation( Loop.tools.debugGraph() );
   loop.registerAnimation( Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) );
@@ -66,13 +67,18 @@
           this.player.motion.x = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
         }
 
+        for(var k in ioState.keys){
+          loop.debug("key:"+k, ioState.keys[k]);
+        }
         if( this.player.can("jump") && ioState.keys.SPACE ){
-          if( this.player.colliding[2] ) this.player.motion.y = -10;
-          if( this.player.colliding[1] ) {
+          if( this.player.colliding[box.BOTTOM] ) {
+            this.player.motion.y = -10;
+          }
+          if( this.player.colliding[box.RIGHT] ) {
             this.player.motion.y = -8;
             this.player.motion.x = -5;
           }
-          if( this.player.colliding[3] ) {
+          if( this.player.colliding[box.LEFT] ) {
             this.player.motion.y = -8;
             this.player.motion.x = 5;
           }
@@ -186,8 +192,8 @@
             }
             ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
                                    this.txW, this.txH, 
-                                   (x - deltaI) * this.txW * camera.zoom, 
-                                   (y - deltaJ) * this.txH * camera.zoom, 
+                                   ~~( (x - deltaI) * this.txW * camera.zoom ), 
+                                   ~~( (y - deltaJ) * this.txH * camera.zoom ), 
                                    this.txW * camera.zoom, 
                                    this.txH * camera.zoom);
           }
@@ -251,8 +257,8 @@
             }
             ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
                                    this.txW, this.txH, 
-                                   (x - deltaI) * this.txW * camera.zoom, 
-                                   (y - deltaJ) * this.txH * camera.zoom, 
+                                   ~~( (x - deltaI) * this.txW * camera.zoom ), 
+                                   ~~( (y - deltaJ) * this.txH * camera.zoom ), 
                                    this.txW * camera.zoom, 
                                    this.txH * camera.zoom);
           }
