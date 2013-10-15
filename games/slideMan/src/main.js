@@ -12,6 +12,7 @@
   var end  = finishScreen();
 
   loop.addIO( Loop.io.time );
+  loop.addIO( Loop.io.deltaTime );
   loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39,"SPACE":32} ) );
   loop.registerAnimation( Loop.tools.debug() );
   //loop.registerAnimation( Loop.tools.debugGraph() );
@@ -57,7 +58,7 @@
         }, mapAnim);
       },
       animate : function(ioState, width, height){ 
-        var deltaT = (ioState.time - this.lastT) / 1000;
+        var deltaT = ioState.deltaTime / 1000;
         if( ioState.keys.LEFT ) this.player.motion.x = Math.max( this.player.motion.x - 0.3, -10);
         if( ioState.keys.RIGHT) this.player.motion.x = Math.min( this.player.motion.x + 0.3,  10);
         if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
@@ -143,7 +144,7 @@
         ctx.drawImage(this.sprite, 0,0, 20, 20,w/2 , h/2, 20 * camera.zoom , 20 * camera.zoom);
       },
       animate : function(ioState, w, h){
-        var deltaT = (ioState.time - this.lastT) / 1000;
+        var deltaT = ioState.deltaTime / 1000;
         var computedPosition = {
           x : this.model.position.x + this.model.motion.x * deltaT,
           y : this.model.position.y + this.model.motion.y * deltaT
