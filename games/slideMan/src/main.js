@@ -147,7 +147,7 @@
         this.map    = map;
       },
       render  : function(ctx, w, h, camera){
-        ctx.drawImage(this.sprite, 0,0, 20, 20,w/2 , h/2, 20 * camera.zoom , 20 * camera.zoom);
+        ctx.drawImage(this.sprite, 0,0, this.model.size.w * 50, this.model.size.h * 50, w/2 , h/2, this.model.size.w * 50 * camera.zoom , this.model.size.h *50 * camera.zoom);
       },
       animate : function(ioState, w, h){
         var deltaT = ioState.deltaTime / 1000;

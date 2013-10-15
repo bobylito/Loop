@@ -28,8 +28,8 @@
     return new Player(
       start.x / mapData.tilewidth,
       start.y / mapData.tileheight,
-      0.4,
-      0.4
+      0.28,
+      0.74
     );
   };
 
