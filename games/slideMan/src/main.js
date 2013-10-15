@@ -97,13 +97,13 @@
           this.player.motion.y = Math.max(Math.abs(newYMotion) < 0.001 ? 0 : newYMotion, 0);
         }*/
 
-        var playerBBox = box.getBoundingBoxAt(
+        var playerBBox = box.getBoundingBoxTopLeft(
               vec2.fromValues(this.player.position.x, this.player.position.y),
               vec2.fromValues(this.player.size.w, this.player.size.h)
             );
 
         var collidingPickups = this.pickups.filter(function(pick){
-          var pickBBox = box.getBoundingBoxAt(pick.position, pick.size);
+          var pickBBox = box.getBoundingBoxTopLeft(pick.position, pick.size);
           return box.collide(playerBBox, pickBBox); 
         });
 
@@ -174,10 +174,10 @@
       },
       render : function(ctx, width, height, camera){
         var mapWidth = this.mapLayer.width;
-        var deltaI = camera.left  - Math.floor(camera.left);
-        var deltaJ = camera.top   - Math.floor(camera.top);
-        for( var i = Math.floor(camera.left) , x = 0; i < Math.ceil(camera.right) ; i++, x++){
-          for( var j = Math.floor(camera.top), y = 0; j < Math.ceil(camera.bottom); j++, y++){
+        var deltaI = camera.box[box.LEFT]  - Math.floor(camera.box[box.LEFT]);
+        var deltaJ = camera.box[box.TOP]   - Math.floor(camera.box[box.TOP]);
+        for( var i = Math.floor(camera.box[box.LEFT]) , x = 0; i < Math.ceil(camera.box[box.RIGHT]) ; i++, x++){
+          for( var j = Math.floor(camera.box[box.TOP]), y = 0; j < Math.ceil(camera.box[box.BOTTOM]); j++, y++){
             var imgX = -1;
             var imgY =  0;
             if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
@@ -239,10 +239,10 @@
       },
       render : function(ctx, width, height, camera){
         var mapWidth = this.mapLayer.width;
-        var deltaI = camera.left  - Math.floor(camera.left);
-        var deltaJ = camera.top   - Math.floor(camera.top);
-        for( var i = Math.floor(camera.left) , x = 0; i < Math.ceil(camera.right) ; i++, x++){
-          for( var j = Math.floor(camera.top), y = 0; j < Math.ceil(camera.bottom); j++, y++){
+        var deltaI = camera.box[box.LEFT]  - Math.floor(camera.box[box.LEFT]);
+        var deltaJ = camera.box[box.TOP]   - Math.floor(camera.box[box.TOP]);
+        for( var i = Math.floor(camera.box[box.LEFT]) , x = 0; i < Math.ceil(camera.box[box.RIGHT]) ; i++, x++){
+          for( var j = Math.floor(camera.box[box.TOP]), y = 0; j < Math.ceil(camera.box[box.BOTTOM]); j++, y++){
             var imgX = -1;
             var imgY =  0;
             if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
@@ -278,8 +278,8 @@
           ctx.drawImage(this.texture, 0 , 50, 
              p.size[0] * this.txW , 
              p.size[1] * this.txH , 
-             (p.position[0] - camera.left) * this.txW * camera.zoom, 
-             (p.position[1] - camera.top ) * this.txH * camera.zoom, 
+             (p.position[0] - camera.box[box.LEFT]) * this.txW * camera.zoom, 
+             (p.position[1] - camera.box[box.TOP] ) * this.txH * camera.zoom, 
              p.size[0] * this.txW * camera.zoom, 
              p.size[1] * this.txH * camera.zoom);
         }, this);
@@ -291,54 +291,45 @@
   }
 
   function isInCamera(camera, positionnable){
-    return camera.bottom + 1 > positionnable.position[1] + positionnable.size[1] &&
-           camera.top - 1    < positionnable.position[1] &&
-           camera.right + 1  > positionnable.position[0] + positionnable.size[0] &&
-           camera.left - 1   < positionnable.position[0];
+    return box.inside(camera.box, 
+        box.getBoundingBoxTopLeft( positionnable.position, positionnable.size ) 
+      );
   }
 
   /**
    * Adds more parameter to the render function of a given animation
    */
   function simpleCamera( animation ){
-    var trackedPosition = {
-      x:0,
-      y:0
-    };
-    var map = {
-      width   : 0,
-      height  : 0
-    };
+    var trackedPosition = vec2.fromValues(0,0);
+    var tileSize = vec2.fromValues(0,0);
+
     var oldInit   = animation._init.bind(animation);
     animation._init   = function initWithCamera(w, h, sys, ioState, resources){
       oldInit(w, h, sys, ioState, resources, function setTrackedPosition( positionnable, zoom ){
           var z = zoom || 1;
           trackedPosition = {
-            x : positionnable.position.x,
-            y : positionnable.position.y,
+            p : vec2.fromValues(positionnable.position.x, positionnable.position.y),
             z : z
           }
         }, function mapConfig(mapData){
-          map.tileheight  = mapData.tileheight;
-          map.tilewidth   = mapData.tilewidth ;
+          tileSize = vec2.fromValues( mapData.tileheight, mapData.tilewidth );
         });
       var oldRender = animation.render.bind(animation);
       animation.render  = function renderWithCamera(ctx, w, h){
         var args    = Array.prototype.splice.call(arguments, 0);
         var zoom    = trackedPosition.z;
-        var mapH2   = h / (2 * map.tileheight * zoom);
-        var mapW2   = w / (2 * map.tilewidth * zoom);
+        var screenSize = vec2.divide( vec2.create(), 
+          [w, h], 
+          vec2.scale( vec2.create(), tileSize, zoom)
+        );
         var camera  = {
-          top     : (trackedPosition.y - mapH2) ,
-          right   : (trackedPosition.x + mapW2) ,
-          bottom  : (trackedPosition.y + mapH2) ,
-          left    : (trackedPosition.x - mapW2) ,
+          box     : box.getBoundingBoxCenter(trackedPosition.p, screenSize),
           zoom    : zoom
         };
-        loop.debug( "camera.top", camera.top.toFixed(4) );
-        loop.debug( "camera.right", camera.right.toFixed(4) );
-        loop.debug( "camera.bottom", camera.bottom.toFixed(4) );
-        loop.debug( "camera.left", camera.left.toFixed(4) );
+        loop.debug( "camera.top", camera.box[box.TOP].toFixed(4) );
+        loop.debug( "camera.right", camera.box[box.RIGHT].toFixed(4) );
+        loop.debug( "camera.bottom", camera.box[box.BOTTOM].toFixed(4) );
+        loop.debug( "camera.left", camera.box[box.LEFT].toFixed(4) );
         args.push( camera );
         return oldRender.apply( animation, args );
       };

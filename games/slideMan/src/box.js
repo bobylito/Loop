@@ -6,29 +6,49 @@
    * Positions and sizes are vec2(x,y) and vec2(w,h)
    */
 
-  box.TOPLEFT     = 0;
-  box.TOPRIGHT    = 1;
-  box.BOTTOMRIGHT = 2;
-  box.BOTTOMLEFT  = 3;
+  box.TOP     = 0;
+  box.RIGHT   = 1;
+  box.BOTTOM  = 2;
+  box.LEFT    = 3;
 
-  box.getBoundingBoxAt = function getBoundingBox( position, size ){
+  box.getBoundingBoxTopLeft = function getBoundingBox( position, size ){
     return [
-      vec2.fromValues(position[0],            position[1]),
-      vec2.fromValues(position[0] + size[0],  position[1]),
-      vec2.fromValues(position[0] + size[0],  position[1] + size[1]),
-      vec2.fromValues(position[0],            position[1] + size[1])
+      position[1],
+      position[0] + size[0],
+      position[1] + size[1],
+      position[0]
+    ];
+  };
+
+  box.getBoundingBoxCenter = function getBoundingBox( position, size ){
+    var half = vec2.scale(vec2.create(), size, 0.5);
+    return [
+      position[1] - half[1],
+      position[0] + half[0],
+      position[1] + half[1],
+      position[0] - half[0]
     ];
   };
 
   box.collide = function collide(box1, box2){
-    return box1.some( isPointInBox.bind(window, box2) );
+    return  box1[box.RIGHT] >= box2[box.LEFT] && 
+            box1[box.LEFT]  <= box2[box.RIGHT] &&
+            box1[box.BOTTOM]>= box2[box.TOP] &&
+            box1[box.TOP]   <= box2[box.BOTTOM];
+  }
+
+  box.inside = function(box1, box2){
+    return  box1[box.RIGHT] >= box2[box.RIGHT] && 
+            box1[box.LEFT]  <= box2[box.LEFT] &&
+            box1[box.TOP]   <= box2[box.TOP] &&
+            box1[box.BOTTOM]>= box1[box.BOTTOM]
   }
 
   function isPointInBox(b, point){
-    return b[box.BOTTOMLEFT][1] > point[1] &&
-           b[box.TOPLEFT][1]    < point[1] &&
-           b[box.TOPRIGHT][0]   > point[0] &&
-           b[box.TOPLEFT][0]    < point[0];
+    return b[box.BOTTOM] > point[1] &&
+           b[box.TOP]    < point[1] &&
+           b[box.RIGHT]  > point[0] &&
+           b[box.LEFT]   < point[0];
   }
 })(
     window.micromando = window.micromando || {},
