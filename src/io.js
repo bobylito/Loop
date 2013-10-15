@@ -111,6 +111,16 @@
     return ioState;
   }, ["time"] );
 
+  var deltaTimeIO = (function(){
+    var lastTime = Date.now();
+    return new IOManager( function(ioState){
+      var currentTime = Date.now();
+      ioState.deltaTime = currentTime - lastTime;
+      lastTime = currentTime;
+      return ioState;
+    }, ["deltaTime"] );
+  })();
+
   var controledTimeIO = function( timeLength ){
     var io = new IOManager( function(ioState ){
       ioState.time = this._timeValue();
@@ -142,8 +152,9 @@
   //Module exports
   io.mouse        = mouseIO;
   io.time         = timeIO;
-  io.keyboard     = keyboardIO;
+  io.deltaTime    = deltaTimeIO;
   io.controlTime  = controledTimeIO;
+  io.keyboard     = keyboardIO;
 })(
     window.Loop = window.Loop || {},
     window.Loop.io = window.Loop.io || {}
