@@ -39,7 +39,7 @@
   }
 
   function gameScreen(backgroundAnim,mapAnim, characterAnim, itemsAnim){
-    var gameScreenAnim  = camera.simple({
+    var gameScreenAnim  = camera.bound({
       _init   : function(w, h, sys, ioState, resources, trackPositionƒ, mapConfigƒ){
         var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim, itemsAnim);
         this.render = allAnimations.render.bind(allAnimations);
@@ -156,7 +156,8 @@
           this.currentSprite[frame].position[1], 
           this.currentSprite[frame].size[0],
           this.currentSprite[frame].size[1], 
-          w/2 , h/2, 
+          w * ((this.model.position.x - camera.box[box.LEFT])   / (camera.box[box.RIGHT] - camera.box[box.LEFT])), 
+          h * ((this.model.position.y - camera.box[box.TOP]) / (camera.box[box.BOTTOM]- camera.box[box.TOP] )), 
           this.currentSprite[frame].size[0] * camera.zoom,
           this.currentSprite[frame].size[1] * camera.zoom 
         );
@@ -190,7 +191,6 @@
     };
   }
 
-  //pattern application in an animation
   function foreground(){
     return {
       _init : function(w,h,sys,ioState, resources, models){
