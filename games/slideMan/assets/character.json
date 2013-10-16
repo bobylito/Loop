@@ -14,13 +14,13 @@
     "size":[16, 37]
   }],
   "run.right":[{
-    "position":[21, 2],
-    "size":[16, 37]
+    "position":[20, 44],
+    "size":[17, 37]
   },{
-    "position":[41, 2],
-    "size":[16, 37]
+    "position":[40, 44],
+    "size":[18, 37]
   },{
-    "position":[64, 2],
-    "size":[16, 37]
+    "position":[61, 44],
+    "size":[14, 37]
   }]
 }
