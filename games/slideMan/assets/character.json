@@ -3,6 +3,7 @@
     "position":[1,2],
     "size":[14, 37]
   }],
+
   "run.left":[{
     "position":[87, 2],
     "size":[16, 37]
@@ -13,6 +14,7 @@
     "position":[130, 2],
     "size":[16, 37]
   }],
+
   "run.right":[{
     "position":[20, 44],
     "size":[17, 37]
@@ -22,5 +24,31 @@
   },{
     "position":[61, 44],
     "size":[14, 37]
+  }],
+
+  "ceiling-grip":[{
+    "position":[51,90],
+    "size":[25, 37]
+  }],
+
+  "crouch.left":[{
+    "position":[16,90],
+    "size":[30, 20]
+  }],
+
+  "crouch.right":[{
+    "position":[16, 118],
+    "size":[30,20]
+  }],
+
+  
+  "jump.right":[{
+    "position":[108,46],
+    "size":[18, 38]
+  }],
+
+  "jump.left":[{
+    "position":[86, 46],
+    "size":[18,38]
   }]
 }

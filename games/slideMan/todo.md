@@ -19,6 +19,7 @@
  [ ] Invisibility
  [ ] Mini map
  [ ] Ladders
+ [+] Ceiling walk
  
 ## Character animatons
  [+] Standing
@@ -27,9 +28,9 @@
  [ ] wall grip
  [ ] wall walk
  [ ] run 
- [ ] jumps
+ [+] jumps
  [ ] push
- [ ] ceiling walking
+ [+] ceiling walk
  [ ] ladder climbing
 
 ## Framework / loop

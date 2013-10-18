@@ -84,16 +84,19 @@
           }
         }
 
+        //Wall grip
         if( ioState.keys.RIGHT && this.player.colliding[1] ) {
-          var tmp = this.player.motion.y - 0.2
-          this.player.motion.y -= Math.max(tmp, 0);
+          this.player.motion.y = 0.2;
         }
         if( ioState.keys.LEFT && this.player.colliding[3] ) {
-          var tmp = this.player.motion.y - 0.2
-          this.player.motion.y -= Math.max(tmp, 0);
+          this.player.motion.y = 0.2; 
         }
   
-        if( !(ioState.keys.UP && this.player.colliding[0]) ){
+        if( ioState.keys.UP && this.player.colliding[0] ){
+          this.player.motion.y = this.player.motion.y - 0.1;
+          if( ioState.keys.LEFT ) this.player.motion.x = Math.min(0, Math.max( this.player.motion.x - 0.2, -5));
+          if( ioState.keys.RIGHT) this.player.motion.x = Math.max(0, Math.min( this.player.motion.x + 0.2,  5));
+        } else{
           this.player.motion.y = this.player.motion.y + 0.3;
         }
         /*if( ioState.keys.UP )   this.player.motion.y -= 0.3;
@@ -166,11 +169,42 @@
         var deltaT = ioState.deltaTime / 1000;
         this.currentFrame++;
         var currentState = "standing";
-        if(this.model.motion.x > 0){
-          currentState = "run.right";
+        if(this.model.colliding[box.BOTTOM]){
+          if(this.model.motion.x > 0){
+            currentState = "run.right";
+          }
+          else if(this.model.motion.x < 0){
+            currentState = "run.left";
+          }
         }
-        else if(this.model.motion.x < 0){
-          currentState = "run.left";
+        else if(this.model.colliding[box.TOP] ){
+          if(ioState.keys["UP"]){
+            if(this.model.motion.x > 0){
+              currentState = "crouch.right";
+            }
+            else if(this.model.motion.x < 0){
+              currentState = "crouch.left";
+            }
+            else {
+              currentState = "ceiling-grip";
+            }
+          }
+          else {
+            if(this.model.motion.x > 0){
+              currentState = "jump.right";
+            }
+            else if(this.model.motion.x < 0){
+              currentState = "jump.left";
+            }
+          }
+        }
+        else {
+          if(this.model.motion.x > 0){
+            currentState = "jump.right";
+          }
+          else if(this.model.motion.x < 0){
+            currentState = "jump.left";
+          }
         }
         var currentDef = this.currentSprite = this.spriteDef[currentState];
 
