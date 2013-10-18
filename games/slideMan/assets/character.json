@@ -27,8 +27,8 @@
   }],
 
   "ceiling-grip":[{
-    "position":[51,90],
-    "size":[32, 37]
+    "position":[54,90],
+    "size":[29, 37]
   },{
     "position":[83, 90],
     "size":[32,37]
