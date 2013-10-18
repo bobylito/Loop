@@ -170,11 +170,23 @@
         this.currentFrame++;
         var currentState = "standing";
         if(this.model.colliding[box.BOTTOM]){
-          if(this.model.motion.x > 0){
-            currentState = "run.right";
+          if(this.model.colliding[box.RIGHT] ){
+            if(ioState.keys["RIGHT"]){
+              currentState = "push.right";
+            }
           }
-          else if(this.model.motion.x < 0){
-            currentState = "run.left";
+          else if(this.model.colliding[box.LEFT] ){
+            if(ioState.keys["LEFT"]){
+              currentState = "push.left";
+            }
+          }
+          else {
+            if(this.model.motion.x > 0){
+              currentState = "run.right";
+            }
+            else if(this.model.motion.x < 0){
+              currentState = "run.left";
+            }
           }
         }
         else if(this.model.colliding[box.TOP] ){
@@ -196,6 +208,16 @@
             else if(this.model.motion.x < 0){
               currentState = "jump.left";
             }
+          }
+        }
+        else if(this.model.colliding[box.RIGHT] ){
+          if(ioState.keys["RIGHT"]){
+            currentState = "wall-grip.right";
+          }
+        }
+        else if(this.model.colliding[box.LEFT] ){
+          if(ioState.keys["LEFT"]){
+            currentState = "wall-grip.left";
           }
         }
         else {

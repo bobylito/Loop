@@ -59,5 +59,25 @@
   "jump.left":[{
     "position":[86, 46],
     "size":[18,38]
+  }],
+
+  "push.right":[{
+    "position":[28,146],
+    "size":[17, 36]
+  }],
+  "push.left":[{
+    "position":[3,146],
+    "size":[17, 36]
+  }],
+  
+  "wall-grip.right":[{
+    "position":[56,132],
+    "size":[19, 34]
+  }],
+
+  
+  "wall-grip.left":[{
+    "position":[79,132],
+    "size":[19, 34]
   }]
 }
