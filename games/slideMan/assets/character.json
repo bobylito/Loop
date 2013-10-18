@@ -28,7 +28,16 @@
 
   "ceiling-grip":[{
     "position":[51,90],
-    "size":[25, 37]
+    "size":[32, 37]
+  },{
+    "position":[83, 90],
+    "size":[32,37]
+  },{
+    "position":[118, 90],
+    "size":[32,37]
+  },{
+    "position":[155, 90],
+    "size":[32,37]
   }],
 
   "crouch.left":[{
