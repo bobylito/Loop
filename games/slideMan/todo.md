@@ -1,6 +1,7 @@
 # TODO
 
 ## Engine
+ [ ] HUD
  [+] Pickups 
  [-] Box generalization
  [+]  - Box for camera
@@ -13,6 +14,11 @@
  [ ] Interactive objects
  [ ]  - movable
  [ ]  - activable
+ [ ] Grapple
+ [ ] Special projectiles (silence shuriken, smoke bomb)
+ [ ] Invisibility
+ [ ] Mini map
+ [ ] Ladders
  
 ## Character animatons
  [+] Standing
@@ -23,6 +29,8 @@
  [ ] run 
  [ ] jumps
  [ ] push
+ [ ] ceiling walking
+ [ ] ladder climbing
 
 ## Framework / loop
  [+] GlMatrix inside!
