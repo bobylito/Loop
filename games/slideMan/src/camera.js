@@ -14,7 +14,7 @@
       oldInit(w, h, sys, ioState, resources, function setTrackedPosition( positionnable, zoom ){
           var z = zoom || 1;
           trackedPosition = {
-            p : vec2.fromValues(positionnable.position.x, positionnable.position.y),
+            p : positionnable.position,
             z : z
           }
         }, function mapConfig(mapData){
@@ -58,7 +58,7 @@
       oldInit(w, h, sys, ioState, resources, function setTrackedPosition( positionnable, zoom ){
           var z = zoom || 1;
           trackedPosition = {
-            p : vec2.fromValues(positionnable.position.x, positionnable.position.y),
+            p : positionnable.position,
             z : z
           }
         }, function mapConfig(mapData){

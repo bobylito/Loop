@@ -5,18 +5,9 @@
   models.CapacityPickup = CapacityPickup;
 
   function Player (x, y, w, h){
-    this.position = {
-      x : x,
-      y : y
-    };
-    this.motion = {
-      x : 0,
-      y : 0
-    };
-    this.size = {
-      h : h,
-      w : w       
-    };
+    this.position = [x,y];
+    this.motion = [0,0];
+    this.size = [w,h];
     this.isAlive = true;
     this.colliding = [false, false, false, false];
     this.capacities = [];
@@ -36,21 +27,21 @@
   Player.prototype = {
     getBoundingBoxAt : function( position ){
       return [
-        { x : position.x              , y : position.y},
-        { x : position.x + this.size.w, y : position.y},
-        { x : position.x + this.size.w, y : position.y + this.size.h},
-        { x : position.x              , y : position.y + this.size.h}
-      ];                 
+        [position[0]                , position[1]],
+        [position[0] + this.size[0] , position[1]],
+        [position[0] + this.size[0] , position[1] + this.size[1]],
+        [position[0]                , position[1] + this.size[1]]
+      ];
     },
     direction : function(){
-      if(this.motion.x===0  && this.motion.y<0)   { return 0;}
-      if(this.motion.x>0    && this.motion.y<0)   { return 1;}
-      if(this.motion.x>0    && this.motion.y===0) { return 2;}
-      if(this.motion.x>0    && this.motion.y>0)   { return 3;}
-      if(this.motion.x===0  && this.motion.y>0)   { return 4;}
-      if(this.motion.x<0    && this.motion.y>0)   { return 5;}
-      if(this.motion.x<0    && this.motion.y===0) { return 6;}
-      if(this.motion.x<0    && this.motion.y<0)   { return 7;}
+      if(this.motion[0]===0  && this.motion[1]<0)   { return 0;}
+      if(this.motion[0]>0    && this.motion[1]<0)   { return 1;}
+      if(this.motion[0]>0    && this.motion[1]===0) { return 2;}
+      if(this.motion[0]>0    && this.motion[1]>0)   { return 3;}
+      if(this.motion[0]===0  && this.motion[1]>0)   { return 4;}
+      if(this.motion[0]<0    && this.motion[1]>0)   { return 5;}
+      if(this.motion[0]<0    && this.motion[1]===0) { return 6;}
+      if(this.motion[0]<0    && this.motion[1]<0)   { return 7;}
     },
     collidingPoints  : function(meaningfulPoints, tileAt){
       var res = meaningfulPoints.filter(function(p){ 
@@ -70,29 +61,29 @@
         console.log("bip");
         if( ( (pIdx = indices.indexOf(2))!=-1 || (pIdx = indices.indexOf(3))!=-1 ) && (direction === 3 || direction === 4 || direction === 5) ){
           this.colliding[2]=true; 
-          faces.push( [2, p[pIdx].y] ); 
+          faces.push( [2, p[pIdx][1]] ); 
         }
         else if( ( (pIdx = indices.indexOf(0))!=-1 || (pIdx = indices.indexOf(1))!=-1 ) && (direction === 7 || direction === 0 || direction === 1) ){
           this.colliding[0]=true; 
-          faces.push( [0, p[pIdx].y] ); 
+          faces.push( [0, p[pIdx][1]] ); 
         }
       }
       else if(collidingPts.length >= 2){
         if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { 
           this.colliding[0]=true; 
-          faces.push( [0, p[pIdx].y] ); 
+          faces.push( [0, p[pIdx][1]] ); 
         }
         if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { 
           this.colliding[1]=true; 
-          faces.push( [1, p[pIdx].x] ); 
+          faces.push( [1, p[pIdx][0]] ); 
         }
         if( (pIdx = indices.indexOf(2))!=-1 &&  indices.indexOf(3)!=-1 ) { 
           this.colliding[2]=true; 
-          faces.push( [2, p[pIdx].y] ); 
+          faces.push( [2, p[pIdx][1]] ); 
         }
         if( (pIdx = indices.indexOf(3))!=-1 &&  indices.indexOf(0)!=-1 ) { 
           this.colliding[3]=true; 
-          faces.push( [3, p[pIdx].x] ); 
+          faces.push( [3, p[pIdx][0]] ); 
         }
       }
       return faces;
@@ -103,11 +94,8 @@
       var faces   = this.getCollisioningFaces( collidingPts, indices, direction );
 
       return faces.map( correctingVectorFromFace ).reduce(function(vectorSum, v){
-            return {
-              x : v.x + vectorSum.x,
-              y : v.y + vectorSum.y
-            }
-          }, {x : 0, y : 0});
+        return vec2.add(vectorSum, vectorSum, v)
+      }, [0,0]);
     },
     can: function( capacity ){
       return this.capacities.indexOf( capacity ) != -1;
