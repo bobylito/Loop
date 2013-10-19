@@ -1,7 +1,7 @@
 (function( micromando, models, camera, box ){
   var loading = Loop.text.loading({
     img : ["ouno.png", "textureMap.png", "assets/character.png"],
-    data : ["map.json", "assets/character.json"]
+    data : ["assets/maps/playground.json", "assets/character.json"]
   });
 
   var m = foreground();
@@ -45,12 +45,12 @@
         this.render = allAnimations.render.bind(allAnimations);
         this.track = trackPositionƒ;
 
-        this.player = micromando.models.Player.create(resources["map.json"]);
-        this.pickups = micromando.models.Pickup.createAll(resources["map.json"]);
+        this.player = micromando.models.Player.create(resources["assets/maps/playground.json"]);
+        this.pickups = micromando.models.Pickup.createAll(resources["assets/maps/playground.json"]);
 
         this.lastT  = ioState.time;
 
-        mapConfigƒ( resources["map.json"] );
+        mapConfigƒ( resources["assets/maps/playground.json"] );
         this.track( this.player );
 
         allAnimations._init.call(allAnimations, w, h, sys, ioState, resources, { 
@@ -59,17 +59,24 @@
         }, mapAnim);
       },
       animate : function(ioState, width, height){ 
-        var deltaT = ioState.deltaTime / 1000;
-        if( ioState.keys.LEFT ) this.player.motion.x = Math.min(0, Math.max( this.player.motion.x - 0.3, -10));
-        if( ioState.keys.RIGHT) this.player.motion.x = Math.max(0, Math.min( this.player.motion.x + 0.3,  10));
-        if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
-          var newXMotion = this.player.motion.x / 2;
-          this.player.motion.x = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
-        }
-
         for(var k in ioState.keys){
           loop.debug("key:"+k, ioState.keys[k]);
         }
+
+        var deltaT = ioState.deltaTime / 1000;
+        if( this.player.colliding[box.BOTTOM]){
+          if( ioState.keys.LEFT ) this.player.motion.x = Math.min(0, Math.max( this.player.motion.x - 0.3, -10));
+          if( ioState.keys.RIGHT) this.player.motion.x = Math.max(0, Math.min( this.player.motion.x + 0.3,  10));
+          if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
+            var newXMotion = this.player.motion.x / 2;
+            this.player.motion.x = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
+          }
+        }
+        else {
+          if( ioState.keys.LEFT ) this.player.motion.x = Math.min(0, Math.max( this.player.motion.x - 0.05, -10));
+          if( ioState.keys.RIGHT) this.player.motion.x = Math.max(0, Math.min( this.player.motion.x + 0.05,  10));
+        }
+
         if( this.player.can("jump") && ioState.keys.SPACE ){
           if( this.player.colliding[box.BOTTOM] ) {
             this.player.motion.y = -10;
@@ -211,14 +218,14 @@
           }
         }
         else if(this.model.colliding[box.RIGHT] ){
-          if(ioState.keys["RIGHT"]){
+          //if(ioState.keys["RIGHT"]){
             currentState = "wall-grip.right";
-          }
+          //}
         }
         else if(this.model.colliding[box.LEFT] ){
-          if(ioState.keys["LEFT"]){
+          //if(ioState.keys["LEFT"]){
             currentState = "wall-grip.left";
-          }
+          //}
         }
         else {
           if(this.model.motion.x > 0){
@@ -250,7 +257,7 @@
   function foreground(){
     return {
       _init : function(w,h,sys,ioState, resources, models){
-        var mapData = this.mapData = resources["map.json"];
+        var mapData = this.mapData = resources["assets/maps/playground.json"];
         this.texture = resources["textureMap.png"];
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
@@ -315,7 +322,7 @@
   function background(){
     return {
       _init : function(w,h,sys,ioState, resources, models){
-        var mapData = this.mapData = resources["map.json"];
+        var mapData = this.mapData = resources["assets/maps/playground.json"];
         this.texture = resources["textureMap.png"];
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
@@ -351,7 +358,7 @@
   function items(){
     return {
       _init : function(w,h,sys,ioState, resources, models){
-        var mapData = this.mapData  = resources["map.json"];
+        var mapData = this.mapData  = resources["assets/maps/playground.json"];
         this.txH    = mapData.tileheight;
         this.txW    = mapData.tilewidth ;
         this.texture= resources["textureMap.png"];

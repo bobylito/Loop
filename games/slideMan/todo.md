@@ -5,7 +5,7 @@
  [+] Pickups 
  [-] Box generalization
  [+]  - Box for camera
- [ ]  - Box for collisions
+ [?]  - Box for collisions
  [ ] Ennemies
  [ ]  - Static
  [ ]  - moving
@@ -20,7 +20,11 @@
  [ ] Mini map
  [ ] Ladders
  [+] Ceiling walk
- 
+ [ ] Door / teleport
+
+## Character movement 
+ [ ] Tweaks!
+
 ## Character animatons
  [+] Standing
  [+] walk right 
