@@ -52,40 +52,41 @@
     indicesOfPoints : function( points, pointsSubset ){
       return pointsSubset.map(function(p){ return points.indexOf(p); }); 
     },
+    updateCollidingStateWithMap : function(box, ){
+
+      this.colliding=[false, false, false, false];
+      this.colliding[3]=true; 
+    },
     getCollisioningFaces : function(collidingPts, indices, direction){
       var faces = [];
       var pIdx;
       var p = collidingPts;
-      this.colliding=[false, false, false, false];
       if( collidingPts.length === 1){
         console.log("bip");
         if( ( (pIdx = indices.indexOf(2))!=-1 || (pIdx = indices.indexOf(3))!=-1 ) && (direction === 3 || direction === 4 || direction === 5) ){
-          this.colliding[2]=true; 
           faces.push( [2, p[pIdx][1]] ); 
         }
         else if( ( (pIdx = indices.indexOf(0))!=-1 || (pIdx = indices.indexOf(1))!=-1 ) && (direction === 7 || direction === 0 || direction === 1) ){
-          this.colliding[0]=true; 
           faces.push( [0, p[pIdx][1]] ); 
         }
       }
       else if(collidingPts.length >= 2){
         if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { 
-          this.colliding[0]=true; 
           faces.push( [0, p[pIdx][1]] ); 
         }
         if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { 
-          this.colliding[1]=true; 
           faces.push( [1, p[pIdx][0]] ); 
         }
         if( (pIdx = indices.indexOf(2))!=-1 &&  indices.indexOf(3)!=-1 ) { 
-          this.colliding[2]=true; 
           faces.push( [2, p[pIdx][1]] ); 
         }
         if( (pIdx = indices.indexOf(3))!=-1 &&  indices.indexOf(0)!=-1 ) { 
-          this.colliding[3]=true; 
           faces.push( [3, p[pIdx][0]] ); 
         }
       }
+      this.colliding.forEach( function(c,i){
+        loop.debug("character["+i+"]", c);
+      });
       return faces;
     },
     correctionVector : function(bBox, collidingPts, direction, correctingVectorFromFace){
