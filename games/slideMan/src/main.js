@@ -297,6 +297,39 @@
         var mapY = Math.floor(position[1]);
         return map.data[ mapX + mapY * map.width];
       },
+      tilesOnXAxis:function(axis, lowerBound, upperBound){
+        var tiles = [];
+        for(var i=lowerBound; i <= Math.ceil(upperBound); i++){
+          var t = this.tileAt([i, axis]);
+          tiles.push([ 
+            box.getBoundingBoxTopLeft( [~~i, ~~axis], [1, 1] ), 
+            t
+          ]);
+        } 
+        return tiles;
+      },
+      tilesOnYAxis:function(axis, lowerBound, upperBound){
+        var tiles = [];
+        for(var i=lowerBound; i <= Math.ceil(upperBound); i++){
+          var t = this.tileAt([axis, i]);
+          tiles.push([ 
+            box.getBoundingBoxTopLeft( [~~axis, ~~i], [1,1]), 
+            t
+          ]);
+        } 
+        return tiles;
+      },
+      surroundingTiles : function( bbox, nBox ){
+        var surroundings = [];
+
+        surroundings[box.TOP]    = this.tilesOnXAxis( bbox[box.TOP],    nBox[box.LEFT], nBox[box.RIGHT]);
+        surroundings[box.BOTTOM] = this.tilesOnXAxis( bbox[box.BOTTOM], nBox[box.LEFT], nBox[box.RIGHT]);
+
+        surroundings[box.RIGHT]  = this.tilesOnYAxis( bbox[box.RIGHT],  nBox[box.TOP],  nBox[box.BOTTOM]);
+        surroundings[box.LEFT]   = this.tilesOnYAxis( bbox[box.LEFT],   nBox[box.TOP],  nBox[box.BOTTOM]);
+
+        return surroundings;
+      },
       correctFace : function( face ){
         if( face[0] === 0 ) return [ 0, Math.ceil( face[1]) - face[1] ];
         if( face[0] === 1 ) return [ Math.floor(face[1]) - face[1], 0 ];
@@ -311,10 +344,15 @@
         var bBox = positionnable.getBoundingBoxAt(newPosition);
         var collidingP  = positionnable.collidingPoints(bBox, this.tileAt.bind(this));
         var correction  = positionnable.correctionVector(bBox, collidingP, d, this.correctFace);
-        return [
+        var pos = [
           newPosition[0] + correction[0],
           newPosition[1] + correction[1]
         ];
+        positionnable.updateCollidingStateWithMap( 
+          box.getBoundingBoxTopLeft(pos, positionnable.size),
+          this
+        );
+        return pos;
       }
     };
   }

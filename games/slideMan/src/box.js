@@ -11,6 +11,30 @@
   box.BOTTOM  = 2;
   box.LEFT    = 3;
 
+  box.fromBox = function makeBoxFromBox(bbox){
+    return vec4.copy([], bbox);
+  };
+
+  box.expand = function expandBox(bbox, value){
+    bbox[box.TOP]     -= value;
+    bbox[box.RIGHT]   += value;
+    bbox[box.BOTTOM]  += value;
+    bbox[box.LEFT]    -= value;
+    return bbox;
+  };
+
+  box.merge = function mergeBox(box1, box2){
+    if( !box1 && !box2) throw new Error("At least one box is expected");
+    if( !box2 ) return box1;
+    if( !box1 ) return box2;
+    return [
+      Math.min( box1[box.TOP],    box2[box.TOP] ),
+      Math.max( box1[box.RIGHT],  box2[box.RIGHT] ),
+      Math.max( box1[box.BOTTOM], box2[box.BOTTOM] ),
+      Math.min( box1[box.LEFT],   box2[box.LEFT] )
+    ];
+  }
+
   box.getBoundingBoxTopLeft = function getBoundingBox( position, size ){
     return [
       position[1],
@@ -37,19 +61,13 @@
             box1[box.TOP]   <= box2[box.BOTTOM];
   }
 
-  box.inside = function(box1, box2){
-    return  box1[box.RIGHT] >= box2[box.RIGHT] && 
-            box1[box.LEFT]  <= box2[box.LEFT] &&
-            box1[box.TOP]   <= box2[box.TOP] &&
-            box1[box.BOTTOM]>= box1[box.BOTTOM]
-  }
-
   function isPointInBox(b, point){
     return b[box.BOTTOM] > point[1] &&
            b[box.TOP]    < point[1] &&
            b[box.RIGHT]  > point[0] &&
            b[box.LEFT]   < point[0];
   }
+
 })(
     window.micromando = window.micromando || {},
     window.micromando.box = window.micromando.box || {}

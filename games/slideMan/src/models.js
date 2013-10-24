@@ -1,4 +1,4 @@
-(function(m, models){
+(function(m, models, box){
 
   models.Player = Player;
   models.Pickup = Pickup;
@@ -52,10 +52,19 @@
     indicesOfPoints : function( points, pointsSubset ){
       return pointsSubset.map(function(p){ return points.indexOf(p); }); 
     },
-    updateCollidingStateWithMap : function(box, ){
 
-      this.colliding=[false, false, false, false];
-      this.colliding[3]=true; 
+    updateCollidingStateWithMap : function(bbox, map ){
+      var xpBox = box.expand( box.fromBox( bbox ), 0.01);
+      var surroundings = map.surroundingTiles( xpBox, bbox );
+      var collideWithXpBox = box.collide.bind( window, xpBox);
+      
+      this.colliding = surroundings.map( function mix(listOfBloc){
+        return listOfBloc.filter( function isCollidible(blocWithType){ return blocWithType[1] != 0; } )
+                         .map(    function removeType(  blocWithType){ return blocWithType[0]; } )
+                         .reduce( box.merge, undefined );
+      })
+      .map( function(b){ return Array.isArray(b)  ? b : [0,0,0,0]; } )
+      .map( collideWithXpBox );
     },
     getCollisioningFaces : function(collidingPts, indices, direction){
       var faces = [];
@@ -177,5 +186,6 @@
 
 })(
     window.micromando = window.micromando || {},
-    window.micromando.models = window.micromando.models || {}
+    window.micromando.models = window.micromando.models || {},
+    window.micromando.box = window.micromando.box || {}
   )
