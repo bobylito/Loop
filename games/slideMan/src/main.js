@@ -330,13 +330,6 @@
 
         return surroundings;
       },
-      correctFace : function( face ){
-        if( face[0] === 0 ) return [ 0, Math.ceil( face[1]) - face[1] ];
-        if( face[0] === 1 ) return [ Math.floor(face[1]) - face[1], 0 ];
-        if( face[0] === 2 ) return [ 0, (Math.floor(face[1]) - face[1])];
-        if( face[0] === 3 ) return [ Math.ceil( face[1]) - face[1], 0 ];
-        return [0, 0];
-      },
       moveTo : function(positionnable, newPosition){
         var newPosBox = box.getBoundingBoxTopLeft(newPosition, positionnable.size);
         var collidingFaces = positionnable.collisionBoxesMap(
@@ -345,13 +338,16 @@
           this
         );
 
-        var correction = positionnable.correctionVector2(collidingFaces, newPosBox);
+        var correction = positionnable.correctionVector(collidingFaces, newPosBox);
         var pos = [
           newPosition[0] + correction[0],
           newPosition[1] + correction[1]
         ];
-        positionnable.updateCollidingStateWithMap( 
-          box.getBoundingBoxTopLeft(pos, positionnable.size),
+
+        var newBox = box.getBoundingBoxTopLeft(pos, positionnable.size);
+        positionnable.colliding = positionnable.collisionBoxesMap( 
+          newBox,
+          box.expand( box.fromBox( newBox ), 0.01),
           this
         );
         return pos;

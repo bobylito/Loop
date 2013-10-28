@@ -25,19 +25,6 @@
   };
 
   Player.prototype = {
-    updateCollidingStateWithMap : function(bbox, map ){
-      var xpBox = box.expand( box.fromBox( bbox ), 0.01);
-      var surroundings = map.surroundingTiles( xpBox, bbox );
-      var collideWithXpBox = box.collide.bind( window, xpBox);
-      
-      this.colliding = surroundings.map( function mix(listOfBloc){
-          return listOfBloc.filter( function isCollidible(blocWithType){ return blocWithType[1] != 0; } )
-                           .map(    function removeType(  blocWithType){ return blocWithType[0]; } )
-                           .reduce( box.merge, undefined );
-        })
-        .map( function(b){ return Array.isArray(b)  ? b : [0,0,0,0]; } )
-        .map( collideWithXpBox );
-    },
     collisionBoxesMap : function(box1, box2, map ){
       var xpBox = box2;
       var bbox  = box1;
@@ -52,7 +39,7 @@
         .map( function(b){ return Array.isArray(b)  ? b : [0,0,0,0]; } )
         .map( collideWithXpBox );
     },
-    correctionVector2 : function( collidingFaces, positionnableBox ){
+    correctionVector : function( collidingFaces, positionnableBox ){
       var nbFaces = collidingFaces.reduce( function(m, v){return m+v?1:0;}, 0 );
       if(nbFaces > 2) throw new Error("Too much colliding faces!");
       return collidingFaces.reduce(function(m, v, i){
