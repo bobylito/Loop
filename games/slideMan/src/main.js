@@ -90,11 +90,11 @@
           if( this.player.colliding[box.BOTTOM] ) {
             this.player.motion[1] = -10;
           }
-          if( this.player.colliding[box.RIGHT] ) {
+          else if( this.player.colliding[box.RIGHT] ) {
             this.player.motion[1] = -8;
             this.player.motion[0] = -5;
           }
-          if( this.player.colliding[box.LEFT] ) {
+          else if( this.player.colliding[box.LEFT] ) {
             this.player.motion[1] = -8;
             this.player.motion[0] = 5;
           }
