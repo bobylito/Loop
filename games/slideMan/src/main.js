@@ -338,11 +338,6 @@
         return [0, 0];
       },
       moveTo : function(positionnable, newPosition){
-        var d = positionnable.direction();
-        if( d === undefined) 
-          return newPosition;
-        var bBox = positionnable.getBoundingBoxAt(newPosition);
-        //var collidingP  = positionnable.collidingPoints(bBox, this.tileAt.bind(this));
         var newPosBox = box.getBoundingBoxTopLeft(newPosition, positionnable.size);
         var collidingFaces = positionnable.collisionBoxesMap(
           box.getBoundingBoxTopLeft(positionnable.position, positionnable.size),
@@ -351,7 +346,6 @@
         );
 
         var correction = positionnable.correctionVector2(collidingFaces, newPosBox);
-        //var correction  = positionnable.correctionVector(bBox, collidingP, d, this.correctFace);
         var pos = [
           newPosition[0] + correction[0],
           newPosition[1] + correction[1]

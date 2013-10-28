@@ -25,34 +25,6 @@
   };
 
   Player.prototype = {
-    getBoundingBoxAt : function( position ){
-      return [
-        [position[0]                , position[1]],
-        [position[0] + this.size[0] , position[1]],
-        [position[0] + this.size[0] , position[1] + this.size[1]],
-        [position[0]                , position[1] + this.size[1]]
-      ];
-    },
-    direction : function(){
-      if(this.motion[0]===0  && this.motion[1]<0)   { return 0;}
-      if(this.motion[0]>0    && this.motion[1]<0)   { return 1;}
-      if(this.motion[0]>0    && this.motion[1]===0) { return 2;}
-      if(this.motion[0]>0    && this.motion[1]>0)   { return 3;}
-      if(this.motion[0]===0  && this.motion[1]>0)   { return 4;}
-      if(this.motion[0]<0    && this.motion[1]>0)   { return 5;}
-      if(this.motion[0]<0    && this.motion[1]===0) { return 6;}
-      if(this.motion[0]<0    && this.motion[1]<0)   { return 7;}
-    },
-    collidingPoints  : function(meaningfulPoints, tileAt){
-      var res = meaningfulPoints.filter(function(p){ 
-        return tileAt(p) != 0; 
-      });
-      return res;
-    },
-    indicesOfPoints : function( points, pointsSubset ){
-      return pointsSubset.map(function(p){ return points.indexOf(p); }); 
-    },
-
     updateCollidingStateWithMap : function(bbox, map ){
       var xpBox = box.expand( box.fromBox( bbox ), 0.01);
       var surroundings = map.surroundingTiles( xpBox, bbox );
@@ -79,47 +51,6 @@
         })
         .map( function(b){ return Array.isArray(b)  ? b : [0,0,0,0]; } )
         .map( collideWithXpBox );
-    },
-    getCollisioningFaces : function(collidingPts, indices, direction){
-      var faces = [];
-      var pIdx;
-      var p = collidingPts;
-      if( collidingPts.length === 1){
-        console.log("bip");
-        if( ( (pIdx = indices.indexOf(2))!=-1 || (pIdx = indices.indexOf(3))!=-1 ) && (direction === 3 || direction === 4 || direction === 5) ){
-          faces.push( [2, p[pIdx][1]] ); 
-        }
-        else if( ( (pIdx = indices.indexOf(0))!=-1 || (pIdx = indices.indexOf(1))!=-1 ) && (direction === 7 || direction === 0 || direction === 1) ){
-          faces.push( [0, p[pIdx][1]] ); 
-        }
-      }
-      else if(collidingPts.length >= 2){
-        if( (pIdx = indices.indexOf(0))!=-1 &&  indices.indexOf(1)!=-1 ) { 
-          faces.push( [0, p[pIdx][1]] ); 
-        }
-        if( (pIdx = indices.indexOf(1))!=-1 &&  indices.indexOf(2)!=-1 ) { 
-          faces.push( [1, p[pIdx][0]] ); 
-        }
-        if( (pIdx = indices.indexOf(2))!=-1 &&  indices.indexOf(3)!=-1 ) { 
-          faces.push( [2, p[pIdx][1]] ); 
-        }
-        if( (pIdx = indices.indexOf(3))!=-1 &&  indices.indexOf(0)!=-1 ) { 
-          faces.push( [3, p[pIdx][0]] ); 
-        }
-      }
-      this.colliding.forEach( function(c,i){
-        loop.debug("character["+i+"]", c);
-      });
-      return faces;
-    },
-    correctionVector : function(bBox, collidingPts, direction, correctingVectorFromFace){
-      var motion  = this.motion;
-      var indices = this.indicesOfPoints(bBox, collidingPts);
-      var faces   = this.getCollisioningFaces( collidingPts, indices, direction );
-
-      return faces.map( correctingVectorFromFace ).reduce(function(vectorSum, v){
-        return vec2.add(vectorSum, vectorSum, v)
-      }, [0,0]);
     },
     correctionVector2 : function( collidingFaces, positionnableBox ){
       var nbFaces = collidingFaces.reduce( function(m, v){return m+v?1:0;}, 0 );
