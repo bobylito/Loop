@@ -3,9 +3,9 @@
 ## Engine
  [ ] HUD
  [+] Pickups 
- [-] Box generalization
+ [+] Box generalization
  [+]  - Box for camera
- [?]  - Box for collisions
+ [+]  - Box for collisions
  [ ] Ennemies
  [ ]  - Static
  [ ]  - moving

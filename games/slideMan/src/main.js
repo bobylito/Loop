@@ -1,6 +1,6 @@
 (function( micromando, models, camera, box ){
   var loading = Loop.text.loading({
-    img : ["ouno.png", "textureMap.png", "assets/character.png"],
+    img : ["ouno.png", "assets/textureMap_.png", "assets/character.png"],
     data : ["assets/maps/playground.json", "assets/character.json"]
   });
 
@@ -251,7 +251,7 @@
     return {
       _init : function(w,h,sys,ioState, resources, models){
         var mapData = this.mapData = resources["assets/maps/playground.json"];
-        this.texture = resources["textureMap.png"];
+        this.texture = resources["assets/textureMap_.png"];
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Map" })[0];
@@ -352,7 +352,7 @@
     return {
       _init : function(w,h,sys,ioState, resources, models){
         var mapData = this.mapData = resources["assets/maps/playground.json"];
-        this.texture = resources["textureMap.png"];
+        this.texture = resources["assets/textureMap_.png"];
         this.txH = mapData.tileheight;
         this.txW = mapData.tilewidth ;
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
@@ -390,12 +390,12 @@
         var mapData = this.mapData  = resources["assets/maps/playground.json"];
         this.txH    = mapData.tileheight;
         this.txW    = mapData.tilewidth ;
-        this.texture= resources["textureMap.png"];
+        this.texture= resources["assets/textureMap_.png"];
         this.pickups= models["pickups"];
       },
       render : function(ctx, width, height, camera){
         this.pickups.filter( isInCamera.bind(window, camera) ).forEach( function(p){
-          ctx.drawImage(this.texture, 0 , 50, 
+          ctx.drawImage(this.texture, 0 * this.txW, 1 * this.txH, 
              p.size[0] * this.txW , 
              p.size[1] * this.txH , 
              (p.position[0] - camera.box[box.LEFT]) * this.txW * camera.zoom, 

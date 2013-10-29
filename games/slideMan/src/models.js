@@ -10,7 +10,7 @@
     this.size = [w,h];
     this.isAlive = true;
     this.colliding = [false, false, false, false];
-    this.capacities = [];
+    this.capacities = ["jump"];
   }
 
   Player.create = function createPlayer(mapData){
@@ -19,8 +19,8 @@
     return new Player(
       start.x / mapData.tilewidth,
       start.y / mapData.tileheight,
-      0.28,
-      0.74
+      0.56,
+      1.48
     );
   };
 
