@@ -65,11 +65,16 @@
 
         var deltaT = ioState.deltaTime / 1000;
         if( this.player.colliding[box.BOTTOM]){
-          if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.3, -10));
-          if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.3,  10));
-          if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
-            var newXMotion = this.player.motion[0] / 2;
-            this.player.motion[0] = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
+          if( ioState.keys.DOWN ) {
+            this.player.motion[0] = this.player.motion[0] / 1.05 ; //* (this.player.motion[0] /this.player.motion[0]);
+          }
+          else{
+            if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.3, -10));
+            if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.3,  10));
+            if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
+              var newXMotion = this.player.motion[0] / 2;
+              this.player.motion[0] = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
+            }
           }
         }
         else if( ioState.keys.UP && this.player.colliding[ box.TOP ] ){
@@ -182,10 +187,20 @@
           }
           else {
             if(this.model.motion[0] > 0){
-              currentState = "run.right";
+              if( ioState.keys["DOWN"]){
+                currentState = "slide.right"
+              }
+              else{
+                currentState = "run.right";
+              }
             }
             else if(this.model.motion[0] < 0){
-              currentState = "run.left";
+              if( ioState.keys["DOWN"]){
+                currentState = "slide.left"
+              }
+              else{
+                currentState = "run.left";
+              }
             }
           }
         }
