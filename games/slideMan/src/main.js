@@ -262,31 +262,35 @@
     };
   }
 
+function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, camera, ctx){
+  var imgX = -1;
+  var imgY =  0;
+  if(j >= 0 && j <= mapLayer.height && i >= 0 && i < mapLayer.width){
+    var dataPos = i + j * mapLayer.width;
+    imgX = mapLayer.data[ dataPos ] - 1;
+  }
+  ctx.drawImage(texture, imgX * tileSize[0], imgY * tileSize[1], 
+                         tileSize[0], tileSize[1], 
+                         Math.ceil( (x - deltaI) * tileSize[0] * camera.zoom ), 
+                         Math.ceil( (y - deltaJ) * tileSize[1] * camera.zoom ), 
+                         tileSize[0] * camera.zoom, 
+                         tileSize[1] * camera.zoom);
+}
+
   function foreground(){
     return {
-      _init : function(w,h,sys,ioState, resources, models){
+      _init : function(w, h, sys, ioState, resources, models){
         var mapData = this.mapData = resources["assets/maps/playground.json"];
         this.texture = resources["assets/textureMap_.png"];
-        this.txH = mapData.tileheight;
-        this.txW = mapData.tilewidth ;
+        this.tileSize = [
+          mapData.tilewidth,
+          mapData.tileheight
+        ];
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Map" })[0];
+        this.drawTiles = drawTiles.bind(this, this.mapLayer, this.texture, this.tileSize);
       },
       render : function(ctx, width, height, camera){
-        var mapWidth = this.mapLayer.width;
-        camera.forEach( function drawFGTiles(x, y, i, j, deltaI, deltaJ){
-          var imgX = -1;
-          var imgY =  0;
-          if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
-            var dataPos = i + j * mapWidth;
-            imgX = this.mapLayer.data[ dataPos ] - 1;
-          }
-          ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
-                                 this.txW, this.txH, 
-                                 Math.ceil( (x - deltaI) * this.txW * camera.zoom ), 
-                                 Math.ceil( (y - deltaJ) * this.txH * camera.zoom ), 
-                                 this.txW * camera.zoom, 
-                                 this.txH * camera.zoom);
-        }, this);
+        camera.forEach(this.drawTiles, this, ctx);
       },
       animate: function(ioState, width, height){ 
         return true; 
@@ -364,26 +368,15 @@
       _init : function(w,h,sys,ioState, resources, models){
         var mapData = this.mapData = resources["assets/maps/playground.json"];
         this.texture = resources["assets/textureMap_.png"];
-        this.txH = mapData.tileheight;
-        this.txW = mapData.tilewidth ;
+        this.tileSize = [
+          mapData.tilewidth,
+          mapData.tileheight
+        ];
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
+        this.drawTiles = drawTiles.bind(this, this.mapLayer, this.texture, this.tileSize);
       },
       render : function(ctx, width, height, camera){
-        var mapWidth = this.mapLayer.width;
-        camera.forEach( function drawBGTiles(x,y,i,j,deltaI,deltaJ){
-            var imgX = -1;
-            var imgY =  0;
-            if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
-              var dataPos = i + j * mapWidth;
-              imgX = this.mapLayer.data[ dataPos ] - 1;
-            }
-            ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
-                                   this.txW, this.txH, 
-                                   Math.ceil( (x - deltaI) * this.txW * camera.zoom ), 
-                                   Math.ceil( (y - deltaJ) * this.txH * camera.zoom ), 
-                                   this.txW * camera.zoom, 
-                                   this.txH * camera.zoom);
-        }, this);
+        camera.forEach( this.drawTiles, this, ctx);
       },
       animate: function(ioState, width, height){ 
         return true; 

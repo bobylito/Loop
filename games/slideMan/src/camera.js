@@ -8,13 +8,23 @@
   }
 
   Camera.prototype.forEach = function( f, self ){
+    var args    = Array.prototype.splice.call(arguments, 0);
+    if(args.length > 2){
+      var otherArgs = args.slice(2);
+    }
     for( var i = Math.floor(this.box[box.LEFT]) , x = 0; 
          i < Math.ceil(this.box[box.RIGHT]) ; 
          i++, x++){
       for( var j = Math.floor(this.box[box.TOP]), y = 0; 
            j < Math.ceil(this.box[box.BOTTOM]); 
            j++, y++){
-        f.call(self || window, x, y, i, j, this.deltaI, this.deltaJ);
+        if(otherArgs){
+          f.apply(self || window, 
+                  [x, y, i, j, this.deltaI, this.deltaJ, this].concat(otherArgs) );
+        }
+        else {
+          f.call(self || window, x, y, i, j, this.deltaI, this.deltaJ, this);
+        }
       }
     }
   };
