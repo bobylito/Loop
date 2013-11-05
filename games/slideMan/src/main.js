@@ -273,24 +273,20 @@
       },
       render : function(ctx, width, height, camera){
         var mapWidth = this.mapLayer.width;
-        var deltaI = camera.box[box.LEFT]  - Math.floor(camera.box[box.LEFT]);
-        var deltaJ = camera.box[box.TOP]   - Math.floor(camera.box[box.TOP]);
-        for( var i = Math.floor(camera.box[box.LEFT]) , x = 0; i < Math.ceil(camera.box[box.RIGHT]) ; i++, x++){
-          for( var j = Math.floor(camera.box[box.TOP]), y = 0; j < Math.ceil(camera.box[box.BOTTOM]); j++, y++){
-            var imgX = -1;
-            var imgY =  0;
-            if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
-              var dataPos = i + j * mapWidth;
-              imgX = this.mapLayer.data[ dataPos ] - 1;
-            }
-            ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
-                                   this.txW, this.txH, 
-                                   ~~( (x - deltaI) * this.txW * camera.zoom ), 
-                                   ~~( (y - deltaJ) * this.txH * camera.zoom ), 
-                                   this.txW * camera.zoom, 
-                                   this.txH * camera.zoom);
+        camera.forEach( function drawFGTiles(x, y, i, j, deltaI, deltaJ){
+          var imgX = -1;
+          var imgY =  0;
+          if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
+            var dataPos = i + j * mapWidth;
+            imgX = this.mapLayer.data[ dataPos ] - 1;
           }
-        }
+          ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
+                                 this.txW, this.txH, 
+                                 Math.ceil( (x - deltaI) * this.txW * camera.zoom ), 
+                                 Math.ceil( (y - deltaJ) * this.txH * camera.zoom ), 
+                                 this.txW * camera.zoom, 
+                                 this.txH * camera.zoom);
+        }, this);
       },
       animate: function(ioState, width, height){ 
         return true; 
@@ -374,10 +370,7 @@
       },
       render : function(ctx, width, height, camera){
         var mapWidth = this.mapLayer.width;
-        var deltaI = camera.box[box.LEFT]  - Math.floor(camera.box[box.LEFT]);
-        var deltaJ = camera.box[box.TOP]   - Math.floor(camera.box[box.TOP]);
-        for( var i = Math.floor(camera.box[box.LEFT]) , x = 0; i < Math.ceil(camera.box[box.RIGHT]) ; i++, x++){
-          for( var j = Math.floor(camera.box[box.TOP]), y = 0; j < Math.ceil(camera.box[box.BOTTOM]); j++, y++){
+        camera.forEach( function drawBGTiles(x,y,i,j,deltaI,deltaJ){
             var imgX = -1;
             var imgY =  0;
             if(j >= 0 && j <= this.mapData.height && i >= 0 && i < this.mapData.width){
@@ -386,12 +379,11 @@
             }
             ctx.drawImage(this.texture, imgX * this.txW, imgY * this.txH, 
                                    this.txW, this.txH, 
-                                   ~~( (x - deltaI) * this.txW * camera.zoom ), 
-                                   ~~( (y - deltaJ) * this.txH * camera.zoom ), 
+                                   Math.ceil( (x - deltaI) * this.txW * camera.zoom ), 
+                                   Math.ceil( (y - deltaJ) * this.txH * camera.zoom ), 
                                    this.txW * camera.zoom, 
                                    this.txH * camera.zoom);
-          }
-        }
+        }, this);
       },
       animate: function(ioState, width, height){ 
         return true; 

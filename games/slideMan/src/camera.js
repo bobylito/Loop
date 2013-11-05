@@ -1,5 +1,24 @@
 (function(m, box, camera){
 
+  function Camera( cameraBox, zoom){
+    this.box  = cameraBox;
+    this.zoom = zoom;
+    this.deltaI = cameraBox[box.LEFT] - Math.floor(cameraBox[box.LEFT]);
+    this.deltaJ = cameraBox[box.TOP]  - Math.floor(cameraBox[box.TOP]);
+  }
+
+  Camera.prototype.forEach = function( f, self ){
+    for( var i = Math.floor(this.box[box.LEFT]) , x = 0; 
+         i < Math.ceil(this.box[box.RIGHT]) ; 
+         i++, x++){
+      for( var j = Math.floor(this.box[box.TOP]), y = 0; 
+           j < Math.ceil(this.box[box.BOTTOM]); 
+           j++, y++){
+        f.call(self || window, x, y, i, j, this.deltaI, this.deltaJ);
+      }
+    }
+  };
+
   /**
    * Simple camera 
    * Tracks an object
@@ -28,10 +47,10 @@
           [w, h], 
           vec2.scale( vec2.create(), tileSize, zoom)
         );
-        var camera  = {
-          box     : box.getBoundingBoxCenter(trackedPosition.p, screenSize),
-          zoom    : zoom
-        };
+        var camera  = new Camera(
+          box.getBoundingBoxCenter(trackedPosition.p, screenSize),
+          zoom
+        );
         loop.debug( "camera.top", camera.box[box.TOP].toFixed(4) );
         loop.debug( "camera.right", camera.box[box.RIGHT].toFixed(4) );
         loop.debug( "camera.bottom", camera.box[box.BOTTOM].toFixed(4) );
@@ -99,10 +118,10 @@
 
           return b;
         })(b);
-        var camera  = {
-          box     : correctedBox,
-          zoom    : zoom
-        };
+        var camera  = new Camera(
+          correctedBox,
+          zoom
+        );
         loop.debug( "camera.top", camera.box[box.TOP].toFixed(4) );
         loop.debug( "camera.right", camera.box[box.RIGHT].toFixed(4) );
         loop.debug( "camera.bottom", camera.box[box.BOTTOM].toFixed(4) );

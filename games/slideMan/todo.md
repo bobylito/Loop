@@ -25,6 +25,9 @@
 ## Character movement 
  [ ] Tweaks!
 
+## BUGS 
+ [ ] Tiling / black line
+
 ## Character animatons
  [+] Standing
  [+] walk right 
