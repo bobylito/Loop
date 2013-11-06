@@ -3,6 +3,7 @@
   models.Player = Player;
   models.Pickup = Pickup;
   models.CapacityPickup = CapacityPickup;
+  models.Ennemy = Ennemy;
 
   function Player (x, y, w, h){
     this.position = [x,y];
@@ -67,7 +68,35 @@
   Map.prototype = {
   };
 
-  function Pickup( x, y, w, h) {
+  function Ennemy( x, y, w, h ){
+    this.position = vec2.fromValues(x, y);
+    this.size     = vec2.fromValues(w, h);
+  }
+
+  Ennemy.create = function( objectData, tileSize ){
+    return new Ennemy(
+          objectData.x / tileSize[0],
+          objectData.y / tileSize[1],
+          objectData.width / tileSize[0],
+          objectData.height/ tileSize[1]
+        );
+  };
+
+  Ennemy.createAll = function(mapData){
+    var baddiesL = mapData.layers.filter(function(l){ 
+          return l.name === "badies" 
+        })[0];
+    var tileSize = [mapData.tilewidth, mapData.tileheight];
+    return baddiesL.objects.map(function(o){
+      return models.Ennemy.create(o, tileSize);
+    });
+  };
+
+  Ennemy.prototype = {
+    
+  };
+
+  function Pickup( x, y, w, h ) {
     this.position = vec2.fromValues( x, y);
     this.size     = vec2.fromValues( w, h);
   }
@@ -102,9 +131,6 @@
   };
 
   Pickup.prototype = {
-    collideWith: function( positionnableWithSize ){
-                 
-    }
   };
 
   function CapacityPickup(x, y, w, h, cap){

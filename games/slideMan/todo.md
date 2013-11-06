@@ -6,7 +6,7 @@
  [+] Box generalization
  [+]  - Box for camera
  [+]  - Box for collisions
- [ ] Ennemies
+ [-] Ennemies
  [ ]  - Static
  [ ]  - moving
  [+] Bound camera
@@ -26,7 +26,7 @@
  [ ] Tweaks!
 
 ## BUGS 
- [ ] Tiling / black line
+ [+] Tiling / black line
 
 ## Character animatons
  [+] Standing

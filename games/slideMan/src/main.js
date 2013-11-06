@@ -8,7 +8,8 @@
   var b = background();
   var c = character();
   var i = items();
-  var game = gameScreen( b, m, c, i ); 
+  var e = ennemies();
+  var game = gameScreen( b, m, c, i, e ); 
   var end  = finishScreen();
 
   loop.addIO( Loop.io.time );
@@ -38,15 +39,16 @@
     };
   }
 
-  function gameScreen(backgroundAnim,mapAnim, characterAnim, itemsAnim){
+  function gameScreen(backgroundAnim,mapAnim, characterAnim, itemsAnim, ennemies){
     var gameScreenAnim  = camera.bound({
       _init   : function(w, h, sys, ioState, resources, trackPositionƒ, mapConfigƒ){
-        var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim, itemsAnim);
+        var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim, itemsAnim, ennemies);
         this.render = allAnimations.render.bind(allAnimations);
         this.track = trackPositionƒ;
 
-        this.player = micromando.models.Player.create(resources["assets/maps/playground.json"]);
-        this.pickups = micromando.models.Pickup.createAll(resources["assets/maps/playground.json"]);
+        this.player   = micromando.models.Player.create(resources["assets/maps/playground.json"]);
+        this.pickups  = micromando.models.Pickup.createAll(resources["assets/maps/playground.json"]);
+        this.ennemies = micromando.models.Ennemy.createAll(resources["assets/maps/playground.json"]);
 
         this.lastT  = ioState.time;
 
@@ -55,7 +57,8 @@
 
         allAnimations._init.call(allAnimations, w, h, sys, ioState, resources, { 
           player  : this.player,
-          pickups : this.pickups
+          pickups : this.pickups,
+          ennemies: this.ennemies
         }, mapAnim);
       },
       animate : function(ioState, width, height){ 
@@ -396,6 +399,32 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
       render : function(ctx, width, height, camera){
         this.pickups.filter( isInCamera.bind(window, camera) ).forEach( function(p){
           ctx.drawImage(this.texture, 0 * this.txW, 1 * this.txH, 
+             p.size[0] * this.txW , 
+             p.size[1] * this.txH , 
+             (p.position[0] - camera.box[box.LEFT]) * this.txW * camera.zoom, 
+             (p.position[1] - camera.box[box.TOP] ) * this.txH * camera.zoom, 
+             p.size[0] * this.txW * camera.zoom, 
+             p.size[1] * this.txH * camera.zoom);
+        }, this);
+      },
+      animate: function(ioState, width, height){ 
+        return true; 
+      }
+    };
+  }
+
+  function ennemies(){
+    return {
+      _init : function(w,h,sys,ioState, resources, models){
+        var mapData   = this.mapData  = resources["assets/maps/playground.json"];
+        this.txH      = mapData.tileheight;
+        this.txW      = mapData.tilewidth ;
+        this.texture  = resources["assets/textureMap_.png"];
+        this.ennemies = models["ennemies"];
+      },
+      render : function(ctx, width, height, camera){
+        this.ennemies.filter( isInCamera.bind(window, camera) ).forEach( function drawSingleBaddy(p){
+          ctx.drawImage(this.texture, 4 * this.txW, 0 * this.txH, 
              p.size[0] * this.txW , 
              p.size[1] * this.txH , 
              (p.position[0] - camera.box[box.LEFT]) * this.txW * camera.zoom, 

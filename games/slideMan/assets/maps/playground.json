@@ -82,21 +82,6 @@
          "objects":[
                 {
                  "gid":5,
-                 "height":50,
-                 "name":"r2",
-                 "properties":
-                    {
-
-                    },
-                 "rotation":0,
-                 "type":"roomba",
-                 "visible":true,
-                 "width":50,
-                 "x":400,
-                 "y":250
-                }, 
-                {
-                 "gid":5,
                  "height":1000,
                  "name":"r1",
                  "properties":
@@ -107,8 +92,8 @@
                  "type":"roomba",
                  "visible":true,
                  "width":1000,
-                 "x":500,
-                 "y":350
+                 "x":501,
+                 "y":325
                 }],
          "opacity":1,
          "type":"objectgroup",
