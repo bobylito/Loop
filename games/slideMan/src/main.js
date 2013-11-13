@@ -129,6 +129,14 @@
           this.pickups.splice( this.pickups.indexOf(p) , 1);
         }, this);
 
+        var collidingEnnemies = this.ennemies.filter(function(ennemy){
+          return box.collide(playerBBox, ennemy.box);
+        });
+
+        collidingEnnemies.forEach( function(e){
+          e.hurt(this.player);
+        }, this);
+
         this.lastT  = ioState.time;
         this.logPlayer(this.player);
         
@@ -255,7 +263,7 @@
         var correctedPosition = this.map.moveTo( this.model, computedPosition );
         if( correctedPosition[0] != computedPosition[0] ) this.model.motion[0] = 0;
         if( correctedPosition[1] != computedPosition[1] ) {
-          if(this.model.motion[1] > 15) this.model.isAlive = false;
+          if(this.model.motion[1] > 50) this.model.isAlive = false;
           this.model.motion[1] = 0;
         }
         this.model.position = correctedPosition;
@@ -423,7 +431,7 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
         this.ennemies = models["ennemies"];
       },
       render : function(ctx, width, height, camera){
-        this.ennemies.filter( isInCamera.bind(window, camera) ).forEach( function drawSingleBaddy(p){
+        this.ennemies.filter( isInCamera2.bind(window, camera) ).forEach( function drawSingleBaddy(p){
           ctx.drawImage(this.texture, 4 * this.txW, 0 * this.txH, 
              p.size[0] * this.txW , 
              p.size[1] * this.txH , 
@@ -443,6 +451,10 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
     return box.collide(camera.box, 
         box.getBoundingBoxTopLeft( positionnable.position, positionnable.size ) 
       );
+  }
+
+  function isInCamera2(camera, positionnable){
+    return box.collide(camera.box, positionnable.box);
   }
 })(
     window.micromando         = window.micromando || {},

@@ -71,6 +71,7 @@
   function Ennemy( x, y, w, h ){
     this.position = vec2.fromValues(x, y);
     this.size     = vec2.fromValues(w, h);
+    this.box      = box.getBoundingBoxTopLeft(this.position, this.size);
   }
 
   Ennemy.create = function( objectData, tileSize ){
@@ -93,7 +94,16 @@
   };
 
   Ennemy.prototype = {
-    
+    setPosition : function(x, y){
+      if(x != this.position[0] || y != this.position[1]){
+        this.position = vec2.fromValues(x, y);
+        this.box = box.getBoundingBoxTopLeft(this.position, this.size);
+      }
+      return this.box;
+    },
+    hurt : function( player ){
+      player.isAlive = false;
+    }
   };
 
   function Pickup( x, y, w, h ) {
