@@ -72,6 +72,7 @@
     this.position = vec2.fromValues(x, y);
     this.size     = vec2.fromValues(w, h);
     this.box      = box.getBoundingBoxTopLeft(this.position, this.size);
+    this.motion   = [-0.1, 0.1]
   }
 
   Ennemy.create = function( objectData, tileSize ){
@@ -94,12 +95,40 @@
   };
 
   Ennemy.prototype = {
-    setPosition : function(x, y){
-      if(x != this.position[0] || y != this.position[1]){
-        this.position = vec2.fromValues(x, y);
+    setPosition : function(p){
+      if(p[0] != this.position[0] || p[1] != this.position[1]){
+        this.position = p;
         this.box = box.getBoundingBoxTopLeft(this.position, this.size);
       }
       return this.box;
+    },
+    collisionBoxesMap : function(box1, box2, map ){
+      var xpBox = box2;
+      var bbox  = box1;
+      var surroundings = map.surroundingTiles( xpBox, bbox );
+      var collideWithXpBox = box.collide.bind( window, xpBox);
+      
+      return surroundings.map( function mix(listOfBloc){
+          return listOfBloc.filter( function isCollidible(blocWithType){ return blocWithType[1] != 0; } )
+                           .map(    function removeType(  blocWithType){ return blocWithType[0]; } )
+                           .reduce( box.merge, undefined );
+        })
+        .map( function(b){ return Array.isArray(b)  ? b : [0,0,0,0]; } )
+        .map( collideWithXpBox );
+    },
+    correctionVector : function( collidingFaces, positionnableBox ){
+      var nbFaces = collidingFaces.reduce( function(m, v){return m+v?1:0;}, 0 );
+      if(nbFaces > 2) throw new Error("Too much colliding faces!");
+      return collidingFaces.reduce(function(m, v, i){
+        var p = positionnableBox[i];
+        if(v){
+          if(i === box.TOP)     return [ m[0],              Math.ceil( p ) - p  ];
+          if(i === box.RIGHT)   return [ Math.floor(p) - p, m[1] ];
+          if(i === box.BOTTOM)  return [ m[0],              Math.floor(p) - p ];
+          if(i === box.LEFT)    return [ Math.ceil(p)  - p, m[1]  ];
+        }
+        else return m;
+      }, [0,0] );
     },
     hurt : function( player ){
       player.isAlive = false;

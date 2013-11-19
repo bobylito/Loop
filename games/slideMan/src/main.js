@@ -423,12 +423,13 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
 
   function ennemies(){
     return {
-      _init : function(w,h,sys,ioState, resources, models){
+      _init : function(w,h,sys,ioState, resources, models, map){
         var mapData   = this.mapData  = resources["assets/maps/playground.json"];
         this.txH      = mapData.tileheight;
         this.txW      = mapData.tilewidth ;
         this.texture  = resources["assets/textureMap_.png"];
         this.ennemies = models["ennemies"];
+        this.map      = map;
       },
       render : function(ctx, width, height, camera){
         this.ennemies.filter( isInCamera2.bind(window, camera) ).forEach( function drawSingleBaddy(p){
@@ -442,6 +443,13 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
         }, this);
       },
       animate: function(ioState, width, height){ 
+        this.ennemies.forEach(function(e){
+          var computedPosition  = vec2.add( [], e.position, e.motion);
+          var correctedPosition = this.map.moveTo( e, computedPosition );
+          e.setPosition(correctedPosition);
+          if(e.colliding[box.LEFT]) e.motion  = [0.1, 0.1];
+          if(e.colliding[box.RIGHT]) e.motion = [-0.1, 0.1];
+        }, this);
         return true; 
       }
     };
