@@ -280,12 +280,14 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
     var dataPos = i + j * mapLayer.width;
     imgX = mapLayer.data[ dataPos ] - 1;
   }
-  ctx.drawImage(texture, imgX * tileSize[0], imgY * tileSize[1], 
-                         tileSize[0], tileSize[1], 
-                         Math.ceil( (x - deltaI) * tileSize[0] * camera.zoom ), 
-                         Math.ceil( (y - deltaJ) * tileSize[1] * camera.zoom ), 
-                         tileSize[0] * camera.zoom, 
-                         tileSize[1] * camera.zoom);
+  if(imgX!=-1){
+    ctx.drawImage(texture, imgX * tileSize[0], imgY * tileSize[1], 
+                           tileSize[0], tileSize[1], 
+                           Math.ceil( (x - deltaI) * tileSize[0] * camera.zoom ), 
+                           Math.ceil( (y - deltaJ) * tileSize[1] * camera.zoom ), 
+                           tileSize[0] * camera.zoom, 
+                           tileSize[1] * camera.zoom);
+  }
 }
 
   function foreground(){
