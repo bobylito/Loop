@@ -72,8 +72,8 @@
             this.player.motion[0] = this.player.motion[0] / 1.05 ; //* (this.player.motion[0] /this.player.motion[0]);
           }
           else{
-            if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.3, -10));
-            if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.3,  10));
+            if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 1, -15));
+            if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 1,  15));
             if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
               var newXMotion = this.player.motion[0] / 2;
               this.player.motion[0] = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
@@ -82,8 +82,8 @@
         }
         else if( ioState.keys.UP && this.player.colliding[ box.TOP ] ){
           this.player.motion[1] = this.player.motion[1] - 0.1;
-          if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.2, -5));
-          if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.2,  5));
+          if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.3, -5));
+          if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.3,  5));
           if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
             var newXMotion = this.player.motion[0] / 2;
             this.player.motion[0] = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
@@ -91,20 +91,20 @@
         } else {
           if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.05, -10));
           if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.05,  10));
-          this.player.motion[1] = this.player.motion[1] + 0.3; // GRAVITY
+          this.player.motion[1] = this.player.motion[1] + 0.5; // GRAVITY
         }
 
         if( this.player.can("jump") && ioState.keys.SPACE ){
           if( this.player.colliding[box.BOTTOM] ) {
-            this.player.motion[1] = -10;
+            this.player.motion[1] = -15;
           }
           else if( this.player.colliding[box.RIGHT] ) {
-            this.player.motion[1] = -8;
-            this.player.motion[0] = -5;
+            this.player.motion[1] = -10;
+            this.player.motion[0] = -8;
           }
           else if( this.player.colliding[box.LEFT] ) {
-            this.player.motion[1] = -8;
-            this.player.motion[0] = 5;
+            this.player.motion[1] = -10;
+            this.player.motion[0] = 8;
           }
         }
 
