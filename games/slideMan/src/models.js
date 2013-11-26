@@ -3,7 +3,8 @@
   models.Player = Player;
   models.Pickup = Pickup;
   models.CapacityPickup = CapacityPickup;
-  models.Ennemy = Ennemy;
+  models.Ennemy     = Ennemy;
+  models.Activable  = Activable;
 
   function Player (x, y, w, h){
     this.position = [x,y];
@@ -66,6 +67,50 @@
   Map.create = function createMap(){}
 
   Map.prototype = {
+  };
+
+  function Activable(x, y, w, h, type, properties){
+    this.position = vec2.fromValues(x,y);
+    this.size     = vec2.fromValues(w,h);
+    this.type     = type;
+    this.box      = box.getBoundingBoxTopLeft(this.position, this.size);
+    this.properties = properties;
+  }
+
+  Activable.create = function( objectData, tileSize ){
+    return new Activable(
+          objectData.x / tileSize[0],
+          objectData.y / tileSize[1],
+          objectData.width / tileSize[0],
+          objectData.height/ tileSize[1],
+          objectData.type,
+          objectData.properties
+        );
+  };
+
+  Activable.createAll = function(mapData){
+    var activableL = mapData.layers.filter(function(l){ 
+          return l.name === "activable" 
+        })[0];
+    var tileSize = [mapData.tilewidth, mapData.tileheight];
+    return activableL.objects.map(function(o){
+      return models.Activable.create(o, tileSize);
+    });
+  };
+
+  Activable.prototype = {
+    setPosition : function(p){
+      if(p[0] != this.position[0] || p[1] != this.position[1]){
+        this.position = p;
+        this.box = box.getBoundingBoxTopLeft(this.position, this.size);
+      }
+      return this.box;
+    },
+    activate : function( character ){   
+      console.log("DOOR : ", character);
+      var pos = JSON.parse(this.properties.position);
+      character.position = pos;
+    }
   };
 
   function Ennemy( x, y, w, h ){

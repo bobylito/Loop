@@ -46,9 +46,10 @@
         this.render = allAnimations.render.bind(allAnimations);
         this.track = trackPositionƒ;
 
-        this.player   = micromando.models.Player.create(resources["assets/maps/playground.json"]);
-        this.pickups  = micromando.models.Pickup.createAll(resources["assets/maps/playground.json"]);
-        this.ennemies = micromando.models.Ennemy.createAll(resources["assets/maps/playground.json"]);
+        this.player     = micromando.models.Player.create(resources["assets/maps/playground.json"]);
+        this.pickups    = micromando.models.Pickup.createAll(resources["assets/maps/playground.json"]);
+        this.ennemies   = micromando.models.Ennemy.createAll(resources["assets/maps/playground.json"]);
+        this.activables = micromando.models.Activable.createAll(resources["assets/maps/playground.json"]);
 
         this.lastT  = ioState.time;
 
@@ -67,9 +68,24 @@
         }
 
         var deltaT = ioState.deltaTime / 1000;
+        var playerBBox = box.getBoundingBoxTopLeft(
+              this.player.position,
+              this.player.size
+            );
+
         if( this.player.colliding[box.BOTTOM]){
           if( ioState.keys.DOWN ) {
             this.player.motion[0] = this.player.motion[0] / 1.05 ; //* (this.player.motion[0] /this.player.motion[0]);
+          }
+          else if( ioState.keys.UP ){
+            var collidingActivables = this.activables.filter(function(act){
+              var actBBox = box.getBoundingBoxTopLeft(act.position, act.size);
+              return box.collide(playerBBox, actBBox); 
+            });
+
+            collidingActivables.forEach(function(p){
+              p.activate(this.player);
+            }, this);
           }
           else{
             if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 1, -15));
@@ -113,11 +129,6 @@
             ioState.keys.LEFT && this.player.colliding[box.LEFT]      ) {
           this.player.motion[1] = 0.2;
         }
-
-        var playerBBox = box.getBoundingBoxTopLeft(
-              this.player.position,
-              this.player.size
-            );
 
         var collidingPickups = this.pickups.filter(function(pick){
           var pickBBox = box.getBoundingBoxTopLeft(pick.position, pick.size);
@@ -278,7 +289,9 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
   var imgY =  0;
   if(j >= 0 && j <= mapLayer.height && i >= 0 && i < mapLayer.width){
     var dataPos = i + j * mapLayer.width;
-    imgX = mapLayer.data[ dataPos ] - 1;
+    var tilePos = mapLayer.data[ dataPos ] - 1;
+    imgX = tilePos % 5;
+    imgY = Math.floor(tilePos / 5)
   }
   if(imgX!=-1){
     ctx.drawImage(texture, imgX * tileSize[0], imgY * tileSize[1], 
