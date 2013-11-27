@@ -14,8 +14,8 @@
 
   loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.deltaTime );
-  loop.addIO( Loop.io.keyboard( {"UP":38,"DOWN":40,"LEFT":37,"RIGHT":39} ) );
-  loop.addIO( Loop.io.noAutoKeyboard( {"SPACE":32} ) );
+  loop.addIO( Loop.io.keyboard( {"DOWN":40,"LEFT":37,"RIGHT":39} ) );
+  loop.addIO( Loop.io.noAutoKeyboard( {"UP":38,"SPACE":32} ) );
   loop.registerAnimation( Loop.tools.debug() );
   //loop.registerAnimation( Loop.tools.debugGraph() );
   loop.registerAnimation( Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) );

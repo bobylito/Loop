@@ -8,12 +8,12 @@
  [+]  - Box for collisions
  [-] Ennemies
  [ ]  - Static
- [ ]  - moving
+ [+]  - moving
  [+] Bound camera
  [+] Character placement given the camera
- [ ] Interactive objects
+ [-] Interactive objects
  [ ]  - movable
- [ ]  - activable
+ [+]  - activable
  [ ] Grapple
  [ ] Special projectiles (silence shuriken, smoke bomb)
  [ ] Invisibility
@@ -21,6 +21,9 @@
  [ ] Ladders
  [+] Ceiling walk
  [ ] Door / teleport
+ [ ] Sound
+ [ ]  - SFX
+ [ ]  - Music
 
 ## Character movement 
  [ ] Tweaks!
