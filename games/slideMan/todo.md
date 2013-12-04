@@ -7,23 +7,25 @@
  [+]  - Box for camera
  [+]  - Box for collisions
  [-] Ennemies
- [ ]  - Static
+ [-]  - Static
  [+]  - moving
  [+] Bound camera
  [+] Character placement given the camera
  [-] Interactive objects
  [ ]  - movable
- [+]  - activable
+ [ ]  - activable
+ [+]  - pickups
  [ ] Grapple
  [ ] Special projectiles (silence shuriken, smoke bomb)
  [ ] Invisibility
  [ ] Mini map
  [ ] Ladders
  [+] Ceiling walk
- [ ] Door / teleport
+ [+] Door / teleport
  [ ] Sound
  [ ]  - SFX
  [ ]  - Music
+ [ ] Resources alias
 
 ## Character movement 
  [ ] Tweaks!

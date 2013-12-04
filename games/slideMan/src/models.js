@@ -113,19 +113,37 @@
     }
   };
 
-  function Ennemy( x, y, w, h ){
+  function Ennemy( x, y, w, h, type ){
+    var config = Ennemy.config[type];
     this.position = vec2.fromValues(x, y);
     this.size     = vec2.fromValues(w, h);
     this.box      = box.getBoundingBoxTopLeft(this.position, this.size);
-    this.motion   = [-0.1, 0.1]
+    this.motion   = config.motion;
+    this.type     = type;
+    this.pixPos   = config.pixPosition;
+  }
+
+  Ennemy.config = {
+    "roomba" : {
+      "pixPosition" : [4,0],
+      "motion" :[-0.1, 0.1] 
+    },
+    "fireblock" : {
+      "pixPosition" : [3,1],
+      "motion" :[0, 0] 
+    }
   }
 
   Ennemy.create = function( objectData, tileSize ){
+    if( !Ennemy.config[objectData.type] ){
+      throw new Error("Can't create ennemy : type ["+ objectData.type + "] undefined");
+    }
     return new Ennemy(
           objectData.x / tileSize[0],
           objectData.y / tileSize[1],
           objectData.width / tileSize[0],
-          objectData.height/ tileSize[1]
+          objectData.height/ tileSize[1],
+          objectData.type
         );
   };
 

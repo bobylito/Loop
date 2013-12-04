@@ -448,7 +448,7 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
       },
       render : function(ctx, width, height, camera){
         this.ennemies.filter( isInCamera2.bind(window, camera) ).forEach( function drawSingleBaddy(p){
-          ctx.drawImage(this.texture, 4 * this.txW, 0 * this.txH, 
+          ctx.drawImage(this.texture, p.pixPos[0] * this.txW, p.pixPos[1] * this.txH, 
              p.size[0] * this.txW , 
              p.size[1] * this.txH , 
              (p.position[0] - camera.box[box.LEFT]) * this.txW * camera.zoom, 

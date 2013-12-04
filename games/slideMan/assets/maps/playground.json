@@ -124,6 +124,21 @@
                  "width":24,
                  "x":105,
                  "y":185
+                }, 
+                {
+                 "gid":9,
+                 "height":25,
+                 "name":"",
+                 "properties":
+                    {
+
+                    },
+                 "rotation":0,
+                 "type":"fireblock",
+                 "visible":true,
+                 "width":25,
+                 "x":191,
+                 "y":320
                 }],
          "opacity":1,
          "type":"objectgroup",
