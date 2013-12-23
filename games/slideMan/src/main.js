@@ -1,6 +1,6 @@
-(function( micromando, models, camera, box ){
+(function( micromando, models, camera, box, loader ){
   var loading = Loop.text.loading({
-    img : ["ouno.png", "assets/textureMap_.png", "assets/character.png"],
+    img : ["assets/textureMap_.png", "assets/character.png"],
     data : ["assets/maps/playground.json", "assets/character.json"]
   });
 
@@ -14,8 +14,8 @@
 
   loop.addIO( Loop.io.time );
   loop.addIO( Loop.io.deltaTime );
-  loop.addIO( Loop.io.keyboard( {"DOWN":40,"LEFT":37,"RIGHT":39} ) );
-  loop.addIO( Loop.io.noAutoKeyboard( {"UP":38,"SPACE":32} ) );
+  loop.addIO( Loop.io.keyboard( {"DOWN":40,"LEFT":37,"RIGHT":39, "UP":38} ) );
+  loop.addIO( Loop.io.noAutoKeyboard( {"ACTION":88,"SPACE":32} ) );
   loop.registerAnimation( Loop.tools.debug() );
   //loop.registerAnimation( Loop.tools.debugGraph() );
   loop.registerAnimation( Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) );
@@ -24,15 +24,17 @@
 
   function finishScreen(){
     return {
-      _init   : function(w, h, sys, ioState){
+      _init   : function(w, h, sys, ioState, result){
+        var missionSuccess = this.success = result.character.isAlive && result.character.scroll;
+        this.message = missionSuccess ? "Mission completed!":"Mission failed!"; 
       },
       animate : function(ioState){ return !ioState.keys["SPACE"] ;},
       render: function(ctx, w, h){
+          ctx.fillStyle = this.success ? "green" : "red";
+          var m1 = ctx.measureText(this.message);
+          ctx.fillText(this.message, w/2-m1.width/2, h * 0.33);
+
           ctx.fillStyle="white";
-
-          var m1 = ctx.measureText("GAME OVER");
-          ctx.fillText("GAME OVER", w/2-m1.width/2, h * 0.33);
-
           var m2 = ctx.measureText("press >space< to restart");
           ctx.fillText("press >space< to restart", w/2-m2.width/2, h * 0.66);
       }
@@ -77,7 +79,7 @@
           if( ioState.keys.DOWN ) {
             this.player.motion[0] = this.player.motion[0] / 1.05 ; //* (this.player.motion[0] /this.player.motion[0]);
           }
-          else if( ioState.keys.UP ){
+          else if( ioState.keys.ACTION ){
             var collidingActivables = this.activables.filter(function(act){
               var actBBox = box.getBoundingBoxTopLeft(act.position, act.size);
               return box.collide(playerBBox, actBBox); 
@@ -98,15 +100,15 @@
         }
         else if( ioState.keys.UP && this.player.colliding[ box.TOP ] ){
           this.player.motion[1] = this.player.motion[1] - 0.1;
-          if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.3, -5));
-          if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.3,  5));
+          if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.4, -5));
+          if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.4,  5));
           if(!ioState.keys.LEFT && !ioState.keys.RIGHT) {
             var newXMotion = this.player.motion[0] / 2;
             this.player.motion[0] = Math.max(Math.abs(newXMotion) < 0.001 ? 0 : newXMotion, 0);
           }
         } else {
-          if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.05, -10));
-          if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.05,  10));
+          if( ioState.keys.LEFT ) this.player.motion[0] = Math.min(0, Math.max( this.player.motion[0] - 0.4, -10));
+          if( ioState.keys.RIGHT) this.player.motion[0] = Math.max(0, Math.min( this.player.motion[0] + 0.4,  10));
           this.player.motion[1] = this.player.motion[1] + 0.5; // GRAVITY
         }
 
@@ -136,7 +138,7 @@
         });
 
         collidingPickups.forEach(function(p){
-          p.enhancePlayer(this.player);
+          p.activate(this.player);
           this.pickups.splice( this.pickups.indexOf(p) , 1);
         }, this);
 
@@ -162,6 +164,11 @@
         loop.debug( "position.y", p.position[1].toFixed(4) );
         loop.debug( "motion.x"  , p.motion[0].toFixed(4) );
         loop.debug( "motion.y"  , p.motion[1].toFixed(4) );
+      },
+      result : function(){
+        return {
+          character : this.player
+        };        
       }
     });
       
@@ -279,7 +286,7 @@
         }
         this.model.position = correctedPosition;
         this.lastT = ioState.time;
-        return this.model.isAlive; 
+        return this.model.isAlive && !this.model.missionComplete; 
       }
     };
   }
@@ -483,5 +490,6 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
     window.micromando         = window.micromando || {},
     window.micromando.models  = window.micromando.models || {},
     window.micromando.camera  = window.micromando.camera || {},
-    window.micromando.box     = window.micromando.box || {}
+    window.micromando.box     = window.micromando.box || {},
+    window.micromando.loader  = window.micromando.loader || {}
   );

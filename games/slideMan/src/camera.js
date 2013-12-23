@@ -12,11 +12,13 @@
     if(args.length > 2){
       var otherArgs = args.slice(2);
     }
+    var iMax = Math.ceil(this.box[box.RIGHT]);
+    var jMax = Math.ceil(this.box[box.BOTTOM]);
     for( var i = Math.floor(this.box[box.LEFT]) , x = 0; 
-         i < Math.ceil(this.box[box.RIGHT]) ; 
+         i < iMax; 
          i++, x++){
       for( var j = Math.floor(this.box[box.TOP]), y = 0; 
-           j < Math.ceil(this.box[box.BOTTOM]); 
+           j < jMax; 
            j++, y++){
         if(otherArgs){
           f.apply(self || window, 

@@ -11,6 +11,7 @@
     this.motion = [0,0];
     this.size = [w,h];
     this.isAlive = true;
+    this.missionComplete = false;
     this.colliding = [false, false, false, false];
     this.capacities = ["jump"];
   }
@@ -106,10 +107,17 @@
       }
       return this.box;
     },
-    activate : function( character ){   
-      console.log("DOOR : ", character);
-      var pos = JSON.parse(this.properties.position);
-      character.position = pos;
+    activate : function( character ){
+      if(this.properties.position){
+        var pos = JSON.parse(this.properties.position);
+        character.position = pos;
+      }
+      if(this.properties.requiredProperty){
+        var requiredProperty = this.properties.requiredProperty;
+        if(character[requiredProperty]){
+          character.missionComplete = true;
+        }
+      }
     }
   };
 
@@ -204,7 +212,7 @@
   }
 
   Pickup.knownPickups = {
-    "scroll" : CapacityPickup 
+    "scroll" : ObjectPickup
   };
   Pickup.create = function( objectData ){ 
     if( !objectData ){
@@ -251,10 +259,30 @@
   };
 
   CapacityPickup.prototype = new Pickup();
-  CapacityPickup.prototype.enhancePlayer = function( player ){
+  CapacityPickup.prototype.activate = function( player ){
     if(player.capacities.indexOf( this.capacity ) === -1){
       player.capacities.push(this.capacity);
     }
+  };
+
+  function ObjectPickup(x, y, w, h, cap){
+    Pickup.apply(this, arguments);
+    this.Object = cap;
+  }
+
+  ObjectPickup.create = function( objectData, txW, txH ){
+    return new ObjectPickup(
+      objectData.x / txW,
+      objectData.y / txH,
+      objectData.width / txW,
+      objectData.height/ txH,
+      objectData.properties.capability   
+    );
+  };
+
+  ObjectPickup.prototype = new Pickup();
+  ObjectPickup.prototype.activate = function( player ){
+    player.scroll = true;
   };
 
 

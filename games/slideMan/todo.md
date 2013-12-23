@@ -1,31 +1,34 @@
 # TODO
 
 ## Engine
+ [ ] Text stuff to introduce the objectives
+ [ ] Ladders
  [ ] HUD
+ [-] Resources alias
+ [ ] Sound
+ [ ]  - SFX
+ [ ]  - Music
+ [+] Mission complete screen (tweak intermission screen)
+ [+] End point
  [+] Pickups 
  [+] Box generalization
  [+]  - Box for camera
  [+]  - Box for collisions
- [-] Ennemies
- [-]  - Static
+ [+] Ennemies
+ [+]  - Static
  [+]  - moving
  [+] Bound camera
  [+] Character placement given the camera
  [-] Interactive objects
  [ ]  - movable
- [ ]  - activable
+ [+]  - activable
  [+]  - pickups
  [ ] Grapple
  [ ] Special projectiles (silence shuriken, smoke bomb)
  [ ] Invisibility
  [ ] Mini map
- [ ] Ladders
  [+] Ceiling walk
  [+] Door / teleport
- [ ] Sound
- [ ]  - SFX
- [ ]  - Music
- [ ] Resources alias
 
 ## Character movement 
  [ ] Tweaks!
