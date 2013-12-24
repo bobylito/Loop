@@ -3,7 +3,7 @@
    * Renderings are pluggable rendering for particles systems
    * Parameters : 
    *  - renderingOptions options specific to the rendering passed when the system is created
-   *  - context canvas 2D context
+   *  - outputs.canvas2d canvas 2D outputs.canvas2d
    *  - width width of the canvas
    *  - height height of the canvas
    */
@@ -15,7 +15,7 @@
      *  - size : diameter of the disc
      *  - compositionMethod : composition to use when drawing the disc
      */
-    circle : function(renderingOptions, context, width, height){
+    circle : function(renderingOptions, outputs){
       var half = renderingOptions.size / 2 ;
       if(!this.particleCanvas){
         this.particleCanvas = (function initCacheCanvas(){
@@ -33,20 +33,20 @@
           return particleCanvas;
         })();
       }
-      context.globalCompositeOperation = renderingOptions.compositionMethod;
+      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
+        outputs.canvas2d.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
       }
     },
     /**
      * texture: rendering of particles as images
      *  - img : image dom element
      */
-    texture: function(renderingOptions, context, width, height){
+    texture: function(renderingOptions, outputs){
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
+        outputs.canvas2d.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
       }
     },
     /**
@@ -55,17 +55,17 @@
      *  - compositionMethod
      *  - color
      */
-    line : function(renderingOptions, context, width, height){
+    line : function(renderingOptions, outputs){
       if(this.particles.length === 0) return ;
-      context.globalCompositeOperation = renderingOptions.compositionMethod;
-      context.beginPath();
-      context.strokeStyle=renderingOptions.color;
-      context.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
+      outputs.canvas2d.beginPath();
+      outputs.canvas2d.strokeStyle=renderingOptions.color;
+      outputs.canvas2d.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.lineTo(~~p[0], ~~p[1]);
+        outputs.canvas2d.lineTo(~~p[0], ~~p[1]);
       }
-      context.stroke();
+      outputs.canvas2d.stroke();
     },
     /**
      * quadratic : rendering of the particles as curve drawn between particles
@@ -73,33 +73,32 @@
      *  - compositionMethod
      *  - color
      */
-    quadratic : function(renderingOptions, context, width, height){
+    quadratic : function(renderingOptions, outputs){
       if( this.particles.length === 0 ) return ;
-      context.globalCompositeOperation = renderingOptions.compositionMethod;
-      context.beginPath();
-      context.strokeStyle = renderingOptions.color;
-      context.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
+      outputs.canvas2d.beginPath();
+      outputs.canvas2d.strokeStyle = renderingOptions.color;
+      outputs.canvas2d.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
+        outputs.canvas2d.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
       }
-      context.stroke();
+      outputs.canvas2d.stroke();
     },
-    imageData : function(renderingOptions, context, width, height){
-      var imgData = context.getImageData(0, 0,width,height),
+    imageData : function(renderingOptions, outputs){
+      var imgData = outputs.canvas2d.getImageData(0, 0, this.width, this.height),
           data    = imgData.data;
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i],
             x = ~~p[0],
             y = ~~p[1],
-            t = (x + y * width) * 4;
-        //context.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
+            t = (x + y * this.width) * 4;
         data[t] = 250;
         data[t+1] = 250;
         data[t+2] = 2;
         data[t+3] = 255;
       }
-      context.putImageData(imgData, 0,0);
+      outputs.canvas2d.putImageData(imgData, 0,0);
     },
   };
 
@@ -129,13 +128,13 @@
                     ){
       var eolf    = endOfLifef || function(){},
           system  = {
-            _init: function(w, h){
-              this.width = w;
-              this.height = h;
+            _init: function( outputs ){
+              this.width  = w = outputs.canvas2d.width;
+              this.height = h = outputs.canvas2d.height;
               this.particles = initf ? initf(w, h):[];
               this.toBeCreated = [];
             },
-            animate:function(ioState, width, height){
+            animate:function(ioState){
               this.toBeCreated.forEach(function( n ){
                 this._create(ioState, n);
               }, this);
@@ -143,13 +142,13 @@
               for(var i = 0; i < this.particles.length; i++){
                 var p   = this.particles[i],
                     now = ioState.time,
-                    vd  = fieldf(p, this.particles, width, height, ioState);
+                    vd  = fieldf(p, this.particles, this.width, this.height, ioState);
 
                 p[0] = p[0] + p[3];
                 p[1] = p[1] + p[4];
 
-                if( p[0] > width+500 || 
-                    p[1] > height+500 || 
+                if( p[0] > this.width+500 || 
+                    p[1] > this.height+500 || 
                     p[0] < -500 || 
                     p[1] < -500 ||
                     p[2] < now ){

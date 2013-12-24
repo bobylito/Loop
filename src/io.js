@@ -5,9 +5,9 @@
   }
 
   IOManager.prototype = {
-    _init : function( sceneDom ){
-      this.el = sceneDom;
-      this.elPos = sceneDom.getBoundingClientRect();
+    _init : function( outputContexts ){
+      this.el = document.body;
+      this.elPos = this.el.getBoundingClientRect();
     }
   };
 

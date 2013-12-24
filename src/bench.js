@@ -5,7 +5,7 @@
     document.body.appendChild(nbParticles);
     
     return {
-      _init:function(w, h, animationSystem){
+      _init:function(outputs, animationSystem){
         var bench = this;
         animationSystem.on("start", function(){
           bench.pf = animationSystem._animations.filter(function(f){

@@ -1,4 +1,5 @@
 (function( Loop, particles, io, benchmark){
+  window.loop = Loop.create( [ new Loop.out.canvas2d([document.getElementById("principal"), 300, 300]) ]);
   var sunPF = particles.lasso(
     function(){return [];},
     function(ioState, width, height){

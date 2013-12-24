@@ -1,14 +1,17 @@
 (function( Loop, text ){
   var simple = function(text, duration){
     return {
-      _init   : function(w, h, sys, ioState){
+      _init   : function(outputs, sys, ioState){
         this.startTime = ioState.time;
       },
       animate : function(ioState){return ioState.time < this.startTime + duration ;},
-      render: function(ctx, w, h){
-          var m = ctx.measureText(text);
-          ctx.fillStyle="white";
-          ctx.fillText(text, w/2-m.width/2, h/2);
+      render: function(outputs){
+          var c = outputs.canvas2d;
+          var w = c.width;
+          var h = c.height;
+          var m = c.measureText(text);
+          c.fillStyle="white";
+          c.fillText(text, w/2-m.width/2, h/2);
       }
     };
   };
@@ -23,7 +26,7 @@
       loaded    : {},
       totalLoad : 0, 
       total     : 0,
-      _init     : function(w, h, sys, ioState){
+      _init     : function(outputs, sys, ioState){
         if(resources.data){
           this.total += resources.data.length;
           resources.data.forEach(function( path ){

@@ -18,7 +18,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     document.body.appendChild(nbParticles);
     
     return {
-      _init:function(w, h, animationSystem){
+      _init:function(outputs, animationSystem){
         var bench = this;
         animationSystem.on("start", function(){
           bench.pf = animationSystem._animations.filter(function(f){
@@ -57,27 +57,14 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     this.end = function(){};
   };
 
-  function Loop( canvas, fadeoutf ){
+  function Loop( outputManagers ){
+    if(!outputManagers) throw new Error("No output managers provided.");
+
     this.eventRegister= {};
     this._animations  = [];
     this._io          = [];
+    this._out         = {};
 
-    this.canvas       = canvas || document.createElement("canvas");
-    this.canvasOff    = (function copyProperties(newC, original){
-      newC.height = original.height;
-      newC.width  = original.width;
-      return newC;
-    })(document.createElement("canvas"), this.canvas);
-    this.ctx          = this.canvas.getContext("2d");
-    this.ctxOff       = this.canvasOff.getContext("2d");
-
-    this.height       = canvas.height;
-    this.width        = canvas.width;
-    this.fadeoutf     = fadeoutf || function(){
-      this.ctxOff.globalCompositeOperation = "source-over";
-      this.ctxOff.fillStyle = "#000000";
-      this.ctxOff.fillRect(0,0,this.width,this.height);
-    };
     this.status = null;
     this.stats = (function(){
       var s = new Stats();
@@ -90,6 +77,9 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       return s;
     })();
 
+    //Add output managers
+    outputManagers.forEach( this._addOutput.bind(this) );
+
     this.loop = this.loop.bind(this);
   }
 
@@ -97,18 +87,21 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     loop:function(){
       var animSys = this,
           ioState = this.calculateIOState();
-      this.fadeoutf(this.ctxOff, this.width, this.height);
 
       this.stats.begin();
-      this._animations.forEach(function(anim){
-        anim.render( this.ctxOff, this.width, this.height );
-      }, this);
+
+      this._trigger("renderStart");
+
+      for(var i0 = 0; i0<this._animations.length;i0++){
+        this._animations[i0].render( this._out );
+      }
+
+      this._trigger("renderEnd");
 
       //Copie canvas offscreen vers canvas on
-      this.ctx.drawImage(this.canvasOff, 0, 0);
 
       for(var i = this._animations.length-1; i>=0; i--){
-        if(!this._animations[i].animate(ioState, this.width, this.height)){
+        if( !this._animations[i].animate(ioState) ){
           this._animations.splice(i,1);
         }
       }
@@ -120,7 +113,6 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     },
     start: function(){
       this._trigger("start");
-      this.fadeoutf(this.ctxOff, this.width, this.height);
       this.status = true;
       this.loop();
     },
@@ -130,7 +122,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     },
     registerAnimation: function(animation){
       if(typeof(animation._init) === "function")
-        animation._init( this.width, this.height, this, this.calculateIOState());
+        animation._init( this._out, this, this.calculateIOState());
       this._animations.push(animation);
     },
     addIO : function( ioManager ){
@@ -138,8 +130,15 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
         console.log( "Wrong IOManager : ",ioManager );
         throw new Error("IOmanagers should have _init method");
       }
-      ioManager._init( this.canvas );
+      ioManager._init( this._out );
       this._io.push( ioManager );
+    },
+    _addOutput : function( outputManager ){
+      if(!outputManager._init){
+        console.log( "Wrong OutputManager : ",outputManager );
+        throw new Error("OutputManagers should have _init method");
+      }
+      this._out[outputManager.name] = outputManager._init( this );
     },
     calculateIOState : function(){
       return this._io.map(    function(o){ return o.update;})
@@ -154,15 +153,17 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     _trigger: function(eventType){
       if( this.eventRegister[eventType] ){
         var animationSystem = this;
-        this.eventRegister[eventType].forEach(function(f){
-            f.call(animationSystem);
-        });
+        var fs = this.eventRegister[eventType];
+        if( !fs || !fs.length) return;
+        for(var i = fs.length - 1; i >=0; i--){
+            fs[i].call(animationSystem);
+        }
       }
     }
   };
 
-  loopModule.create = function( canvas, fadeoutf){
-    return new Loop(canvas, fadeoutf);
+  loopModule.create = function( outputManagers ){
+    return new Loop( outputManagers );
   };
 
   return Loop;
@@ -171,7 +172,8 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     window.Loop.animations = window.Loop.animations || {}
   );
 
-window.loop = Loop.create( document.getElementById("scene") );
+document.addEventListener("load", function(){
+});
 ;(function( Loop, filters){
 
   var vertexShaderSrc = 
@@ -263,9 +265,9 @@ window.loop = Loop.create( document.getElementById("scene") );
   }
 
   IOManager.prototype = {
-    _init : function( sceneDom ){
-      this.el = sceneDom;
-      this.elPos = sceneDom.getBoundingClientRect();
+    _init : function( outputContexts ){
+      this.el = document.body;
+      this.elPos = this.el.getBoundingClientRect();
     }
   };
 
@@ -330,6 +332,7 @@ window.loop = Loop.create( document.getElementById("scene") );
     io._keys = {};
     io._firedKeys = {};
     io._inversedConfig = {};
+
     for(var k in watchedKeys ){
       io._keys[k] = false;
       io._firedKeys[k] = false;
@@ -770,12 +773,69 @@ window.loop = Loop.create( document.getElementById("scene") );
     window.Loop = window.Loop || {},
     window.Loop.meta = window.Loop.meta || {}
   );
+;(function( Loop, out){
+
+  function OutputManager( name, initContext, parameters ){
+    this.name     = name;
+    this.context  = null;
+    this._initCtx = initContext;
+    this._params  = parameters || [];
+  }
+
+  OutputManager.prototype = {
+    _init: function( system ){
+      var contextObject = this._initCtx.apply(this, this._params);
+      if( contextObject.onRenderStart ) system.on("renderStart" , contextObject.onRenderStart );
+      if( contextObject.onRenderEnd )   system.on("renderEnd"   , contextObject.onRenderEnd );
+      return contextObject.ctx;
+    }
+  };
+
+  /**
+   * CanvasOutputManager
+   * Loop.out.canvas2d
+   *
+   * Use : 
+   * new Loop.out.canvas2d( document.getDocumentById("parentDiv"), 300, 300 );
+   */
+  var CanvasOutputManager = OutputManager.bind(null, "canvas2d", function init2DCanvas( domParent, width, height ){
+    var canvas       = document.createElement("canvas");
+    canvas.height    = height;
+    canvas.width     = width;
+
+    var canvasOff       = document.createElement("canvas");
+    canvasOff.height    = height;
+    canvasOff.width     = width;
+
+    var ctx          = canvas.getContext("2d");
+    var ctxOff       = canvas.getContext("2d");
+
+    domParent.appendChild( canvas );
+
+    return {
+      ctx           : ctxOff,
+      onRenderStart : function(){
+        ctxOff.globalCompositeOperation = "source-over";
+        ctxOff.fillStyle = "#000000";
+        ctxOff.fillRect(0,0,width,height);
+      },
+      onRenderEnd   : function(){
+        ctx.drawImage(canvasOff, 0, 0);
+      }
+    };
+  });
+
+  out.canvas2d = CanvasOutputManager;
+})(
+    window.Loop = window.Loop || {},
+    window.Loop.out = window.Loop.out || {}
+  );
 ;(function(Loop, particles){
   /**
    * Renderings are pluggable rendering for particles systems
    * Parameters : 
    *  - renderingOptions options specific to the rendering passed when the system is created
-   *  - context canvas 2D context
+   *  - outputs.canvas2d canvas 2D outputs.canvas2d
    *  - width width of the canvas
    *  - height height of the canvas
    */
@@ -787,7 +847,7 @@ window.loop = Loop.create( document.getElementById("scene") );
      *  - size : diameter of the disc
      *  - compositionMethod : composition to use when drawing the disc
      */
-    circle : function(renderingOptions, context, width, height){
+    circle : function(renderingOptions, outputs){
       var half = renderingOptions.size / 2 ;
       if(!this.particleCanvas){
         this.particleCanvas = (function initCacheCanvas(){
@@ -805,20 +865,20 @@ window.loop = Loop.create( document.getElementById("scene") );
           return particleCanvas;
         })();
       }
-      context.globalCompositeOperation = renderingOptions.compositionMethod;
+      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
+        outputs.canvas2d.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
       }
     },
     /**
      * texture: rendering of particles as images
      *  - img : image dom element
      */
-    texture: function(renderingOptions, context, width, height){
+    texture: function(renderingOptions, outputs){
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
+        outputs.canvas2d.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
       }
     },
     /**
@@ -827,17 +887,17 @@ window.loop = Loop.create( document.getElementById("scene") );
      *  - compositionMethod
      *  - color
      */
-    line : function(renderingOptions, context, width, height){
+    line : function(renderingOptions, outputs){
       if(this.particles.length === 0) return ;
-      context.globalCompositeOperation = renderingOptions.compositionMethod;
-      context.beginPath();
-      context.strokeStyle=renderingOptions.color;
-      context.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
+      outputs.canvas2d.beginPath();
+      outputs.canvas2d.strokeStyle=renderingOptions.color;
+      outputs.canvas2d.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.lineTo(~~p[0], ~~p[1]);
+        outputs.canvas2d.lineTo(~~p[0], ~~p[1]);
       }
-      context.stroke();
+      outputs.canvas2d.stroke();
     },
     /**
      * quadratic : rendering of the particles as curve drawn between particles
@@ -845,33 +905,32 @@ window.loop = Loop.create( document.getElementById("scene") );
      *  - compositionMethod
      *  - color
      */
-    quadratic : function(renderingOptions, context, width, height){
+    quadratic : function(renderingOptions, outputs){
       if( this.particles.length === 0 ) return ;
-      context.globalCompositeOperation = renderingOptions.compositionMethod;
-      context.beginPath();
-      context.strokeStyle = renderingOptions.color;
-      context.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
+      outputs.canvas2d.beginPath();
+      outputs.canvas2d.strokeStyle = renderingOptions.color;
+      outputs.canvas2d.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i];
-        context.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
+        outputs.canvas2d.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
       }
-      context.stroke();
+      outputs.canvas2d.stroke();
     },
-    imageData : function(renderingOptions, context, width, height){
-      var imgData = context.getImageData(0, 0,width,height),
+    imageData : function(renderingOptions, outputs){
+      var imgData = outputs.canvas2d.getImageData(0, 0, this.width, this.height),
           data    = imgData.data;
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i],
             x = ~~p[0],
             y = ~~p[1],
-            t = (x + y * width) * 4;
-        //context.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
+            t = (x + y * this.width) * 4;
         data[t] = 250;
         data[t+1] = 250;
         data[t+2] = 2;
         data[t+3] = 255;
       }
-      context.putImageData(imgData, 0,0);
+      outputs.canvas2d.putImageData(imgData, 0,0);
     },
   };
 
@@ -901,13 +960,13 @@ window.loop = Loop.create( document.getElementById("scene") );
                     ){
       var eolf    = endOfLifef || function(){},
           system  = {
-            _init: function(w, h){
-              this.width = w;
-              this.height = h;
+            _init: function( outputs ){
+              this.width  = w = outputs.canvas2d.width;
+              this.height = h = outputs.canvas2d.height;
               this.particles = initf ? initf(w, h):[];
               this.toBeCreated = [];
             },
-            animate:function(ioState, width, height){
+            animate:function(ioState){
               this.toBeCreated.forEach(function( n ){
                 this._create(ioState, n);
               }, this);
@@ -915,13 +974,13 @@ window.loop = Loop.create( document.getElementById("scene") );
               for(var i = 0; i < this.particles.length; i++){
                 var p   = this.particles[i],
                     now = ioState.time,
-                    vd  = fieldf(p, this.particles, width, height, ioState);
+                    vd  = fieldf(p, this.particles, this.width, this.height, ioState);
 
                 p[0] = p[0] + p[3];
                 p[1] = p[1] + p[4];
 
-                if( p[0] > width+500 || 
-                    p[1] > height+500 || 
+                if( p[0] > this.width+500 || 
+                    p[1] > this.height+500 || 
                     p[0] < -500 || 
                     p[1] < -500 ||
                     p[2] < now ){
@@ -996,14 +1055,17 @@ window.loop = Loop.create( document.getElementById("scene") );
 ;(function( Loop, text ){
   var simple = function(text, duration){
     return {
-      _init   : function(w, h, sys, ioState){
+      _init   : function(outputs, sys, ioState){
         this.startTime = ioState.time;
       },
       animate : function(ioState){return ioState.time < this.startTime + duration ;},
-      render: function(ctx, w, h){
-          var m = ctx.measureText(text);
-          ctx.fillStyle="white";
-          ctx.fillText(text, w/2-m.width/2, h/2);
+      render: function(outputs){
+          var c = outputs.canvas2d;
+          var w = c.width;
+          var h = c.height;
+          var m = c.measureText(text);
+          c.fillStyle="white";
+          c.fillText(text, w/2-m.width/2, h/2);
       }
     };
   };
@@ -1018,7 +1080,7 @@ window.loop = Loop.create( document.getElementById("scene") );
       loaded    : {},
       totalLoad : 0, 
       total     : 0,
-      _init     : function(w, h, sys, ioState){
+      _init     : function(outputs, sys, ioState){
         if(resources.data){
           this.total += resources.data.length;
           resources.data.forEach(function( path ){

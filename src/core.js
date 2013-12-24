@@ -19,27 +19,14 @@
     this.end = function(){};
   };
 
-  function Loop( canvas, fadeoutf ){
+  function Loop( outputManagers ){
+    if(!outputManagers) throw new Error("No output managers provided.");
+
     this.eventRegister= {};
     this._animations  = [];
     this._io          = [];
+    this._out         = {};
 
-    this.canvas       = canvas || document.createElement("canvas");
-    this.canvasOff    = (function copyProperties(newC, original){
-      newC.height = original.height;
-      newC.width  = original.width;
-      return newC;
-    })(document.createElement("canvas"), this.canvas);
-    this.ctx          = this.canvas.getContext("2d");
-    this.ctxOff       = this.canvasOff.getContext("2d");
-
-    this.height       = canvas.height;
-    this.width        = canvas.width;
-    this.fadeoutf     = fadeoutf || function(){
-      this.ctxOff.globalCompositeOperation = "source-over";
-      this.ctxOff.fillStyle = "#000000";
-      this.ctxOff.fillRect(0,0,this.width,this.height);
-    };
     this.status = null;
     this.stats = (function(){
       var s = new Stats();
@@ -52,6 +39,9 @@
       return s;
     })();
 
+    //Add output managers
+    outputManagers.forEach( this._addOutput.bind(this) );
+
     this.loop = this.loop.bind(this);
   }
 
@@ -59,18 +49,21 @@
     loop:function(){
       var animSys = this,
           ioState = this.calculateIOState();
-      this.fadeoutf(this.ctxOff, this.width, this.height);
 
       this.stats.begin();
-      this._animations.forEach(function(anim){
-        anim.render( this.ctxOff, this.width, this.height );
-      }, this);
+
+      this._trigger("renderStart");
+
+      for(var i0 = 0; i0<this._animations.length;i0++){
+        this._animations[i0].render( this._out );
+      }
+
+      this._trigger("renderEnd");
 
       //Copie canvas offscreen vers canvas on
-      this.ctx.drawImage(this.canvasOff, 0, 0);
 
       for(var i = this._animations.length-1; i>=0; i--){
-        if(!this._animations[i].animate(ioState, this.width, this.height)){
+        if( !this._animations[i].animate(ioState) ){
           this._animations.splice(i,1);
         }
       }
@@ -82,7 +75,6 @@
     },
     start: function(){
       this._trigger("start");
-      this.fadeoutf(this.ctxOff, this.width, this.height);
       this.status = true;
       this.loop();
     },
@@ -92,7 +84,7 @@
     },
     registerAnimation: function(animation){
       if(typeof(animation._init) === "function")
-        animation._init( this.width, this.height, this, this.calculateIOState());
+        animation._init( this._out, this, this.calculateIOState());
       this._animations.push(animation);
     },
     addIO : function( ioManager ){
@@ -100,8 +92,15 @@
         console.log( "Wrong IOManager : ",ioManager );
         throw new Error("IOmanagers should have _init method");
       }
-      ioManager._init( this.canvas );
+      ioManager._init( this._out );
       this._io.push( ioManager );
+    },
+    _addOutput : function( outputManager ){
+      if(!outputManager._init){
+        console.log( "Wrong OutputManager : ",outputManager );
+        throw new Error("OutputManagers should have _init method");
+      }
+      this._out[outputManager.name] = outputManager._init( this );
     },
     calculateIOState : function(){
       return this._io.map(    function(o){ return o.update;})
@@ -116,15 +115,17 @@
     _trigger: function(eventType){
       if( this.eventRegister[eventType] ){
         var animationSystem = this;
-        this.eventRegister[eventType].forEach(function(f){
-            f.call(animationSystem);
-        });
+        var fs = this.eventRegister[eventType];
+        if( !fs || !fs.length) return;
+        for(var i = fs.length - 1; i >=0; i--){
+            fs[i].call(animationSystem);
+        }
       }
     }
   };
 
-  loopModule.create = function( canvas, fadeoutf){
-    return new Loop(canvas, fadeoutf);
+  loopModule.create = function( outputManagers ){
+    return new Loop( outputManagers );
   };
 
   return Loop;
@@ -133,4 +134,5 @@
     window.Loop.animations = window.Loop.animations || {}
   );
 
-window.loop = Loop.create( document.getElementById("scene") );
+document.addEventListener("load", function(){
+});
