@@ -1,8 +1,10 @@
 (function( Loop, particles, io, benchmark){
-  window.loop = Loop.create( [ new Loop.out.canvas2d([document.getElementById("principal"), 300, 300]) ]);
+  var width = 500;
+  var height = 500;
+  window.loop = Loop.create( [ new Loop.out.canvas2d([document.getElementById("principal"), width, height]) ]);
   var sunPF = particles.lasso(
     function(){return [];},
-    function(ioState, width, height){
+    function(ioState){
       var r = Math.random();
       return [  
         // x 
@@ -30,7 +32,7 @@
  
   var starfieldPF = particles.circle(
     function(){return [];},
-    function(ioState, width, height){
+    function(ioState){
       var r = Math.random(),
           x = (width  + 1000) * Math.random() - 500,
           y = (height + 1000) * Math.random() - 500,
@@ -55,7 +57,7 @@
         ioState.time 
       ];
     },
-    function(p, allP, width, height){
+    function(p, allP){
       var xPrime = (p[0] - width/2),
           yPrime = (p[1] - height/2),
           d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));
@@ -81,7 +83,7 @@
 
   var explosionPF = particles.circle(
     function(){return [];},
-    function(ioState, width, height){
+    function(ioState){
       var r = Math.random();
       return [  
         // x 
@@ -97,7 +99,7 @@
         ioState.time 
       ];
     },
-    function(p, allP, width, height){
+    function(p, allP){
       p[3] = 1.05 * p[3];
       p[4] = 1.05 * p[4];
       return p;
@@ -124,7 +126,7 @@
   }, 200)
   setInterval(function(){
     explosionPF.create(500);
-  }, 2000);
+  }, 10000);
 
   loop.registerAnimation(benchmark.particles());
 
