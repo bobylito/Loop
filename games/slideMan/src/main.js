@@ -1,4 +1,9 @@
 (function( micromando, models, camera, box, loader ){
+  var width = 300;
+  var height = 300;
+
+  var loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height) );
+
   var loading = Loop.text.loading({
     img : ["assets/textureMap_.png", "assets/character.png"],
     data : ["assets/maps/playground.json", "assets/character.json"]

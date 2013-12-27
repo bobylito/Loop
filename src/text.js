@@ -2,16 +2,19 @@
   var simple = function(text, duration){
     return {
       _init   : function(outputs, sys, ioState){
+        console.log(ioState.time);
         this.startTime = ioState.time;
       },
-      animate : function(ioState){return ioState.time < this.startTime + duration ;},
-      render: function(outputs){
-          var c = outputs.canvas2d;
-          var w = c.width;
-          var h = c.height;
-          var m = c.measureText(text);
-          c.fillStyle="white";
-          c.fillText(text, w/2-m.width/2, h/2);
+      animate : function(ioState){
+        return ioState.time < this.startTime + duration ;
+      },
+      render: function(outputManagers){
+          var ctx = outputManagers.canvas2d.context;
+          var w = outputManagers.canvas2d.parameters.width;
+          var h = outputManagers.canvas2d.parameters.height;
+          var m = ctx.measureText(text);
+          ctx.fillStyle="white";
+          ctx.fillText(text, w/2-m.width/2, h/2);
       }
     };
   };
@@ -56,7 +59,10 @@
       animate : function(ioState){
         return this.total > this.totalLoad ;
       },
-      render: function(ctx, w, h){
+      render: function(outputManagers){
+        var ctx = outputManagers.canvas2d.context;
+        var w = outputManagers.canvas2d.parameters.width;
+        var h = outputManagers.canvas2d.parameters.height;
         var m = ctx.measureText(text);
         ctx.fillStyle="white";
         ctx.fillText(text, w/2-m.width/2, h/2);

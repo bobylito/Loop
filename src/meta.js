@@ -6,9 +6,10 @@
     if(arguments.length < 1) throw new Error("andThen must have at least one animation");
     var animations = Array.prototype.slice.call(arguments, 0);
     return {
-      _init:function(w, h, sys, ioState){
+      _init:function(outputs, sys, ioState){
         this._loop    = sys;
         this._result  = null;
+        this._cachedOutputs = outputs;
         this.current  = animations.shift();
         this.current._init.apply(this.current, arguments);
       },
@@ -24,7 +25,7 @@
             return false;
           }
           this.current = animations.shift();
-          this.current._init(w, h, this._loop, ioState, lastResult);
+          this.current._init(this._cachedOutputs, this._loop, ioState, lastResult);
         }
         return true;
       },
