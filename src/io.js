@@ -6,7 +6,7 @@
 
   IOManager.prototype = {
     _init : function( outputContexts ){
-      this.el = document.body;
+      this.el = outputContexts.canvas2d ?  outputContexts.canvas2d.parameters.canvas : document.body;
       this.elPos = this.el.getBoundingClientRect();
     }
   };

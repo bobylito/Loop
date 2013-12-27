@@ -17,21 +17,21 @@ ul li{list-style-type:none;}
 
 <body>
   <div id="principal"> 
-    <canvas id="scene" height="500" width="500"></canvas>
   </div>
 </body>
 
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function( Loop, io, particles, benchmark){
-  window.loop = Loop.create( [ new Loop.out.canvas2d([document.getElementById("principal"), 300, 300]) ]);
-
+  var width = 300;
+  var height = 300;
+  window.loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height) );
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
       fireFP = particles.circle(
       function(){ return []; },
-      function(ioState, width, height){
+      function(ioState){
         return [  
           // x 
           Math.random() * width,
@@ -47,7 +47,7 @@ ul li{list-style-type:none;}
           ioState.time
         ];
       },
-      function(p, allP, width, height){
+      function(p, allP){
         var xPrime = (p[0] - width  / 2),
             yPrime = (p[1] - height / 2),
             d = Math.sqrt(Math.pow(xPrime,2) + Math.pow(yPrime,2));

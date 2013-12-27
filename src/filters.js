@@ -7,8 +7,10 @@
   var glsl = function( fragShaderSrc ){
     return {
       glCanvas : document.createElement("canvas"),
-      _init   : function(w, h, sys, ioState){
+      _init   : function(outputManagers, sys, ioState){
         var compiled;
+        var w = outputManagers.canvas2d.parameters.width;
+        var h = outputManagers.canvas2d.parameters.height;
 
         this.glCanvas.width = w;
         this.glCanvas.height = h;
@@ -54,13 +56,12 @@
         gl.enableVertexAttribArray(positionLocation);
         gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-        this.canvas = sys.canvas;
-
         gl.uniform1i( gl.getUniformLocation(prog, "u_canvas"), 0);
-
       },
       animate : function(ioState){ return true;},
-      render  : function(ctx, w, h){
+      render  : function(outputManagers){
+        var w = outputManagers.canvas2d.parameters.width;
+        var h = outputManagers.canvas2d.parameters.height;
         var gl = this.glContext;
         var texture   = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -68,10 +69,11 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+        gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, outputManagers.canvas2d.parameters.canvas);
         this.glContext.drawArrays(this.glContext.TRIANGLES, 0, 6);
 
-        ctx.drawImage(this.glCanvas, 0, 0, w, h);
+        outputManagers.canvas2d.context.clearRect(0,0,w,h);
+        outputManagers.canvas2d.context.drawImage(this.glCanvas, 0, 0, w, h);
       }
     };
   };

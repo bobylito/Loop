@@ -3,7 +3,7 @@
    * Renderings are pluggable rendering for particles systems
    * Parameters : 
    *  - renderingOptions options specific to the rendering passed when the system is created
-   *  - outputs.canvas2d canvas 2D outputs.canvas2d
+   *  - outCtx canvas 2D outCtxS //FIXME
    *  - width width of the canvas
    *  - height height of the canvas
    */
@@ -16,6 +16,7 @@
      *  - compositionMethod : composition to use when drawing the disc
      */
     circle : function(renderingOptions, outputs){
+      var outCtx = outputs.canvas2d.context;
       var half = renderingOptions.size / 2 ;
       if(!this.particleCanvas){
         this.particleCanvas = (function initCacheCanvas(){
@@ -33,10 +34,10 @@
           return particleCanvas;
         })();
       }
-      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
+      outCtx.globalCompositeOperation = renderingOptions.compositionMethod;
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        outputs.canvas2d.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
+        outCtx.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
       }
     },
     /**
@@ -44,9 +45,10 @@
      *  - img : image dom element
      */
     texture: function(renderingOptions, outputs){
+      var outCtx = outputs.canvas2d.context;
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        outputs.canvas2d.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
+        outCtx.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
       }
     },
     /**
@@ -56,16 +58,17 @@
      *  - color
      */
     line : function(renderingOptions, outputs){
+      var outCtx = outputs.canvas2d.context;
       if(this.particles.length === 0) return ;
-      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
-      outputs.canvas2d.beginPath();
-      outputs.canvas2d.strokeStyle=renderingOptions.color;
-      outputs.canvas2d.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      outCtx.globalCompositeOperation = renderingOptions.compositionMethod;
+      outCtx.beginPath();
+      outCtx.strokeStyle=renderingOptions.color;
+      outCtx.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i];
-        outputs.canvas2d.lineTo(~~p[0], ~~p[1]);
+        outCtx.lineTo(~~p[0], ~~p[1]);
       }
-      outputs.canvas2d.stroke();
+      outCtx.stroke();
     },
     /**
      * quadratic : rendering of the particles as curve drawn between particles
@@ -74,19 +77,21 @@
      *  - color
      */
     quadratic : function(renderingOptions, outputs){
+      var outCtx = outputs.canvas2d.context;
       if( this.particles.length === 0 ) return ;
-      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
-      outputs.canvas2d.beginPath();
-      outputs.canvas2d.strokeStyle = renderingOptions.color;
-      outputs.canvas2d.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      outCtx.globalCompositeOperation = renderingOptions.compositionMethod;
+      outCtx.beginPath();
+      outCtx.strokeStyle = renderingOptions.color;
+      outCtx.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i];
-        outputs.canvas2d.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
+        outCtx.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
       }
-      outputs.canvas2d.stroke();
+      outCtx.stroke();
     },
     imageData : function(renderingOptions, outputs){
-      var imgData = outputs.canvas2d.getImageData(0, 0, this.width, this.height),
+      var outCtx = outputs.canvas2d.context;
+      var imgData = outCtx.getImageData(0, 0, this.width, this.height),
           data    = imgData.data;
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i],
@@ -98,7 +103,7 @@
         data[t+2] = 2;
         data[t+3] = 255;
       }
-      outputs.canvas2d.putImageData(imgData, 0,0);
+      outCtx.putImageData(imgData, 0,0);
     },
   };
 
@@ -129,8 +134,9 @@
       var eolf    = endOfLifef || function(){},
           system  = {
             _init: function( outputs ){
-              this.width  = w = outputs.canvas2d.width;
-              this.height = h = outputs.canvas2d.height;
+              var outCtx = outputs.canvas2d.parameters;
+              this.width  = w = outCtx.width;
+              this.height = h = outCtx.height;
               this.particles = initf ? initf(w, h):[];
               this.toBeCreated = [];
             },

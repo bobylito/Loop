@@ -25,7 +25,7 @@ ul li{list-style-type:none;}
   (function( Loop, particles, io, benchmark){
   var w = 600,
       h = 600;
-  window.loop = Loop.create( [ new Loop.out.canvas2d([document.getElementById("principal"), w,h]) ]);
+  window.loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), w, h) );
   var nbFireballs = 25,
       fireballs = [];
 

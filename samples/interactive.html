@@ -17,27 +17,28 @@ ul li{list-style-type:none;}
 
 <body>
   <div id="principal"> 
-    <canvas id="scene" height="500" width="500"></canvas>
   </div>
 </body>
 
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function( Loop, io, particles, benchmark){
-  window.loop = Loop.create( [ new Loop.out.canvas2d([document.getElementById("principal"), 300, 300]) ]);
+  var width = 300;
+  var height = 300;
+  window.loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height) );
   var maxWithSign = function(val, max){
         return Math.min(Math.abs(val), max) * (Math.abs(val)/val);
       },
       fireFP = particles.circle(
       function(){return []},
-      function(ioState, width, height){
+      function(ioState){
         return [  
           // x 
           (0.47 + 0.06 * Math.random()) * width,
           // y
           (0.47 + 0.06 * Math.random()) * height ,
           // Date d'expiration
-          ioState.time + 50000 ,
+          ioState.time + 2000 ,
           // Valeur de déplacement sur x
           0,
           // Valeur de deplacement sur y
@@ -75,9 +76,9 @@ ul li{list-style-type:none;}
       });
 
 
-  setTimeout(function(){
-    fireFP.create(4000);
-  }, 0)
+  setInterval(function(){
+    fireFP.create(30);
+  }, 100)
 
   loop.addIO(io.time);
   loop.registerAnimation(fireFP);

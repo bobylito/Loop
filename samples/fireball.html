@@ -23,7 +23,7 @@ ul li{list-style-type:none;}
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function( Loop, particles, benchmark, io){
-  window.loop = Loop.create( [ new Loop.out.canvas2d([document.getElementById("principal"), 300, 300]) ]);
+  window.loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), 300, 300) );
   var nbFireballs = 10,
       fireballs = [];
 

@@ -17,14 +17,15 @@ ul li{list-style-type:none;}
 
 <body>
   <div id="principal"> 
-    <canvas id="scene" height="500" width="500"></canvas>
   </div>
 </body>
 
 <script src="../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function( Loop, particles, io, benchmark){
-  window.loop = Loop.create( [ new Loop.out.canvas2d([document.getElementById("principal"), 300, 300]) ]);
+  var w = 600,
+      h = 600;
+  window.loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), w, h) );
   var nbFireballs = 20,
       fireballs = [];
 
@@ -34,7 +35,7 @@ ul li{list-style-type:none;}
   for(var i = nbFireballs-1 ; i >= 0; i--){
     var fireballFP = particles.imageData(
             function(){ return []},
-            createFireballGenerator( i * loop.width/nbFireballs, loop.height/2),
+            createFireballGenerator( i * w/nbFireballs, h/2),
             physic,
             {
               compositionMethod:"lighter",
@@ -52,7 +53,7 @@ ul li{list-style-type:none;}
   loop.start();
 
   function createFireballGenerator(x, y){
-    return function(ioState, width, height){
+    return function(ioState){
       return [  
         x,
         y,

@@ -19,8 +19,12 @@
     this.end = function(){};
   };
 
-  function Loop( outputManagers ){
-    if(!outputManagers) throw new Error("No output managers provided.");
+  /**
+   * Loop(output1, output2...)
+   */
+  function Loop( /* Output managers here */ ){
+    if(arguments.length < 1) throw new Error("No output managers provided.");
+    var outputManagers = Array.prototype.splice.call(arguments, 0);
 
     this.eventRegister= {};
     this._animations  = [];
@@ -133,6 +137,3 @@
     window.Loop = window.Loop || {},
     window.Loop.animations = window.Loop.animations || {}
   );
-
-document.addEventListener("load", function(){
-});

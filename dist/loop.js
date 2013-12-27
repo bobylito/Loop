@@ -57,8 +57,12 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     this.end = function(){};
   };
 
-  function Loop( outputManagers ){
-    if(!outputManagers) throw new Error("No output managers provided.");
+  /**
+   * Loop(output1, output2...)
+   */
+  function Loop( /* Output managers here */ ){
+    if(arguments.length < 1) throw new Error("No output managers provided.");
+    var outputManagers = Array.prototype.splice.call(arguments, 0);
 
     this.eventRegister= {};
     this._animations  = [];
@@ -171,9 +175,6 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     window.Loop = window.Loop || {},
     window.Loop.animations = window.Loop.animations || {}
   );
-
-document.addEventListener("load", function(){
-});
 ;(function( Loop, filters){
 
   var vertexShaderSrc = 
@@ -183,8 +184,10 @@ document.addEventListener("load", function(){
   var glsl = function( fragShaderSrc ){
     return {
       glCanvas : document.createElement("canvas"),
-      _init   : function(w, h, sys, ioState){
+      _init   : function(outputManagers, sys, ioState){
         var compiled;
+        var w = outputManagers.canvas2d.parameters.width;
+        var h = outputManagers.canvas2d.parameters.height;
 
         this.glCanvas.width = w;
         this.glCanvas.height = h;
@@ -230,13 +233,12 @@ document.addEventListener("load", function(){
         gl.enableVertexAttribArray(positionLocation);
         gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-        this.canvas = sys.canvas;
-
         gl.uniform1i( gl.getUniformLocation(prog, "u_canvas"), 0);
-
       },
       animate : function(ioState){ return true;},
-      render  : function(ctx, w, h){
+      render  : function(outputManagers){
+        var w = outputManagers.canvas2d.parameters.width;
+        var h = outputManagers.canvas2d.parameters.height;
         var gl = this.glContext;
         var texture   = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -244,10 +246,11 @@ document.addEventListener("load", function(){
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-        gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);
+        gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, outputManagers.canvas2d.parameters.canvas);
         this.glContext.drawArrays(this.glContext.TRIANGLES, 0, 6);
 
-        ctx.drawImage(this.glCanvas, 0, 0, w, h);
+        outputManagers.canvas2d.context.clearRect(0,0,w,h);
+        outputManagers.canvas2d.context.drawImage(this.glCanvas, 0, 0, w, h);
       }
     };
   };
@@ -266,7 +269,7 @@ document.addEventListener("load", function(){
 
   IOManager.prototype = {
     _init : function( outputContexts ){
-      this.el = document.body;
+      this.el = outputContexts.canvas2d ?  outputContexts.canvas2d.parameters.canvas : document.body;
       this.elPos = this.el.getBoundingClientRect();
     }
   };
@@ -775,11 +778,15 @@ document.addEventListener("load", function(){
   );
 ;(function( Loop, out){
 
-  function OutputManager( name, initContext, parameters ){
+  function OutputManager( name, initContext /*, parameters... */){
+    if(arguments.length < 2){ throw new Error("Not enough arguments to build OutputManager", this); }
+
+    var parameters = arguments.length > 2 ? Array.prototype.splice.call(arguments, 2) : [];
+
     this.name     = name;
     this.context  = null;
     this._initCtx = initContext;
-    this._params  = parameters || [];
+    this._params  = parameters;
   }
 
   OutputManager.prototype = {
@@ -787,7 +794,10 @@ document.addEventListener("load", function(){
       var contextObject = this._initCtx.apply(this, this._params);
       if( contextObject.onRenderStart ) system.on("renderStart" , contextObject.onRenderStart );
       if( contextObject.onRenderEnd )   system.on("renderEnd"   , contextObject.onRenderEnd );
-      return contextObject.ctx;
+      return {
+        context    : contextObject.ctx,
+        parameters : contextObject.parameters
+      };
     }
   };
 
@@ -798,7 +808,7 @@ document.addEventListener("load", function(){
    * Use : 
    * new Loop.out.canvas2d( document.getDocumentById("parentDiv"), 300, 300 );
    */
-  var CanvasOutputManager = OutputManager.bind(null, "canvas2d", function init2DCanvas( domParent, width, height ){
+  var CanvasOutputManager = OutputManager.bind(null, "canvas2d", function init2DCanvas( domParent, width, height, resetBG ){
     var canvas       = document.createElement("canvas");
     canvas.height    = height;
     canvas.width     = width;
@@ -812,13 +822,20 @@ document.addEventListener("load", function(){
 
     domParent.appendChild( canvas );
 
+    var onRenderStartf = resetBG ? resetBG.bind(this, ctxOff, width, height) : function(){
+      ctxOff.globalCompositeOperation = "source-over";
+      ctxOff.fillStyle = "#000000";
+      ctxOff.fillRect(0,0,width,height);
+    };
+
     return {
       ctx           : ctxOff,
-      onRenderStart : function(){
-        ctxOff.globalCompositeOperation = "source-over";
-        ctxOff.fillStyle = "#000000";
-        ctxOff.fillRect(0,0,width,height);
+      parameters    : {
+        height : height,
+        width  : width,
+        canvas : canvas
       },
+      onRenderStart : onRenderStartf,
       onRenderEnd   : function(){
         ctx.drawImage(canvasOff, 0, 0);
       }
@@ -835,7 +852,7 @@ document.addEventListener("load", function(){
    * Renderings are pluggable rendering for particles systems
    * Parameters : 
    *  - renderingOptions options specific to the rendering passed when the system is created
-   *  - outputs.canvas2d canvas 2D outputs.canvas2d
+   *  - outCtx canvas 2D outCtxS //FIXME
    *  - width width of the canvas
    *  - height height of the canvas
    */
@@ -848,6 +865,7 @@ document.addEventListener("load", function(){
      *  - compositionMethod : composition to use when drawing the disc
      */
     circle : function(renderingOptions, outputs){
+      var outCtx = outputs.canvas2d.context;
       var half = renderingOptions.size / 2 ;
       if(!this.particleCanvas){
         this.particleCanvas = (function initCacheCanvas(){
@@ -865,10 +883,10 @@ document.addEventListener("load", function(){
           return particleCanvas;
         })();
       }
-      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
+      outCtx.globalCompositeOperation = renderingOptions.compositionMethod;
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        outputs.canvas2d.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
+        outCtx.drawImage(this.particleCanvas, ~~(p[0]-half), ~~(p[1]-half));
       }
     },
     /**
@@ -876,9 +894,10 @@ document.addEventListener("load", function(){
      *  - img : image dom element
      */
     texture: function(renderingOptions, outputs){
+      var outCtx = outputs.canvas2d.context;
       for(var i = 0; i < this.particles.length; i++){
         var p = this.particles[i];
-        outputs.canvas2d.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
+        outCtx.drawImage(renderingOptions.img, ~~p[0], ~~p[1]);
       }
     },
     /**
@@ -888,16 +907,17 @@ document.addEventListener("load", function(){
      *  - color
      */
     line : function(renderingOptions, outputs){
+      var outCtx = outputs.canvas2d.context;
       if(this.particles.length === 0) return ;
-      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
-      outputs.canvas2d.beginPath();
-      outputs.canvas2d.strokeStyle=renderingOptions.color;
-      outputs.canvas2d.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      outCtx.globalCompositeOperation = renderingOptions.compositionMethod;
+      outCtx.beginPath();
+      outCtx.strokeStyle=renderingOptions.color;
+      outCtx.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i];
-        outputs.canvas2d.lineTo(~~p[0], ~~p[1]);
+        outCtx.lineTo(~~p[0], ~~p[1]);
       }
-      outputs.canvas2d.stroke();
+      outCtx.stroke();
     },
     /**
      * quadratic : rendering of the particles as curve drawn between particles
@@ -906,19 +926,21 @@ document.addEventListener("load", function(){
      *  - color
      */
     quadratic : function(renderingOptions, outputs){
+      var outCtx = outputs.canvas2d.context;
       if( this.particles.length === 0 ) return ;
-      outputs.canvas2d.globalCompositeOperation = renderingOptions.compositionMethod;
-      outputs.canvas2d.beginPath();
-      outputs.canvas2d.strokeStyle = renderingOptions.color;
-      outputs.canvas2d.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
+      outCtx.globalCompositeOperation = renderingOptions.compositionMethod;
+      outCtx.beginPath();
+      outCtx.strokeStyle = renderingOptions.color;
+      outCtx.moveTo(~~(this.particles[0][0]), ~~(this.particles[0][1]));
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i];
-        outputs.canvas2d.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
+        outCtx.quadraticCurveTo(p[0]- p[3] * 100, p[1] -p[4] * 100,~~p[0], ~~p[1]);
       }
-      outputs.canvas2d.stroke();
+      outCtx.stroke();
     },
     imageData : function(renderingOptions, outputs){
-      var imgData = outputs.canvas2d.getImageData(0, 0, this.width, this.height),
+      var outCtx = outputs.canvas2d.context;
+      var imgData = outCtx.getImageData(0, 0, this.width, this.height),
           data    = imgData.data;
       for(var i = 1; i < this.particles.length; i++){
         var p = this.particles[i],
@@ -930,7 +952,7 @@ document.addEventListener("load", function(){
         data[t+2] = 2;
         data[t+3] = 255;
       }
-      outputs.canvas2d.putImageData(imgData, 0,0);
+      outCtx.putImageData(imgData, 0,0);
     },
   };
 
@@ -961,8 +983,9 @@ document.addEventListener("load", function(){
       var eolf    = endOfLifef || function(){},
           system  = {
             _init: function( outputs ){
-              this.width  = w = outputs.canvas2d.width;
-              this.height = h = outputs.canvas2d.height;
+              var outCtx = outputs.canvas2d.parameters;
+              this.width  = w = outCtx.width;
+              this.height = h = outCtx.height;
               this.particles = initf ? initf(w, h):[];
               this.toBeCreated = [];
             },

@@ -18,20 +18,22 @@ ul li{list-style-type:none;}
 <body>
   <p>Use the space bar to mix the particles. Use the arrow to move them around.</p>
   <div id="principal"> 
-    <canvas id="scene" height="500" width="500"></canvas>
   </div>
 </body>
 
 <script src="../../dist/loop.js" type="text/javascript" language="javascript" charset="utf-8"></script>
 <script type="text/javascript" language="javascript" charset="utf-8">
 (function( Loop, particles, io, benchmark){
+  var width = 500;
+  var height = 500;
+  window.loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height) );
   var nbFireballs = 2,
       fireballs = [];
 
   for(var i = nbFireballs-1 ; i >= 0; i--){
     var fireballFP = particles.circle(
         function(){return []},
-        createFireballGenerator( (i+1) * loop.width/(nbFireballs+1), loop.height * 0.8),
+        createFireballGenerator( (i+1) * width/(nbFireballs+1), height * 0.8),
         physic,
         {
           compositionMethod: "lighter",
@@ -60,15 +62,15 @@ ul li{list-style-type:none;}
       if(ioState.keys.UP)    y -= 1;
       if(ioState.keys.DOWN)  y += 1;
       return [  
-      ioState.keys.SPACE ? width  / 2 : x,
-      ioState.keys.SPACE ? height / 2 : y,
-      // Date d'expiration
-      ioState.time + 1300 ,
-      // Valeur de déplacement sur x
-      0.25 - Math.random()/2,
-      // Valeur de deplacement sur y
-      0.25 - Math.random()/2,
-      ioState.time
+        ioState.keys.SPACE ? width  / 2 : x,
+        ioState.keys.SPACE ? height / 2 : y,
+        // Date d'expiration
+        ioState.time + 1300 ,
+        // Valeur de déplacement sur x
+        0.25 - Math.random()/2,
+        // Valeur de deplacement sur y
+        0.25 - Math.random()/2,
+        ioState.time
       ];
     };
   }

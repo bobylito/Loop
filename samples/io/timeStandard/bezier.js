@@ -1,6 +1,5 @@
 //Exp2 : come get some bezier
-
-(function(Loop, io){
+(function( Loop, io ){
   var utilMvt = {
     f1: function(t, tn, d, seed){
       var x = t/tn;
@@ -32,10 +31,11 @@
       dh:0,
       w:width,
       angle:0,
-      _init : function(width, height, animSys, initialIOState){
+      _init : function(outputManagers, animSys, initialIOState){
         this.t0 = initialIOState.time;
       }, 
-      render: function( context, width, height){
+      render: function( outputManagers){
+        var context = outputManagers.canvas2d.context;
         context.save();
         context.beginPath();
         context.lineWidth = 0;
@@ -47,7 +47,7 @@
         context.shadowBlur = 30;
         context.shadowOffsetY = 5;
         context.shadowColor = "white";
-        var d = (this.h-this.dh);2
+        var d = (this.h-this.dh);
 
         context.bezierCurveTo(
             this.x-d,
@@ -73,15 +73,17 @@
       },
       animate: function(ioState, width, height){
         var d   = ioState.time - this.t0;
-        this.dh = utilAmpl.f1(d, 16000, amplitude, animaSeed);
-        this.y  = utilMvt.f1(d, 16000, pos.y, animaSeed);
+        this.dh = utilAmpl.f1(d, 80000, amplitude, animaSeed);
+        this.y  = utilMvt.f1(d, 80000, pos.y, animaSeed);
         return true;//!(this.y<-this.w);
       }
     };
     return res;
   }
 
-  var loop = window.loop = Loop.create(document.getElementById("scene"), function(context, width, height){
+  var width = 500;
+  var height = 500;
+  var loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height, function(context, width, height){
     context.save();
     var lineargradient = context.createLinearGradient(0,0,0,height);  
     lineargradient.addColorStop(0,'rgba(0,0,30,0.1)');  
@@ -89,23 +91,15 @@
     context.fillStyle = lineargradient;
     context.fillRect(0,0,width,height);
     context.restore();
-  });
-  loop.addIO(io.time);
-  loop.registerAnimation(createBlob({y:-50, x:100}, 10, 20, 20));
+  }));
+  loop.addIO( io.time );
+  loop.registerAnimation( createBlob({y:-50, x:100}, 10, 20, 20) );
 
-  for(var i = 0; i < 10; i++){
-    var randX = Math.random()* window.loop.width;
+  for(var i = 0; i < 30; i++){
+    var randX = Math.random()* width;
     var randSizeFactor = Math.random()+1;
-    loop.registerAnimation(createBlob({y: window.loop.height + 60 , x: randX}, 5*randSizeFactor, 20*randSizeFactor, 20*randSizeFactor));
+    loop.registerAnimation(createBlob({y: height + 60 * i/3 , x: randX}, 5*randSizeFactor, 20*randSizeFactor, 20*randSizeFactor));
   }
-
-  setInterval(function(){
-    for(var i = 0; i < 3; i++){
-      var randX = Math.random()* window.loop.width;
-      var randSizeFactor = Math.random()+1;
-      loop.registerAnimation(createBlob({y: window.loop.height + 60 , x: randX}, 5*randSizeFactor, 20*randSizeFactor, 20*randSizeFactor));
-    }
-  }, 1000);
 
   loop.start();
 })(
