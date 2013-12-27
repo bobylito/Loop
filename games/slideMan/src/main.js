@@ -21,7 +21,7 @@
   loop.addIO( Loop.io.deltaTime );
   loop.addIO( Loop.io.keyboard( {"DOWN":40,"LEFT":37,"RIGHT":39, "UP":38} ) );
   loop.addIO( Loop.io.noAutoKeyboard( {"ACTION":88,"SPACE":32} ) );
-  loop.registerAnimation( Loop.tools.debug() );
+  //loop.registerAnimation( Loop.tools.debug() );
   //loop.registerAnimation( Loop.tools.debugGraph() );
   loop.registerAnimation( Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) );
 
@@ -29,12 +29,15 @@
 
   function finishScreen(){
     return {
-      _init   : function(w, h, sys, ioState, result){
+      _init   : function(outputManagers, sys, ioState, result){
         var missionSuccess = this.success = result.character.isAlive && result.character.scroll;
         this.message = missionSuccess ? "Mission completed!":"Mission failed!"; 
       },
       animate : function(ioState){ return !ioState.keys["SPACE"] ;},
-      render: function(ctx, w, h){
+      render: function(outputManagers){
+          var ctx = outputManagers.canvas2d.context;
+          var w = outputManagers.canvas2d.parameters.width;
+          var h = outputManagers.canvas2d.parameters.height;
           ctx.fillStyle = this.success ? "green" : "red";
           var m1 = ctx.measureText(this.message);
           ctx.fillText(this.message, w/2-m1.width/2, h * 0.33);
@@ -46,9 +49,9 @@
     };
   }
 
-  function gameScreen(backgroundAnim,mapAnim, characterAnim, itemsAnim, ennemies){
+  function gameScreen(backgroundAnim, mapAnim, characterAnim, itemsAnim, ennemies){
     var gameScreenAnim  = camera.bound({
-      _init   : function(w, h, sys, ioState, resources, trackPositionƒ, mapConfigƒ){
+      _init   : function(outputManagers, sys, ioState, resources, trackPositionƒ, mapConfigƒ){
         var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim, itemsAnim, ennemies);
         this.render = allAnimations.render.bind(allAnimations);
         this.track = trackPositionƒ;
@@ -63,16 +66,16 @@
         mapConfigƒ( resources["assets/maps/playground.json"] );
         this.track( this.player );
 
-        allAnimations._init.call(allAnimations, w, h, sys, ioState, resources, { 
+        allAnimations._init.call(allAnimations, outputManagers, sys, ioState, resources, { 
           player  : this.player,
           pickups : this.pickups,
           ennemies: this.ennemies
         }, mapAnim);
       },
-      animate : function(ioState, width, height){ 
-        for(var k in ioState.keys){
-          loop.debug("key:"+k, ioState.keys[k]);
-        }
+      animate : function(ioState){ 
+//      for(var k in ioState.keys){
+//        loop.debug("key:"+k, ioState.keys[k]);
+//      }
 
         var deltaT = ioState.deltaTime / 1000;
         var playerBBox = box.getBoundingBoxTopLeft(
@@ -165,10 +168,10 @@
         return resAnim ;
       },
       logPlayer : function( p ){
-        loop.debug( "position.x", p.position[0].toFixed(4) );
-        loop.debug( "position.y", p.position[1].toFixed(4) );
-        loop.debug( "motion.x"  , p.motion[0].toFixed(4) );
-        loop.debug( "motion.y"  , p.motion[1].toFixed(4) );
+//      loop.debug( "position.x", p.position[0].toFixed(4) );
+//      loop.debug( "position.y", p.position[1].toFixed(4) );
+//      loop.debug( "motion.x"  , p.motion[0].toFixed(4) );
+//      loop.debug( "motion.y"  , p.motion[1].toFixed(4) );
       },
       result : function(){
         return {
@@ -182,7 +185,7 @@
 
   function character(){
     return {
-      _init : function(w, h, sys, ioState, resources, models, map){
+      _init : function(outputManagers, sys, ioState, resources, models, map){
         this.sprite = resources["assets/character.png"];
         this.spriteDef = resources["assets/character.json"];
         this.currentSprite = this.spriteDef.standing;
@@ -191,7 +194,10 @@
         this.lastT  = ioState.time;
         this.map    = map;
       },
-      render  : function(ctx, w, h, camera){
+      render  : function(outputManagers, camera){
+        var ctx = outputManagers.canvas2d.context;
+        var w = outputManagers.canvas2d.parameters.width;
+        var h = outputManagers.canvas2d.parameters.height;
         var frame = ~~(this.currentFrame/10 )%this.currentSprite.length;
         ctx.drawImage(this.sprite, 
           this.currentSprite[frame].position[0],
@@ -204,7 +210,7 @@
           this.currentSprite[frame].size[1] * camera.zoom 
         );
       },
-      animate : function(ioState, w, h){
+      animate : function(ioState){
         var deltaT = ioState.deltaTime / 1000;
         this.currentFrame++;
         var currentState = "standing";
@@ -317,7 +323,7 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
 
   function foreground(){
     return {
-      _init : function(w, h, sys, ioState, resources, models){
+      _init : function(outputManagers, sys, ioState, resources, models){
         var mapData = this.mapData = resources["assets/maps/playground.json"];
         this.texture = resources["assets/textureMap_.png"];
         this.tileSize = [
@@ -327,10 +333,11 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Map" })[0];
         this.drawTiles = drawTiles.bind(this, this.mapLayer, this.texture, this.tileSize);
       },
-      render : function(ctx, width, height, camera){
+      render : function(outputManagers, camera){
+        var ctx = outputManagers.canvas2d.context;
         camera.forEach(this.drawTiles, this, ctx);
       },
-      animate: function(ioState, width, height){ 
+      animate: function(ioState){ 
         return true; 
       }, 
       tileAt : function( position ){
@@ -403,7 +410,7 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
 
   function background(){
     return {
-      _init : function(w,h,sys,ioState, resources, models){
+      _init : function(outputManagers, sys, ioState, resources, models){
         var mapData = this.mapData = resources["assets/maps/playground.json"];
         this.texture = resources["assets/textureMap_.png"];
         this.tileSize = [
@@ -413,10 +420,11 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
         this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
         this.drawTiles = drawTiles.bind(this, this.mapLayer, this.texture, this.tileSize);
       },
-      render : function(ctx, width, height, camera){
+      render : function(outputManagers, camera){
+        var ctx = outputManagers.canvas2d.context;
         camera.forEach( this.drawTiles, this, ctx);
       },
-      animate: function(ioState, width, height){ 
+      animate: function(ioState){ 
         return true; 
       }
     };
@@ -424,14 +432,15 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
 
   function items(){
     return {
-      _init : function(w,h,sys,ioState, resources, models){
+      _init : function(outputManagers, sys, ioState, resources, models){
         var mapData = this.mapData  = resources["assets/maps/playground.json"];
         this.txH    = mapData.tileheight;
         this.txW    = mapData.tilewidth ;
         this.texture= resources["assets/textureMap_.png"];
         this.pickups= models["pickups"];
       },
-      render : function(ctx, width, height, camera){
+      render : function(outputManagers, camera){
+        var ctx = outputManagers.canvas2d.context;
         this.pickups.filter( isInCamera.bind(window, camera) ).forEach( function(p){
           ctx.drawImage(this.texture, 0 * this.txW, 1 * this.txH, 
              p.size[0] * this.txW , 
@@ -442,7 +451,7 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
              p.size[1] * this.txH * camera.zoom);
         }, this);
       },
-      animate: function(ioState, width, height){ 
+      animate: function(ioState){ 
         return true; 
       }
     };
@@ -450,7 +459,7 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
 
   function ennemies(){
     return {
-      _init : function(w,h,sys,ioState, resources, models, map){
+      _init : function(outputManagers, sys, ioState, resources, models, map){
         var mapData   = this.mapData  = resources["assets/maps/playground.json"];
         this.txH      = mapData.tileheight;
         this.txW      = mapData.tilewidth ;
@@ -458,7 +467,8 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
         this.ennemies = models["ennemies"];
         this.map      = map;
       },
-      render : function(ctx, width, height, camera){
+      render : function(outputManagers, camera){
+        var ctx = outputManagers.canvas2d.context;
         this.ennemies.filter( isInCamera2.bind(window, camera) ).forEach( function drawSingleBaddy(p){
           ctx.drawImage(this.texture, p.pixPos[0] * this.txW, p.pixPos[1] * this.txH, 
              p.size[0] * this.txW , 
@@ -469,7 +479,7 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
              p.size[1] * this.txH * camera.zoom);
         }, this);
       },
-      animate: function(ioState, width, height){ 
+      animate: function(ioState){ 
         this.ennemies.forEach(function(e){
           var computedPosition  = vec2.add( [], e.position, e.motion);
           var correctedPosition = this.map.moveTo( e, computedPosition );
