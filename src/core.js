@@ -22,10 +22,7 @@
   /**
    * Loop(output1, output2...)
    */
-  function Loop( /* Output managers here */ ){
-    if(arguments.length < 1) throw new Error("No output managers provided.");
-    var outputManagers = Array.prototype.splice.call(arguments, 0);
-
+  function Loop( outputManagers /* Output managers here */ ){
     this.eventRegister= {};
     this._animations  = [];
     this._io          = [];
@@ -128,7 +125,10 @@
     }
   };
 
-  loopModule.create = function( outputManagers ){
+  loopModule.create = function( /* OutputManagers */ ){
+    if(arguments.length < 1) throw new Error("No output managers provided.");
+    var outputManagers = Array.prototype.splice.call(arguments, 0);
+
     return new Loop( outputManagers );
   };
 

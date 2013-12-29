@@ -60,10 +60,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   /**
    * Loop(output1, output2...)
    */
-  function Loop( /* Output managers here */ ){
-    if(arguments.length < 1) throw new Error("No output managers provided.");
-    var outputManagers = Array.prototype.splice.call(arguments, 0);
-
+  function Loop( outputManagers /* Output managers here */ ){
     this.eventRegister= {};
     this._animations  = [];
     this._io          = [];
@@ -166,7 +163,10 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     }
   };
 
-  loopModule.create = function( outputManagers ){
+  loopModule.create = function( /* OutputManagers */ ){
+    if(arguments.length < 1) throw new Error("No output managers provided.");
+    var outputManagers = Array.prototype.splice.call(arguments, 0);
+
     return new Loop( outputManagers );
   };
 
@@ -843,7 +843,16 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     };
   });
 
+  var WebaudioOutputManager = OutputManager.bind(null, "webaudio", function initWebaudio(){
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    var context = new AudioContext();
+    return {
+      ctx : context
+    };
+  });
+
   out.canvas2d = CanvasOutputManager;
+  out.webaudio = WebaudioOutputManager;
 })(
     window.Loop = window.Loop || {},
     window.Loop.out = window.Loop.out || {}
@@ -1132,6 +1141,26 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
             });
             img.src = imgPath;
           }, this); 
+        }
+        if(resources.sfx){
+          var context = outputs.webaudio.context;
+          var self = this;
+          this.total += resources.sfx.length;
+          resources.sfx.forEach(function( soundPath ){
+            var xhr = new XMLHttpRequest();
+            xhr.addEventListener("load", function(){
+              context.decodeAudioData(
+                xhr.response,
+                function(buffer){
+                  self.loaded[soundPath] = buffer;
+                  self.totalLoad++;
+                }  
+              ); 
+            });
+            xhr.open("GET", soundPath, true);
+            xhr.responseType = "arraybuffer";
+            xhr.send();
+          });
         }
       },
       animate : function(ioState){

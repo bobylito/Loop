@@ -4,7 +4,10 @@ An animation system : this is the todo
 ## Features
  [ ] test if required IO are provided by IO manager before start
  [ ] Bind model data
- [-] WebGL/GLSL filters
+ [-] Pluggable output contexts
+ [+]  - Canvas 2D
+ [-]  - Web audio
+ [+] WebGL/GLSL filters
  [ ] Animated sprites
  [+] Text animations 
  [+]  - simple
@@ -53,7 +56,7 @@ An animation system : this is the todo
 ## Investigate 
  [ ] Particle system over time (pure function, reproductibility)?
  [ ] Time control for particles
- [ ] Sound output?
+ [+] Sound output?
  [+] Animation context >> meta animations?
  [ ] Rendering engine with filled triangles
  [+] Rendering engine with filled line and curve => boring...

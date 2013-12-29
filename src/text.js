@@ -55,6 +55,26 @@
             img.src = imgPath;
           }, this); 
         }
+        if(resources.sfx){
+          var context = outputs.webaudio.context;
+          var self = this;
+          this.total += resources.sfx.length;
+          resources.sfx.forEach(function( soundPath ){
+            var xhr = new XMLHttpRequest();
+            xhr.addEventListener("load", function(){
+              context.decodeAudioData(
+                xhr.response,
+                function(buffer){
+                  self.loaded[soundPath] = buffer;
+                  self.totalLoad++;
+                }  
+              ); 
+            });
+            xhr.open("GET", soundPath, true);
+            xhr.responseType = "arraybuffer";
+            xhr.send();
+          });
+        }
       },
       animate : function(ioState){
         return this.total > this.totalLoad ;

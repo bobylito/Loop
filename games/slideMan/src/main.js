@@ -2,11 +2,12 @@
   var width = 300;
   var height = 300;
 
-  var loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height) );
+  var loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height), new Loop.out.webaudio() );
 
   var loading = Loop.text.loading({
     img : ["assets/textureMap_.png", "assets/character.png"],
-    data : ["assets/maps/playground.json", "assets/character.json"]
+    data: ["assets/maps/playground.json", "assets/character.json"],
+    sfx : ["assets/sfx/jump.wav"]
   });
 
   var m = foreground();
@@ -77,6 +78,7 @@
 //        loop.debug("key:"+k, ioState.keys[k]);
 //      }
 
+        this.player.resetActions();
         var deltaT = ioState.deltaTime / 1000;
         var playerBBox = box.getBoundingBoxTopLeft(
               this.player.position,
@@ -123,14 +125,17 @@
         if( this.player.can("jump") && ioState.keys.SPACE ){
           if( this.player.colliding[box.BOTTOM] ) {
             this.player.motion[1] = -15;
+            this.player.actions.jump = true;
           }
           else if( this.player.colliding[box.RIGHT] ) {
             this.player.motion[1] = -10;
             this.player.motion[0] = -8;
+            this.player.actions.jump = true;
           }
           else if( this.player.colliding[box.LEFT] ) {
             this.player.motion[1] = -10;
             this.player.motion[0] = 8;
+            this.player.actions.jump = true;
           }
         }
 
@@ -186,6 +191,7 @@
   function character(){
     return {
       _init : function(outputManagers, sys, ioState, resources, models, map){
+        this.resources = resources;
         this.sprite = resources["assets/character.png"];
         this.spriteDef = resources["assets/character.json"];
         this.currentSprite = this.spriteDef.standing;
@@ -195,6 +201,12 @@
         this.map    = map;
       },
       render  : function(outputManagers, camera){
+        if( this.model.actions.jump ){
+          var source = outputManagers.webaudio.context.createBufferSource();
+          source.buffer = this.resources["assets/sfx/jump.wav"];
+          source.connect(outputManagers.webaudio.context.destination);
+          source.start(0);
+        }
         var ctx = outputManagers.canvas2d.context;
         var w = outputManagers.canvas2d.parameters.width;
         var h = outputManagers.canvas2d.parameters.height;
@@ -214,6 +226,8 @@
         var deltaT = ioState.deltaTime / 1000;
         this.currentFrame++;
         var currentState = "standing";
+
+
         if(this.model.colliding[box.BOTTOM]){
           if(this.model.colliding[box.RIGHT] ){
             if(ioState.keys["RIGHT"]){

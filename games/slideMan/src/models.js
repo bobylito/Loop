@@ -14,6 +14,9 @@
     this.missionComplete = false;
     this.colliding = [false, false, false, false];
     this.capacities = ["jump"];
+    this.actions = {
+      jump:false
+    }
   }
 
   Player.create = function createPlayer(mapData){
@@ -58,6 +61,13 @@
     },
     can: function( capacity ){
       return this.capacities.indexOf( capacity ) != -1;
+    },
+    resetActions : function(){
+      for(action in this.actions){
+        if(this.actions.hasOwnProperty(action)){
+          this.actions[action] = false;
+        }
+      }
     }
   };
   
