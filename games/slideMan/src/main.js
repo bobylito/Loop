@@ -1,5 +1,5 @@
-(function( micromando, models, camera, box, loader ){
-  var width = 300;
+(function( micromando, models, camera, box, loader, sfxUtils ){
+  var width = 400;
   var height = 300;
 
   var loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height), new Loop.out.webaudio() );
@@ -7,7 +7,7 @@
   var loading = Loop.text.loading({
     img : ["assets/textureMap_.png", "assets/character.png"],
     data: ["assets/maps/playground.json", "assets/character.json"],
-    sfx : ["assets/sfx/jump.wav"]
+    sfx : ["assets/sfx/jump.wav", "assets/sfx/fail.wav", "assets/sfx/pickup.wav"]
   });
 
   var m = foreground();
@@ -54,13 +54,16 @@
     var gameScreenAnim  = camera.bound({
       _init   : function(outputManagers, sys, ioState, resources, trackPositionƒ, mapConfigƒ){
         var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim, itemsAnim, ennemies);
-        this.render = allAnimations.render.bind(allAnimations);
+        this.renderSubAnimations = allAnimations.render.bind(allAnimations);
         this.track = trackPositionƒ;
 
         this.player     = micromando.models.Player.create(resources["assets/maps/playground.json"]);
         this.pickups    = micromando.models.Pickup.createAll(resources["assets/maps/playground.json"]);
         this.ennemies   = micromando.models.Ennemy.createAll(resources["assets/maps/playground.json"]);
         this.activables = micromando.models.Activable.createAll(resources["assets/maps/playground.json"]);
+
+        this.events = [];
+        this.resources = resources;
 
         this.lastT  = ioState.time;
 
@@ -73,7 +76,25 @@
           ennemies: this.ennemies
         }, mapAnim);
       },
+      render : function( outputManagers ){
+        this.events.forEach( function(e){
+          if(e==="pickup"){
+            sfxUtils.playBuffer(
+              outputManagers.webaudio.context, 
+              this.resources["assets/sfx/pickup.wav"]
+            );
+          }
+          if(e==="death"){
+            sfxUtils.playBuffer(
+              outputManagers.webaudio.context, 
+              this.resources["assets/sfx/fail.wav"]
+            );
+          }
+        }, this);
+        this.renderSubAnimations.apply(this, arguments);
+      },
       animate : function(ioState){ 
+        this.events = [];
 //      for(var k in ioState.keys){
 //        loop.debug("key:"+k, ioState.keys[k]);
 //      }
@@ -153,6 +174,7 @@
         collidingPickups.forEach(function(p){
           p.activate(this.player);
           this.pickups.splice( this.pickups.indexOf(p) , 1);
+          this.events.push("pickup");
         }, this);
 
         var collidingEnnemies = this.ennemies.filter(function(ennemy){
@@ -167,6 +189,9 @@
         this.logPlayer(this.player);
         
         var resAnim = this.allAnimations.animate.apply(this.allAnimations, arguments);
+
+        if(!resAnim) 
+          this.events.push("death");
 
         this.track( this.player );
 
@@ -202,10 +227,7 @@
       },
       render  : function(outputManagers, camera){
         if( this.model.actions.jump ){
-          var source = outputManagers.webaudio.context.createBufferSource();
-          source.buffer = this.resources["assets/sfx/jump.wav"];
-          source.connect(outputManagers.webaudio.context.destination);
-          source.start(0);
+          sfxUtils.playBuffer(outputManagers.webaudio.context, this.resources["assets/sfx/jump.wav"]);
         }
         var ctx = outputManagers.canvas2d.context;
         var w = outputManagers.canvas2d.parameters.width;
@@ -520,5 +542,6 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
     window.micromando.models  = window.micromando.models || {},
     window.micromando.camera  = window.micromando.camera || {},
     window.micromando.box     = window.micromando.box || {},
-    window.micromando.loader  = window.micromando.loader || {}
+    window.micromando.loader  = window.micromando.loader || {},
+    window.micromando.sfxUtils= window.micromando.sfxUtils || {}
   );

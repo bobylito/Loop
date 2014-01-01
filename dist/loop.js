@@ -640,12 +640,20 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     return {
       _init:function(outputs, sys, ioState){
         this._loop    = sys;
-        this._result  = null;
+        this._result  = undefined;
         this._cachedOutputs = outputs;
         this.current  = animations.shift();
         this.current._init.apply(this.current, arguments);
       },
-      animate : function(ioState, w, h){
+      animate : function(ioState){
+        if( this._result !== undefined ){
+          if(animations.length <= 0){
+            return false;
+          }
+          this.current = animations.shift();
+          this.current._init(this._cachedOutputs, this._loop, ioState, this._result);
+          this._result = undefined;
+        }
         var isAlive = this.current.animate.apply(this.current, arguments);
         if( !isAlive ){
           var lastResult = (function(a){
@@ -653,11 +661,6 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
             else return null;
           })(this.current);
           this._result = lastResult;
-          if(animations.length <= 0){
-            return false;
-          }
-          this.current = animations.shift();
-          this.current._init(this._cachedOutputs, this._loop, ioState, lastResult);
         }
         return true;
       },
