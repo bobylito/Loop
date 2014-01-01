@@ -48,10 +48,20 @@
 
   Loop.prototype = {
     loop:function(){
+      if(this.status){
+        requestAnimFrame( this.loop );
+      }
+
       var animSys = this,
           ioState = this.calculateIOState();
 
       this.stats.begin();
+
+      for(var i = this._animations.length-1; i>=0; i--){
+        if( !this._animations[i].animate(ioState) ){
+          this._animations.splice(i,1);
+        }
+      }
 
       this._trigger("renderStart");
 
@@ -63,16 +73,8 @@
 
       //Copie canvas offscreen vers canvas on
 
-      for(var i = this._animations.length-1; i>=0; i--){
-        if( !this._animations[i].animate(ioState) ){
-          this._animations.splice(i,1);
-        }
-      }
       this.stats.end();
 
-      if(this.status){
-        requestAnimFrame( this.loop );
-      }
     },
     start: function(){
       this._trigger("start");
