@@ -5,8 +5,8 @@
  [ ] Ladders
  [ ] HUD
  [-] Resources alias
- [ ] Sound
- [ ]  - SFX
+ [-] Sound
+ [+]  - SFX
  [ ]  - Music
  [+] Mission complete screen (tweak intermission screen)
  [+] End point
