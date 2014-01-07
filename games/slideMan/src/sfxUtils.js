@@ -3,6 +3,9 @@
     var source = ctx.createBufferSource();
     source.buffer = buffer;
     source.connect(ctx.destination);
+    source.onended = function(){
+      source.disconnect();
+    };
     source.start(0);
   };
 })(

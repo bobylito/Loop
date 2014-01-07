@@ -1,6 +1,6 @@
 (function( micromando, models, camera, box, loader, sfxUtils ){
-  var width = 400;
-  var height = 300;
+  var width = 800;
+  var height = 600;
 
   var loop = Loop.create( new Loop.out.canvas2d(document.getElementById("principal"), width, height), new Loop.out.webaudio() );
 
