@@ -5,6 +5,7 @@
   models.CapacityPickup = CapacityPickup;
   models.Ennemy     = Ennemy;
   models.Activable  = Activable;
+  models.Map  = Map;
 
   function Player (x, y, w, h){
     this.position = [x,y];
@@ -71,13 +72,86 @@
     }
   };
   
-  function Map( rawData ){
-  
+  function Map( layerData, tileSize ){
+    this._data = layerData;
+    this._tileSize = tileSize;
   }
 
-  Map.create = function createMap(){}
+  Map.create = function createMap( rawData, layerKey ){
+    var tileSize = [
+      rawData.tilewidth,
+      rawData.tileheight
+    ];
+    var layerData = rawData.layers.filter( function(l){ return l.name === layerKey })[0];
+    return new Map( layerData, tileSize );
+  }
 
   Map.prototype = {
+    tileAt : function( position ){
+      var map  = this._data;
+      if(position[1] <= 0) return 10;
+      if(position[0] <= 0) return 10;
+      if(position[0] > map.width) return 10;
+
+      var mapX = Math.floor(position[0]);
+      var mapY = Math.floor(position[1]);
+      return map.data[ mapX + mapY * map.width];
+    },
+    tilesOnXAxis:function(axis, lowerBound, upperBound){
+      var tiles = [];
+      for(var i = lowerBound; i <= Math.ceil(upperBound); i++){
+        var t = this.tileAt([i, axis]);
+        tiles.push([ 
+          box.getBoundingBoxTopLeft( [~~i, ~~axis], [1, 1] ), 
+          t
+        ]);
+      } 
+      return tiles;
+    },
+    tilesOnYAxis:function(axis, lowerBound, upperBound){
+      var tiles = [];
+      for(var i=lowerBound; i <= Math.ceil(upperBound); i++){
+        var t = this.tileAt([axis, i]);
+        tiles.push([ 
+          box.getBoundingBoxTopLeft( [~~axis, ~~i], [1,1]), 
+          t
+        ]);
+      } 
+      return tiles;
+    },
+    surroundingTiles : function( bbox, nBox ){
+      var surroundings = [];
+
+      surroundings[box.TOP]    = this.tilesOnXAxis( bbox[box.TOP],    nBox[box.LEFT], nBox[box.RIGHT]);
+      surroundings[box.BOTTOM] = this.tilesOnXAxis( bbox[box.BOTTOM], nBox[box.LEFT], nBox[box.RIGHT]);
+
+      surroundings[box.RIGHT]  = this.tilesOnYAxis( bbox[box.RIGHT],  nBox[box.TOP],  nBox[box.BOTTOM]);
+      surroundings[box.LEFT]   = this.tilesOnYAxis( bbox[box.LEFT],   nBox[box.TOP],  nBox[box.BOTTOM]);
+
+      return surroundings;
+    },
+    moveTo : function(positionnable, newPosition){
+      var newPosBox = box.getBoundingBoxTopLeft(newPosition, positionnable.size);
+      var collidingFaces = positionnable.collisionBoxesMap(
+        box.getBoundingBoxTopLeft(positionnable.position, positionnable.size),
+        newPosBox,
+        this
+      );
+
+      var correction = positionnable.correctionVector(collidingFaces, newPosBox);
+      var pos = [
+        newPosition[0] + correction[0],
+        newPosition[1] + correction[1]
+      ];
+
+      var newBox = box.getBoundingBoxTopLeft(pos, positionnable.size);
+      positionnable.colliding = positionnable.collisionBoxesMap( 
+        newBox,
+        box.expand( box.fromBox( newBox ), 0.01),
+        this
+      );
+      return pos;
+    }
   };
 
   function Activable(x, y, w, h, type, properties){

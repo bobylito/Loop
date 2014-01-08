@@ -11,11 +11,12 @@
   });
 
   var m = foreground();
-  var b = background();
+  var b = backgroundPainter();
+  var o = objectsPainter();
   var c = character();
   var i = items();
   var e = ennemies();
-  var game = gameScreen( b, m, c, i, e ); 
+  var game = gameScreen( b, o, m, c, i, e ); 
   var end  = finishScreen();
 
   loop.addIO( Loop.io.time );
@@ -50,31 +51,38 @@
     };
   }
 
-  function gameScreen(backgroundAnim, mapAnim, characterAnim, itemsAnim, ennemies){
+  function gameScreen(backgroundAnim, objectsAnim, mapAnim, characterAnim, itemsAnim, ennemies){
     var gameScreenAnim  = camera.bound({
       _init   : function(outputManagers, sys, ioState, resources, trackPositionƒ, mapConfigƒ){
-        var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, mapAnim, characterAnim, itemsAnim, ennemies);
+        var allAnimations = this.allAnimations = Loop.meta.some.call(window, backgroundAnim, objectsAnim, mapAnim, characterAnim, itemsAnim, ennemies);
         this.renderSubAnimations = allAnimations.render.bind(allAnimations);
         this.track = trackPositionƒ;
 
-        this.player     = micromando.models.Player.create(resources["assets/maps/playground.json"]);
-        this.pickups    = micromando.models.Pickup.createAll(resources["assets/maps/playground.json"]);
-        this.ennemies   = micromando.models.Ennemy.createAll(resources["assets/maps/playground.json"]);
-        this.activables = micromando.models.Activable.createAll(resources["assets/maps/playground.json"]);
+        var level = resources["assets/maps/playground.json"];
+
+        this.player     = micromando.models.Player.create( level );
+        this.pickups    = micromando.models.Pickup.createAll( level );
+        this.ennemies   = micromando.models.Ennemy.createAll( level );
+        this.activables = micromando.models.Activable.createAll( level );
+
+        this.mapLayer       = micromando.models.Map.create( level, "Map" );
+        this.backgroundLayer= micromando.models.Map.create( level, "Background" );
+        this.objectsLayer   = micromando.models.Map.create( level, "Objects" );
 
         this.events = [];
         this.resources = resources;
 
         this.lastT  = ioState.time;
 
-        mapConfigƒ( resources["assets/maps/playground.json"] );
+        mapConfigƒ( level );
         this.track( this.player );
 
         allAnimations._init.call(allAnimations, outputManagers, sys, ioState, resources, { 
           player  : this.player,
           pickups : this.pickups,
-          ennemies: this.ennemies
-        }, mapAnim);
+          ennemies: this.ennemies,
+          mapLayer: this.mapLayer
+        });
       },
       render : function( outputManagers ){
         this.events.forEach( function(e){
@@ -160,6 +168,11 @@
           }
         }
 
+        //Ladders climb
+        if(ioState.keys["UP"]){
+          // FIXME Test collision with ladders
+        }
+
         //Wall grip
         if( ioState.keys.RIGHT && this.player.colliding[box.RIGHT] || 
             ioState.keys.LEFT && this.player.colliding[box.LEFT]      ) {
@@ -215,7 +228,7 @@
 
   function character(){
     return {
-      _init : function(outputManagers, sys, ioState, resources, models, map){
+      _init : function(outputManagers, sys, ioState, resources, models){
         this.resources = resources;
         this.sprite = resources["assets/character.png"];
         this.spriteDef = resources["assets/character.json"];
@@ -223,7 +236,7 @@
         this.currentFrame = 0;
         this.model  = models["player"];
         this.lastT  = ioState.time;
-        this.map    = map;
+        this.map    = models["mapLayer"];
       },
       render  : function(outputManagers, camera){
         if( this.model.actions.jump ){
@@ -338,36 +351,32 @@
     };
   }
 
-function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, camera, ctx){
-  var imgX = -1;
-  var imgY =  0;
-  if(j >= 0 && j <= mapLayer.height && i >= 0 && i < mapLayer.width){
-    var dataPos = i + j * mapLayer.width;
-    var tilePos = mapLayer.data[ dataPos ] - 1;
-    imgX = tilePos % 5;
-    imgY = Math.floor(tilePos / 5)
+  function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, camera, ctx){
+    var imgX = -1;
+    var imgY =  0;
+    if(j >= 0 && j <= mapLayer.height && i >= 0 && i < mapLayer.width){
+      var dataPos = i + j * mapLayer.width;
+      var tilePos = mapLayer.data[ dataPos ] - 1;
+      imgX = tilePos % 5;
+      imgY = Math.floor(tilePos / 5)
+    }
+    if(imgX!=-1){
+      ctx.drawImage(texture, imgX * tileSize[0], imgY * tileSize[1], 
+                             tileSize[0], tileSize[1], 
+                             Math.ceil( (x - deltaI) * tileSize[0] * camera.zoom ), 
+                             Math.ceil( (y - deltaJ) * tileSize[1] * camera.zoom ), 
+                             tileSize[0] * camera.zoom, 
+                             tileSize[1] * camera.zoom);
+    }
   }
-  if(imgX!=-1){
-    ctx.drawImage(texture, imgX * tileSize[0], imgY * tileSize[1], 
-                           tileSize[0], tileSize[1], 
-                           Math.ceil( (x - deltaI) * tileSize[0] * camera.zoom ), 
-                           Math.ceil( (y - deltaJ) * tileSize[1] * camera.zoom ), 
-                           tileSize[0] * camera.zoom, 
-                           tileSize[1] * camera.zoom);
-  }
-}
 
   function foreground(){
     return {
       _init : function(outputManagers, sys, ioState, resources, models){
-        var mapData = this.mapData = resources["assets/maps/playground.json"];
-        this.texture = resources["assets/textureMap_.png"];
-        this.tileSize = [
-          mapData.tilewidth,
-          mapData.tileheight
-        ];
-        this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Map" })[0];
-        this.drawTiles = drawTiles.bind(this, this.mapLayer, this.texture, this.tileSize);
+        var mapData   = this.mapData  = resources["assets/maps/playground.json"];
+        var model     = this.model    = models["mapLayer"]; 
+        this.texture  = resources["assets/textureMap_.png"];
+        this.drawTiles= drawTiles.bind( this, this.model._data, this.texture, this.model._tileSize);
       },
       render : function(outputManagers, camera){
         var ctx = outputManagers.canvas2d.context;
@@ -376,75 +385,10 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
       animate: function(ioState){ 
         return true; 
       }, 
-      tileAt : function( position ){
-        var map  = this.mapLayer;
-        if(position[1] <= 0) return 10;
-        if(position[0] <= 0) return 10;
-        if(position[0] > map.width) return 10;
-
-        var mapX = Math.floor(position[0]);
-        var mapY = Math.floor(position[1]);
-        return map.data[ mapX + mapY * map.width];
-      },
-      tilesOnXAxis:function(axis, lowerBound, upperBound){
-        var tiles = [];
-        for(var i=lowerBound; i <= Math.ceil(upperBound); i++){
-          var t = this.tileAt([i, axis]);
-          tiles.push([ 
-            box.getBoundingBoxTopLeft( [~~i, ~~axis], [1, 1] ), 
-            t
-          ]);
-        } 
-        return tiles;
-      },
-      tilesOnYAxis:function(axis, lowerBound, upperBound){
-        var tiles = [];
-        for(var i=lowerBound; i <= Math.ceil(upperBound); i++){
-          var t = this.tileAt([axis, i]);
-          tiles.push([ 
-            box.getBoundingBoxTopLeft( [~~axis, ~~i], [1,1]), 
-            t
-          ]);
-        } 
-        return tiles;
-      },
-      surroundingTiles : function( bbox, nBox ){
-        var surroundings = [];
-
-        surroundings[box.TOP]    = this.tilesOnXAxis( bbox[box.TOP],    nBox[box.LEFT], nBox[box.RIGHT]);
-        surroundings[box.BOTTOM] = this.tilesOnXAxis( bbox[box.BOTTOM], nBox[box.LEFT], nBox[box.RIGHT]);
-
-        surroundings[box.RIGHT]  = this.tilesOnYAxis( bbox[box.RIGHT],  nBox[box.TOP],  nBox[box.BOTTOM]);
-        surroundings[box.LEFT]   = this.tilesOnYAxis( bbox[box.LEFT],   nBox[box.TOP],  nBox[box.BOTTOM]);
-
-        return surroundings;
-      },
-      moveTo : function(positionnable, newPosition){
-        var newPosBox = box.getBoundingBoxTopLeft(newPosition, positionnable.size);
-        var collidingFaces = positionnable.collisionBoxesMap(
-          box.getBoundingBoxTopLeft(positionnable.position, positionnable.size),
-          newPosBox,
-          this
-        );
-
-        var correction = positionnable.correctionVector(collidingFaces, newPosBox);
-        var pos = [
-          newPosition[0] + correction[0],
-          newPosition[1] + correction[1]
-        ];
-
-        var newBox = box.getBoundingBoxTopLeft(pos, positionnable.size);
-        positionnable.colliding = positionnable.collisionBoxesMap( 
-          newBox,
-          box.expand( box.fromBox( newBox ), 0.01),
-          this
-        );
-        return pos;
-      }
     };
   }
 
-  function background(){
+  function tilePainter( layerName ){
     return {
       _init : function(outputManagers, sys, ioState, resources, models){
         var mapData = this.mapData = resources["assets/maps/playground.json"];
@@ -453,7 +397,7 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
           mapData.tilewidth,
           mapData.tileheight
         ];
-        this.mapLayer = mapData.layers.filter(function(l){ return l.name === "Background" })[0];
+        this.mapLayer = mapData.layers.filter(function(l){ return l.name === layerName })[0];
         this.drawTiles = drawTiles.bind(this, this.mapLayer, this.texture, this.tileSize);
       },
       render : function(outputManagers, camera){
@@ -464,6 +408,14 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
         return true; 
       }
     };
+  }
+
+  function backgroundPainter(){
+    return tilePainter("Background");
+  }
+
+  function objectsPainter(){
+    return tilePainter("Objects");
   }
 
   function items(){
@@ -495,13 +447,13 @@ function drawTiles(mapLayer, texture, tileSize, x, y, i, j, deltaI, deltaJ, came
 
   function ennemies(){
     return {
-      _init : function(outputManagers, sys, ioState, resources, models, map){
+      _init : function(outputManagers, sys, ioState, resources, models){
         var mapData   = this.mapData  = resources["assets/maps/playground.json"];
         this.txH      = mapData.tileheight;
         this.txW      = mapData.tilewidth ;
         this.texture  = resources["assets/textureMap_.png"];
         this.ennemies = models["ennemies"];
-        this.map      = map;
+        this.map      = models["mapLayer"];
       },
       render : function(outputManagers, camera){
         var ctx = outputManagers.canvas2d.context;
