@@ -10,7 +10,7 @@
     sfx : ["assets/sfx/jump.wav", "assets/sfx/fail.wav", "assets/sfx/pickup.wav"]
   });
 
-  var m = foreground();
+  var m = foregroundPainter();
   var b = backgroundPainter();
   var o = objectsPainter();
   var c = character();
@@ -81,7 +81,11 @@
           player  : this.player,
           pickups : this.pickups,
           ennemies: this.ennemies,
-          mapLayer: this.mapLayer
+          layers : {
+            Map         : this.mapLayer,
+            Background  : this.backgroundLayer,
+            Objects     : this.objectsLayer
+          }
         });
       },
       render : function( outputManagers ){
@@ -107,13 +111,50 @@
 //        loop.debug("key:"+k, ioState.keys[k]);
 //      }
 
-        this.player.resetActions();
+        this.player.resetActions(["climb"]);
         var deltaT = ioState.deltaTime / 1000;
         var playerBBox = box.getBoundingBoxTopLeft(
               this.player.position,
               this.player.size
             );
 
+        switch(true) {
+          case this.player.actions.climb : this.climbingPhysicsBehavior(ioState, playerBBox); break;
+          default : this.defaultPhysicsBehavior(ioState, playerBBox);
+        }
+
+        var collidingPickups = this.pickups.filter(function(pick){
+          var pickBBox = box.getBoundingBoxTopLeft(pick.position, pick.size);
+          return box.collide(playerBBox, pickBBox); 
+        });
+
+        collidingPickups.forEach(function(p){
+          p.activate(this.player);
+          this.pickups.splice( this.pickups.indexOf(p) , 1);
+          this.events.push("pickup");
+        }, this);
+
+        var collidingEnnemies = this.ennemies.filter(function(ennemy){
+          return box.collide(playerBBox, ennemy.box);
+        });
+
+        collidingEnnemies.forEach( function(e){
+          e.hurt(this.player);
+        }, this);
+
+        this.lastT  = ioState.time;
+        this.logPlayer(this.player);
+        
+        var resAnim = this.allAnimations.animate.apply(this.allAnimations, arguments);
+
+        if(!resAnim) 
+          this.events.push("death");
+
+        this.track( this.player );
+
+        return resAnim ;
+      },
+      defaultPhysicsBehavior : function( ioState, playerBBox ){
         if( this.player.colliding[box.BOTTOM]){
           if( ioState.keys.DOWN ) {
             this.player.motion[0] = this.player.motion[0] / 1.05 ; //* (this.player.motion[0] /this.player.motion[0]);
@@ -168,47 +209,51 @@
           }
         }
 
-        //Ladders climb
-        if(ioState.keys["UP"]){
-          // FIXME Test collision with ladders
-        }
-
         //Wall grip
         if( ioState.keys.RIGHT && this.player.colliding[box.RIGHT] || 
             ioState.keys.LEFT && this.player.colliding[box.LEFT]      ) {
           this.player.motion[1] = 0.2;
         }
-
-        var collidingPickups = this.pickups.filter(function(pick){
-          var pickBBox = box.getBoundingBoxTopLeft(pick.position, pick.size);
-          return box.collide(playerBBox, pickBBox); 
-        });
-
-        collidingPickups.forEach(function(p){
-          p.activate(this.player);
-          this.pickups.splice( this.pickups.indexOf(p) , 1);
-          this.events.push("pickup");
-        }, this);
-
-        var collidingEnnemies = this.ennemies.filter(function(ennemy){
-          return box.collide(playerBBox, ennemy.box);
-        });
-
-        collidingEnnemies.forEach( function(e){
-          e.hurt(this.player);
-        }, this);
-
-        this.lastT  = ioState.time;
-        this.logPlayer(this.player);
         
-        var resAnim = this.allAnimations.animate.apply(this.allAnimations, arguments);
+        //Ladders climb
+        if(ioState.keys["UP"]){
+          // FIXME Test collision with ladders // make sense out of that
+          var collidingTiles = this.objectsLayer.surroundingTiles( playerBBox, playerBBox ).reduce(function(mts, tiles){
+            return mts + tiles.reduce(function(mt, tile){
+              return mt + tile[1];
+            }, 0);
+          }, 0);
+          if(collidingTiles !== 0){
+            this.player.actions.climb = true;
+          }
+        }
+      },
+      climbingPhysicsBehavior : function( ioState, playerBBox ){
+        if(ioState.keys["SPACE"]){
+          this.player.actions.climb = false;
+        }
+        this.player.motion = [0,0];
+        if(ioState.keys["UP"]){
+          this.player.motion[1] = -3;
+        }
+        if(ioState.keys["DOWN"]){
+          this.player.motion[1] = 3;
+        }
+        if(ioState.keys["LEFT"]){
+          this.player.motion[0] = -3;
+        }
+        if(ioState.keys["RIGHT"]){
+          this.player.motion[0] = 3;
+        }
 
-        if(!resAnim) 
-          this.events.push("death");
-
-        this.track( this.player );
-
-        return resAnim ;
+        var collidingTiles = this.objectsLayer.surroundingTiles( playerBBox, playerBBox ).reduce(function(mts, tiles){
+          return mts + tiles.reduce(function(mt, tile){
+            return mt + tile[1];
+          }, 0);
+        }, 0);
+        if(collidingTiles < 40){
+          this.player.actions.climb = false;
+        }
       },
       logPlayer : function( p ){
 //      loop.debug( "position.x", p.position[0].toFixed(4) );
@@ -236,7 +281,7 @@
         this.currentFrame = 0;
         this.model  = models["player"];
         this.lastT  = ioState.time;
-        this.map    = models["mapLayer"];
+        this.map    = models.layers["Map"];
       },
       render  : function(outputManagers, camera){
         if( this.model.actions.jump ){
@@ -261,7 +306,6 @@
         var deltaT = ioState.deltaTime / 1000;
         this.currentFrame++;
         var currentState = "standing";
-
 
         if(this.model.colliding[box.BOTTOM]){
           if(this.model.colliding[box.RIGHT] ){
@@ -370,11 +414,10 @@
     }
   }
 
-  function foreground(){
+  function tilePainter( layerModelName ){
     return {
       _init : function(outputManagers, sys, ioState, resources, models){
-        var mapData   = this.mapData  = resources["assets/maps/playground.json"];
-        var model     = this.model    = models["mapLayer"]; 
+        var model     = this.model    = models.layers[layerModelName]; 
         this.texture  = resources["assets/textureMap_.png"];
         this.drawTiles= drawTiles.bind( this, this.model._data, this.texture, this.model._tileSize);
       },
@@ -388,26 +431,8 @@
     };
   }
 
-  function tilePainter( layerName ){
-    return {
-      _init : function(outputManagers, sys, ioState, resources, models){
-        var mapData = this.mapData = resources["assets/maps/playground.json"];
-        this.texture = resources["assets/textureMap_.png"];
-        this.tileSize = [
-          mapData.tilewidth,
-          mapData.tileheight
-        ];
-        this.mapLayer = mapData.layers.filter(function(l){ return l.name === layerName })[0];
-        this.drawTiles = drawTiles.bind(this, this.mapLayer, this.texture, this.tileSize);
-      },
-      render : function(outputManagers, camera){
-        var ctx = outputManagers.canvas2d.context;
-        camera.forEach( this.drawTiles, this, ctx);
-      },
-      animate: function(ioState){ 
-        return true; 
-      }
-    };
+  function foregroundPainter(){
+    return tilePainter("Map");
   }
 
   function backgroundPainter(){
@@ -453,7 +478,7 @@
         this.txW      = mapData.tilewidth ;
         this.texture  = resources["assets/textureMap_.png"];
         this.ennemies = models["ennemies"];
-        this.map      = models["mapLayer"];
+        this.map      = models.layers["Map"];
       },
       render : function(outputManagers, camera){
         var ctx = outputManagers.canvas2d.context;

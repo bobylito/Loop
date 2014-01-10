@@ -63,10 +63,13 @@
     can: function( capacity ){
       return this.capacities.indexOf( capacity ) != -1;
     },
-    resetActions : function(){
+    resetActions : function( exceptions ){
+      var ex = exceptions || [];
       for(action in this.actions){
         if(this.actions.hasOwnProperty(action)){
-          this.actions[action] = false;
+          if( ex.indexOf(action) === -1){
+            this.actions[action] = false;
+          }
         }
       }
     }
