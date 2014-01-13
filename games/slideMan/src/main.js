@@ -16,7 +16,7 @@
   var c = character();
   var i = items();
   var e = ennemies();
-  var game = gameScreen( b, o, m, c, i, e ); 
+  var game = Loop.filters.fadeOut(gameScreen( b, o, m, c, i, e ), 500); 
   var end  = finishScreen();
 
   loop.addIO( Loop.io.time );

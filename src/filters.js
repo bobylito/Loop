@@ -78,8 +78,54 @@
     };
   };
 
+  /**
+   * fadeOut : Animation filter to fade out when animation ends
+   */
+  var fadeOut = function(anim, duration){
+    var fadeLevel = 0;
+    var t0 = null;
+    var size = null;
+    return {
+      _init   : function(outputM){
+        t0 = null;
+        fadeLevel = 0;
+        size = [
+          outputM.canvas2d.parameters.width,
+          outputM.canvas2d.parameters.height
+        ];
+        anim._init.apply(anim, arguments);
+      },
+      render  : function(outputManagers){
+        var ctx = outputManagers.canvas2d.context;
+        anim.render.apply(anim, arguments);
+        if(t0 !== null){
+          var oldColor = ctx.fillStyle;
+          ctx.fillStyle = "rgba(0,0,0," + fadeLevel + ")";
+          ctx.fillRect(0,0,size[0],size[1]);
+          ctx.fillStyle = oldColor;
+        }
+      },
+      animate : function(ioState){
+        if( t0 !== null ){
+          t = ioState.time - t0;
+          fadeLevel = t/duration; 
+          return (fadeLevel <= 1);
+        }
+        else {
+          var res = anim.animate.apply(anim, arguments);
+          if( !res ){
+            t0 = ioState.time;
+          }
+          return true;
+        }
+      },
+      result : anim.result.bind(anim) 
+    };
+  };
+
   //Module exports 
-  filters.glsl = glsl;
+  filters.fadeOut = fadeOut;
+  filters.glsl    = glsl;
 })(
     window.Loop = window.Loop || {},
     window.Loop.filters = window.Loop.filters || {}
