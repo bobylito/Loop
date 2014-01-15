@@ -25,9 +25,33 @@
   loop.addIO( Loop.io.noAutoKeyboard( {"ACTION":88,"SPACE":32} ) );
   //loop.registerAnimation( Loop.tools.debug() );
   //loop.registerAnimation( Loop.tools.debugGraph() );
-  loop.registerAnimation( Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) );
+  loop.registerAnimation( Loop.meta.andThen(titleScreen(), Loop.meta.while1(Loop.meta.andThen.bind(window, loading, game, end) ) ) );
 
   loop.start();
+
+  function titleScreen(){
+    var loader = Loop.text.loading({
+      img:["assets/img/title.png"]
+    });
+    return Loop.filters.fadeOut( Loop.meta.andThen( loader, {
+      _init:function(outputManagers, sys, ioState, resources){
+        this.startT = ioState.time;
+        this.img = resources["assets/img/title.png"];
+      },
+      render:function(outputManagers){
+        var ctx = outputManagers.canvas2d.context;
+        var params = outputManagers.canvas2d.parameters;
+        ctx.fillStyle = "#FFF";
+        ctx.fillRect(0, 0, params.width, params.height);
+        ctx.drawImage(this.img, (params.width/2) -(this.img.width/2) ,(params.height/2) - (this.img.height/2));
+      },
+      animate:function(ioState){
+        var now = ioState.time;
+        return (this.startT + 3000) > now;
+      },
+      result:function(){ return null;}
+    }), 500);
+  }
 
   function finishScreen(){
     return {
