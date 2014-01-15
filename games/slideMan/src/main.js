@@ -253,21 +253,30 @@
         }
       },
       climbingPhysicsBehavior : function( ioState, playerBBox ){
+        this.player.motion = [0,0];
         if(ioState.keys["SPACE"]){
           this.player.actions.climb = false;
+          if(ioState.keys["LEFT"]){
+            this.player.motion[0] = -8;
+          }
+          if(ioState.keys["RIGHT"]){
+            this.player.motion[0] = 8;
+          }
+          this.player.motion[1] = -10;
         }
-        this.player.motion = [0,0];
-        if(ioState.keys["UP"]){
-          this.player.motion[1] = -3;
-        }
-        if(ioState.keys["DOWN"]){
-          this.player.motion[1] = 3;
-        }
-        if(ioState.keys["LEFT"]){
-          this.player.motion[0] = -3;
-        }
-        if(ioState.keys["RIGHT"]){
-          this.player.motion[0] = 3;
+        else {
+          if(ioState.keys["UP"]){
+            this.player.motion[1] = -3;
+          }
+          if(ioState.keys["DOWN"]){
+            this.player.motion[1] = 3;
+          }
+          if(ioState.keys["LEFT"]){
+            this.player.motion[0] = -3;
+          }
+          if(ioState.keys["RIGHT"]){
+            this.player.motion[0] = 3;
+          }
         }
 
         var collidingTiles = this.objectsLayer.surroundingTiles( playerBBox, playerBBox ).reduce(function(mts, tiles){
