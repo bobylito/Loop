@@ -159,7 +159,7 @@
         }, this);
 
         var collidingEnnemies = this.ennemies.filter(function(ennemy){
-          return box.collide(playerBBox, ennemy.box);
+          return box.collide(playerBBox, ennemy.hitBox);
         });
 
         collidingEnnemies.forEach( function(e){
@@ -479,7 +479,7 @@
   function items(){
     return {
       _init : function(outputManagers, sys, ioState, resources, models){
-        var mapData = this.mapData  = resources["assets/maps/playground.json"];
+        var mapData = resources["assets/maps/playground.json"];
         this.txH    = mapData.tileheight;
         this.txW    = mapData.tilewidth ;
         this.texture= resources["assets/textureMap_.png"];
@@ -506,7 +506,7 @@
   function ennemies(){
     return {
       _init : function(outputManagers, sys, ioState, resources, models){
-        var mapData   = this.mapData  = resources["assets/maps/playground.json"];
+        var mapData   = resources["assets/maps/playground.json"];
         this.txH      = mapData.tileheight;
         this.txW      = mapData.tilewidth ;
         this.texture  = resources["assets/textureMap_.png"];

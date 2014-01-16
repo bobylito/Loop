@@ -208,24 +208,31 @@
     }
   };
 
-  function Ennemy( x, y, w, h, type ){
+  function Ennemy( x, y, w, h, type, hitBoxModifier ){
     var config = Ennemy.config[type];
+
     this.position = vec2.fromValues(x, y);
     this.size     = vec2.fromValues(w, h);
     this.box      = box.getBoundingBoxTopLeft(this.position, this.size);
     this.motion   = config.motion;
     this.type     = type;
     this.pixPos   = config.pixPosition;
+    this.hitBoxMod= config.hitBoxMod;
+    this.hitBox   = [];
+
+    vec4.add(this.hitBox, this.box, this.hitBoxMod);   
   }
 
   Ennemy.config = {
     "roomba" : {
-      "pixPosition" : [4,0],
-      "motion" :[-0.1, 0.1] 
+      "pixPosition" : [ 4, 0],
+      "motion"      : [-0.1, 0.1],
+      "hitBoxMod"   : [0.8, 0, 0, 0]
     },
     "fireblock" : {
       "pixPosition" : [3,1],
-      "motion" :[0, 0] 
+      "motion"      : [0, 0],
+      "hitBoxMod"   : [0, 0, 0, 0]
     }
   }
 
@@ -257,6 +264,7 @@
       if(p[0] != this.position[0] || p[1] != this.position[1]){
         this.position = p;
         this.box = box.getBoundingBoxTopLeft(this.position, this.size);
+        vec4.add(this.hitBox, this.box, this.hitBoxMod);   
       }
       return this.box;
     },
