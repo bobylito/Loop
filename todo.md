@@ -41,6 +41,7 @@ An animation system : this is the todo
  [ ] Enhance graphical debugger to change time resolution
 
 ## Cleanup 
+ [ ] Update requestAnimationFrame polyfill
  [+] Remove datastore
  [+] Main loop as a function to be used multiple time
  [+] Refactor and generalize results/andThen

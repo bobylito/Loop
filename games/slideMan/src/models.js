@@ -275,9 +275,9 @@
       var collideWithXpBox = box.collide.bind( window, xpBox);
       
       return surroundings.map( function mix(listOfBloc){
-          return listOfBloc.filter( function isCollidible(blocWithType){ return blocWithType[1] != 0; } )
-                           .map(    function removeType(  blocWithType){ return blocWithType[0]; } )
-                           .reduce( box.merge, undefined );
+        return listOfBloc.filter( function isCollidible(blocWithType){ return blocWithType[1] != 0; } )
+                         .map(    function removeType(  blocWithType){ return blocWithType[0]; } )
+                         .reduce( box.merge, undefined );
         })
         .map( function(b){ return Array.isArray(b)  ? b : [0,0,0,0]; } )
         .map( collideWithXpBox );

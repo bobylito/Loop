@@ -78,6 +78,40 @@
     };
   };
 
+  var waitForAKey = function(anim, key){
+    var k = key || "SPACE";
+    return {
+      _init   : function(){
+        this.end = false;
+        anim._init.apply(anim, arguments);
+      },
+      render  : function(outputManagers){
+        anim.render.apply(anim, arguments);
+        if(this.end){
+          var params = outputManagers.canvas2d.parameters;
+          var ctx = outputManagers.canvas2d.context;
+          var msg = "PRESS " + k;
+          ctx.font = "20px sans-serif";
+          var size = ctx.measureText(msg);
+          ctx.fillStyle = "red";
+          ctx.fillText( msg, 
+              params.width/2 - size.width/2, 
+              params.height - 50);
+        }
+      },
+      animate : function(ioState){
+        if(this.end){
+          return !ioState.keys[k];
+        }
+        else {
+          var r = anim.animate.apply(anim, arguments);
+          if(!r) this.end = true;
+          return true;
+        }
+      },
+      result  : anim.result.bind(anim)
+    };
+  };
   /**
    * fadeOut : Animation filter to fade out when animation ends
    */
@@ -126,6 +160,7 @@
   //Module exports 
   filters.fadeOut = fadeOut;
   filters.glsl    = glsl;
+  filters.waitForAKey = waitForAKey; 
 })(
     window.Loop = window.Loop || {},
     window.Loop.filters = window.Loop.filters || {}

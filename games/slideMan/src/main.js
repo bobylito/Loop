@@ -33,7 +33,7 @@
     var loader = Loop.text.loading({
       img:["assets/img/title.png"]
     });
-    return Loop.filters.fadeOut( Loop.meta.andThen( loader, {
+    return Loop.filters.fadeOut( Loop.filters.waitForAKey( Loop.meta.andThen( loader, {
       _init:function(outputManagers, sys, ioState, resources){
         this.startT = ioState.time;
         this.img = resources["assets/img/title.png"];
@@ -50,7 +50,7 @@
         return (this.startT + 3000) > now;
       },
       result:function(){ return null;}
-    }), 500);
+    }) ), 500);
   }
 
   function finishScreen(){

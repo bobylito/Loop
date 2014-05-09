@@ -37,12 +37,13 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     window.Loop.benchmark = window.Loop.benchmark || {}
   );
 ;(function( loopModule ){
+  //Request animation frame polyfill
   var requestAnimFrame = (function(){
-    return  window.requestAnimationFrame || 
-    window.webkitRequestAnimationFrame   || 
-    window.mozRequestAnimationFrame      || 
-    window.oRequestAnimationFrame        || 
-    window.msRequestAnimationFrame       || 
+    return  window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame   ||
+    window.mozRequestAnimationFrame      ||
+    window.oRequestAnimationFrame        ||
+    window.msRequestAnimationFrame       ||
     function( callback ){
       window.setTimeout(callback, 1000 / 60);
     };
@@ -59,6 +60,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
 
   /**
    * Loop(output1, output2...)
+   * Creates a new loop object
    */
   function Loop( outputManagers /* Output managers here */ ){
     this.eventRegister= {};
@@ -85,6 +87,10 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   }
 
   Loop.prototype = {
+    /**
+     * Main loop function
+     * Not to be used directly
+     */
     loop:function(){
       if(this.status){
         requestAnimFrame( this.loop );
@@ -114,20 +120,32 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       this.stats.end();
 
     },
+    /**
+     * Starts the animation stack
+     */
     start: function(){
       this._trigger("start");
       this.status = true;
       this.loop();
     },
+    /**
+     * Stop the animation stack
+     */
     stop: function(){
       this._trigger("stop");
       this.status = false;
     },
+    /**
+     * Add an animation to the stack
+     */
     registerAnimation: function(animation){
       if(typeof(animation._init) === "function")
         animation._init( this._out, this, this.calculateIOState());
       this._animations.push(animation);
     },
+    /**
+     * Adds an input manager to the loop
+     */
     addIO : function( ioManager ){
       if(!ioManager._init){
         console.log( "Wrong IOManager : ",ioManager );
@@ -136,6 +154,9 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       ioManager._init( this._out );
       this._io.push( ioManager );
     },
+    /**
+     * Adds an output manager to the loop
+     */
     _addOutput : function( outputManager ){
       if(!outputManager._init){
         console.log( "Wrong OutputManager : ",outputManager );
@@ -143,16 +164,25 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       }
       this._out[outputManager.name] = outputManager._init( this );
     },
+    /**
+     * Internal function that returns the ioState of the loop
+     */
     calculateIOState : function(){
       return this._io.map(    function(o){ return o.update;})
                      .reduce( function(state, updateF){ return updateF(state);}, {});
     },
+    /**
+     * Internal event bind
+     */
     on : function(eventType, funK){
       if( this.eventRegister[eventType] === undefined ){
         this.eventRegister[eventType] = [];
       }
       this.eventRegister[eventType].push(funK);
     },
+    /**
+     * Triggers event message for the loop
+     */
     _trigger: function(eventType){
       if( this.eventRegister[eventType] ){
         var animationSystem = this;
@@ -257,6 +287,40 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     };
   };
 
+  var waitForAKey = function(anim, key){
+    var k = key || "SPACE";
+    return {
+      _init   : function(){
+        this.end = false;
+        anim._init.apply(anim, arguments);
+      },
+      render  : function(outputManagers){
+        anim.render.apply(anim, arguments);
+        if(this.end){
+          var params = outputManagers.canvas2d.parameters;
+          var ctx = outputManagers.canvas2d.context;
+          var msg = "PRESS " + k;
+          ctx.font = "20px sans-serif";
+          var size = ctx.measureText(msg);
+          ctx.fillStyle = "red";
+          ctx.fillText( msg, 
+              params.width/2 - size.width/2, 
+              params.height - 50);
+        }
+      },
+      animate : function(ioState){
+        if(this.end){
+          return !ioState.keys[k];
+        }
+        else {
+          var r = anim.animate.apply(anim, arguments);
+          if(!r) this.end = true;
+          return true;
+        }
+      },
+      result  : anim.result.bind(anim)
+    };
+  };
   /**
    * fadeOut : Animation filter to fade out when animation ends
    */
@@ -305,25 +369,26 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   //Module exports 
   filters.fadeOut = fadeOut;
   filters.glsl    = glsl;
+  filters.waitForAKey = waitForAKey; 
 })(
     window.Loop = window.Loop || {},
     window.Loop.filters = window.Loop.filters || {}
   );
-;(function( Loop, io){
-  function IOManager( ioStateModifier, variables ){
+;(function( Loop, input){
+  function InputManager( ioStateModifier, variables ){
     this.update     = ioStateModifier.bind(this);
     this.variables  = variables;
   }
 
-  IOManager.prototype = {
+  InputManager.prototype = {
     _init : function( outputContexts ){
-      this.el = outputContexts.canvas2d ?  outputContexts.canvas2d.parameters.canvas : document.body;
+      this.el = outputContexts.canvas2d ? outputContexts.canvas2d.parameters.canvas : document.body;
       this.elPos = this.el.getBoundingClientRect();
     }
   };
 
   var keyboardIO = function( watchedKeys ){
-    var io = new IOManager(function(ioState){
+    var io = new InputManager(function(ioState){
       if(ioState.keys){
         var currentK = this._currentKeys();
         for(var k in currentK){
@@ -336,27 +401,27 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       return ioState;
     });
  
-    io._keys = {};
-    io._inversedConfig = {};
+    input._keys = {};
+    input._inversedConfig = {};
     for(var k in watchedKeys ){
-      io._keys[k] = false;
-      io._inversedConfig[ watchedKeys[k] ] = k;
+      input._keys[k] = false;
+      input._inversedConfig[ watchedKeys[k] ] = k;
     }
 
-    io._currentKeys = function(){
+    input._currentKeys = function(){
       document.addEventListener("keydown", function(e){
         var code = e.keyCode;
-        if( code in io._inversedConfig ){
-          io._keys[ io._inversedConfig[code] ] = true;
+        if( code in input._inversedConfig ){
+          input._keys[ input._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in io._inversedConfig ){
-          io._keys[ io._inversedConfig[code] ] = false;
+        if( code in input._inversedConfig ){
+          input._keys[ input._inversedConfig[code] ] = false;
         }
       });
-      io._currentKeys = function(){
+      input._currentKeys = function(){
         return this._keys;
       };
       return this._keys;
@@ -366,7 +431,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   };
 
   var noAutoKeyboardIO = function( watchedKeys ){
-    var io = new IOManager(function(ioState){
+    var io = new InputManager(function(ioState){
       if(ioState.keys){
         var currentK = this._currentKeys();
         for(var k in currentK){
@@ -380,39 +445,39 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       return ioState;
     });
  
-    io._keys = {};
-    io._firedKeys = {};
-    io._inversedConfig = {};
+    input._keys = {};
+    input._firedKeys = {};
+    input._inversedConfig = {};
 
     for(var k in watchedKeys ){
-      io._keys[k] = false;
-      io._firedKeys[k] = false;
-      io._inversedConfig[ watchedKeys[k] ] = k;
+      input._keys[k] = false;
+      input._firedKeys[k] = false;
+      input._inversedConfig[ watchedKeys[k] ] = k;
     }
 
-    io._currentKeys = function(){
+    input._currentKeys = function(){
       document.addEventListener("keydown", function(e){
         var code = e.keyCode;
-        if( code in io._inversedConfig && 
-              !io._firedKeys[ io._inversedConfig[code] ] ){
-          io._keys[ io._inversedConfig[code] ] = true;
-          io._firedKeys[ io._inversedConfig[code] ] = true;
+        if( code in input._inversedConfig && 
+              !input._firedKeys[ input._inversedConfig[code] ] ){
+          input._keys[ input._inversedConfig[code] ] = true;
+          input._firedKeys[ input._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in io._inversedConfig ){
-          io._keys[ io._inversedConfig[code] ] = false;
-          io._firedKeys[ io._inversedConfig[code] ] = false;
+        if( code in input._inversedConfig ){
+          input._keys[ input._inversedConfig[code] ] = false;
+          input._firedKeys[ input._inversedConfig[code] ] = false;
         }
       });
-      io._currentKeys = function(){
+      input._currentKeys = function(){
         return this._keys;
       };
       return this._keys;
     };
 
-    io._resetKeys = function(){
+    input._resetKeys = function(){
       for( var code in this._keys ){
         this._keys[ code ] = false;
       }
@@ -422,7 +487,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   };
 
   var mouseIO = function(){
-    var io = new IOManager( function(ioState){
+    var io = new InputManager( function(ioState){
       var pos = this._positionValue();
       ioState.position = {
         x : pos.x ? pos.x - this.elPos.left : pos.x,
@@ -432,7 +497,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       return ioState;
     }, ["position", "buttons"]);
 
-    io._buttonsValue = function(){
+    input._buttonsValue = function(){
       var self = this;
       this.el.addEventListener("mousedown", function(e){
         self._buttons = {
@@ -454,7 +519,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       };
     };
 
-    io._positionValue = function(){
+    input._positionValue = function(){
       var self = this;
       this.el.addEventListener("mousemove", function(e){
         self._position = {
@@ -481,14 +546,14 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
     return io;
   };
 
-  var timeIO = new IOManager( function(ioState){
+  var timeIO = new InputManager( function(ioState){
     ioState.time = Date.now();
     return ioState;
   }, ["time"] );
 
   var deltaTimeIO = (function(){
     var lastTime = Date.now();
-    return new IOManager( function(ioState){
+    return new InputManager( function(ioState){
       var currentTime = Date.now();
       ioState.deltaTime = currentTime - lastTime;
       lastTime = currentTime;
@@ -497,11 +562,11 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   })();
 
   var controledTimeIO = function( timeLength ){
-    var io = new IOManager( function(ioState ){
+    var io = new InputManager( function(ioState ){
       ioState.time = this._timeValue();
       return ioState;
     }, ["time"]);
-    io._timeValue = function(){
+    input._timeValue = function(){
       this._el = (function(self){
         var d = document.createElement("input");
         d.setAttribute("type", "range");
@@ -525,12 +590,12 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   };
 
   //Module exports
-  io.mouse          = mouseIO;
-  io.time           = timeIO;
-  io.deltaTime      = deltaTimeIO;
-  io.controlTime    = controledTimeIO;
-  io.keyboard       = keyboardIO;
-  io.noAutoKeyboard = noAutoKeyboardIO;
+  input.mouse          = mouseIO;
+  input.time           = timeIO;
+  input.deltaTime      = deltaTimeIO;
+  input.controlTime    = controledTimeIO;
+  input.keyboard       = keyboardIO;
+  input.noAutoKeyboard = noAutoKeyboardIO;
 })(
     window.Loop = window.Loop || {},
     window.Loop.io = window.Loop.io || {}
@@ -1158,14 +1223,14 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   };
 
   /**
-   * 
+   *
    */
   var loading = function(resources){
     var text = "loading";
     return {
       resources : resources,
       loaded    : {},
-      totalLoad : 0, 
+      totalLoad : 0,
       total     : 0,
       _init     : function(outputs, sys, ioState){
         if(resources.data){
@@ -1181,6 +1246,25 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
             xhr.send();
           }, this);
         }
+        if(resources.atlas){
+          this.total += resources.atlas.length;
+          resources.data.forEach(function(path){
+            var atlas = new Atlas();
+            var xhr = new XMLHttpRequest();
+            var img = new Image();
+            var self = this;
+
+            xhr.addEventListener("load", function(){
+              atlas.setupFile(this.response);
+            });
+            xhr.open("GET", path, true);
+            xhr.send();
+
+            img.addEventListener("load", function(){
+              atlas.setupImg(img);
+            });
+          }, this);
+        }
         if(resources.img){
           this.total += resources.img.length;
           resources.img.forEach(function( imgPath ){
@@ -1191,7 +1275,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
               self.totalLoad++;
             });
             img.src = imgPath;
-          }, this); 
+          }, this);
         }
         if(resources.sfx){
           var context = outputs.webaudio.context;
@@ -1205,8 +1289,8 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
                 function(buffer){
                   self.loaded[soundPath] = buffer;
                   self.totalLoad++;
-                }  
-              ); 
+                }
+              );
             });
             xhr.open("GET", soundPath, true);
             xhr.responseType = "arraybuffer";
@@ -1226,13 +1310,49 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
         ctx.fillText(text, w/2-m.width/2, h/2);
       },
       result : function(){
-        return this.loaded;          
+        return this.loaded;
       }
     };
   };
 
   text.simple   = simple;
   text.loading  = loading;
+
+  function Atlas(){
+    this.items = {};
+    this.img = null;
+  }
+  Atlas.parseLine = function( line ){
+    var data = line.match(Atlas.REGEX);
+    return data !== null ?
+      new AtlasItem( data[1],
+          [data[4], data[5]],
+          [data[2], data[3]]
+      ) : null;
+  };
+  Atlas.REGEX =
+    /([a-zA-Z0-9_]+) ([0-9]+) ([0-9]+) ([0-9]+\.[0-9]+) ([0-9]+\.[0-9]+) ([0-9]+\.[0-9]+) ([0-9]+\.[0-9]+)/;
+  Atlas.prototype = {
+    drawItem: function(name){},
+    setupFile:function(atlasFile){
+      var lines = atlasFile.split("\n");
+      lines.map(Atlas.parseLine)
+           .forEach( function(item){
+             if(item !== null) this.items[item.name] = item;
+           });
+      this.setupFile = null;
+    },
+    setupImg : function(img){
+      this.img = img;
+      this.setupImg = null;
+    }
+  };
+
+  function AtlasItem( name, position, size ){
+    this.name = name;
+    this.position = position;
+    this.size = size;
+  }
 })(
     window.Loop = window.Loop || {},
     window.Loop.text = window.Loop.text || {}

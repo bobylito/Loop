@@ -35,6 +35,7 @@
 
 ## BUGS 
  [+] Tiling / black line
+ [ ] Objects of size 1 can't move
 
 ## Character animatons
  [+] Standing

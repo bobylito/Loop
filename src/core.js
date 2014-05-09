@@ -1,10 +1,11 @@
 (function( loopModule ){
+  //Request animation frame polyfill
   var requestAnimFrame = (function(){
-    return  window.requestAnimationFrame || 
-    window.webkitRequestAnimationFrame   || 
-    window.mozRequestAnimationFrame      || 
-    window.oRequestAnimationFrame        || 
-    window.msRequestAnimationFrame       || 
+    return  window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame   ||
+    window.mozRequestAnimationFrame      ||
+    window.oRequestAnimationFrame        ||
+    window.msRequestAnimationFrame       ||
     function( callback ){
       window.setTimeout(callback, 1000 / 60);
     };
@@ -21,6 +22,7 @@
 
   /**
    * Loop(output1, output2...)
+   * Creates a new loop object
    */
   function Loop( outputManagers /* Output managers here */ ){
     this.eventRegister= {};
@@ -47,6 +49,10 @@
   }
 
   Loop.prototype = {
+    /**
+     * Main loop function
+     * Not to be used directly
+     */
     loop:function(){
       if(this.status){
         requestAnimFrame( this.loop );
@@ -76,20 +82,32 @@
       this.stats.end();
 
     },
+    /**
+     * Starts the animation stack
+     */
     start: function(){
       this._trigger("start");
       this.status = true;
       this.loop();
     },
+    /**
+     * Stop the animation stack
+     */
     stop: function(){
       this._trigger("stop");
       this.status = false;
     },
+    /**
+     * Add an animation to the stack
+     */
     registerAnimation: function(animation){
       if(typeof(animation._init) === "function")
         animation._init( this._out, this, this.calculateIOState());
       this._animations.push(animation);
     },
+    /**
+     * Adds an input manager to the loop
+     */
     addIO : function( ioManager ){
       if(!ioManager._init){
         console.log( "Wrong IOManager : ",ioManager );
@@ -98,6 +116,9 @@
       ioManager._init( this._out );
       this._io.push( ioManager );
     },
+    /**
+     * Adds an output manager to the loop
+     */
     _addOutput : function( outputManager ){
       if(!outputManager._init){
         console.log( "Wrong OutputManager : ",outputManager );
@@ -105,16 +126,25 @@
       }
       this._out[outputManager.name] = outputManager._init( this );
     },
+    /**
+     * Internal function that returns the ioState of the loop
+     */
     calculateIOState : function(){
       return this._io.map(    function(o){ return o.update;})
                      .reduce( function(state, updateF){ return updateF(state);}, {});
     },
+    /**
+     * Internal event bind
+     */
     on : function(eventType, funK){
       if( this.eventRegister[eventType] === undefined ){
         this.eventRegister[eventType] = [];
       }
       this.eventRegister[eventType].push(funK);
     },
+    /**
+     * Triggers event message for the loop
+     */
     _trigger: function(eventType){
       if( this.eventRegister[eventType] ){
         var animationSystem = this;

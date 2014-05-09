@@ -116,7 +116,7 @@
                     },
                  "rotation":0,
                  "type":"fireblock",
-                 "visible":true,
+                 "visible":false,
                  "width":25,
                  "x":1008,
                  "y":540
@@ -132,9 +132,9 @@
                  "rotation":0,
                  "type":"roomba",
                  "visible":true,
-                 "width":24,
-                 "x":797,
-                 "y":947
+                 "width":25,
+                 "x":372,
+                 "y":174
                 }, 
                 {
                  "gid":5,
@@ -520,7 +520,7 @@
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "width":600,
          "x":0,
          "y":0

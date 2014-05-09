@@ -1,18 +1,18 @@
-(function( Loop, io){
-  function IOManager( ioStateModifier, variables ){
+(function( Loop, input){
+  function InputManager( ioStateModifier, variables ){
     this.update     = ioStateModifier.bind(this);
     this.variables  = variables;
   }
 
-  IOManager.prototype = {
+  InputManager.prototype = {
     _init : function( outputContexts ){
-      this.el = outputContexts.canvas2d ?  outputContexts.canvas2d.parameters.canvas : document.body;
+      this.el = outputContexts.canvas2d ? outputContexts.canvas2d.parameters.canvas : document.body;
       this.elPos = this.el.getBoundingClientRect();
     }
   };
 
   var keyboardIO = function( watchedKeys ){
-    var io = new IOManager(function(ioState){
+    var io = new InputManager(function(ioState){
       if(ioState.keys){
         var currentK = this._currentKeys();
         for(var k in currentK){
@@ -25,27 +25,27 @@
       return ioState;
     });
  
-    io._keys = {};
-    io._inversedConfig = {};
+    input._keys = {};
+    input._inversedConfig = {};
     for(var k in watchedKeys ){
-      io._keys[k] = false;
-      io._inversedConfig[ watchedKeys[k] ] = k;
+      input._keys[k] = false;
+      input._inversedConfig[ watchedKeys[k] ] = k;
     }
 
-    io._currentKeys = function(){
+    input._currentKeys = function(){
       document.addEventListener("keydown", function(e){
         var code = e.keyCode;
-        if( code in io._inversedConfig ){
-          io._keys[ io._inversedConfig[code] ] = true;
+        if( code in input._inversedConfig ){
+          input._keys[ input._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in io._inversedConfig ){
-          io._keys[ io._inversedConfig[code] ] = false;
+        if( code in input._inversedConfig ){
+          input._keys[ input._inversedConfig[code] ] = false;
         }
       });
-      io._currentKeys = function(){
+      input._currentKeys = function(){
         return this._keys;
       };
       return this._keys;
@@ -55,7 +55,7 @@
   };
 
   var noAutoKeyboardIO = function( watchedKeys ){
-    var io = new IOManager(function(ioState){
+    var io = new InputManager(function(ioState){
       if(ioState.keys){
         var currentK = this._currentKeys();
         for(var k in currentK){
@@ -69,39 +69,39 @@
       return ioState;
     });
  
-    io._keys = {};
-    io._firedKeys = {};
-    io._inversedConfig = {};
+    input._keys = {};
+    input._firedKeys = {};
+    input._inversedConfig = {};
 
     for(var k in watchedKeys ){
-      io._keys[k] = false;
-      io._firedKeys[k] = false;
-      io._inversedConfig[ watchedKeys[k] ] = k;
+      input._keys[k] = false;
+      input._firedKeys[k] = false;
+      input._inversedConfig[ watchedKeys[k] ] = k;
     }
 
-    io._currentKeys = function(){
+    input._currentKeys = function(){
       document.addEventListener("keydown", function(e){
         var code = e.keyCode;
-        if( code in io._inversedConfig && 
-              !io._firedKeys[ io._inversedConfig[code] ] ){
-          io._keys[ io._inversedConfig[code] ] = true;
-          io._firedKeys[ io._inversedConfig[code] ] = true;
+        if( code in input._inversedConfig && 
+              !input._firedKeys[ input._inversedConfig[code] ] ){
+          input._keys[ input._inversedConfig[code] ] = true;
+          input._firedKeys[ input._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in io._inversedConfig ){
-          io._keys[ io._inversedConfig[code] ] = false;
-          io._firedKeys[ io._inversedConfig[code] ] = false;
+        if( code in input._inversedConfig ){
+          input._keys[ input._inversedConfig[code] ] = false;
+          input._firedKeys[ input._inversedConfig[code] ] = false;
         }
       });
-      io._currentKeys = function(){
+      input._currentKeys = function(){
         return this._keys;
       };
       return this._keys;
     };
 
-    io._resetKeys = function(){
+    input._resetKeys = function(){
       for( var code in this._keys ){
         this._keys[ code ] = false;
       }
@@ -111,7 +111,7 @@
   };
 
   var mouseIO = function(){
-    var io = new IOManager( function(ioState){
+    var io = new InputManager( function(ioState){
       var pos = this._positionValue();
       ioState.position = {
         x : pos.x ? pos.x - this.elPos.left : pos.x,
@@ -121,7 +121,7 @@
       return ioState;
     }, ["position", "buttons"]);
 
-    io._buttonsValue = function(){
+    input._buttonsValue = function(){
       var self = this;
       this.el.addEventListener("mousedown", function(e){
         self._buttons = {
@@ -143,7 +143,7 @@
       };
     };
 
-    io._positionValue = function(){
+    input._positionValue = function(){
       var self = this;
       this.el.addEventListener("mousemove", function(e){
         self._position = {
@@ -170,14 +170,14 @@
     return io;
   };
 
-  var timeIO = new IOManager( function(ioState){
+  var timeIO = new InputManager( function(ioState){
     ioState.time = Date.now();
     return ioState;
   }, ["time"] );
 
   var deltaTimeIO = (function(){
     var lastTime = Date.now();
-    return new IOManager( function(ioState){
+    return new InputManager( function(ioState){
       var currentTime = Date.now();
       ioState.deltaTime = currentTime - lastTime;
       lastTime = currentTime;
@@ -186,11 +186,11 @@
   })();
 
   var controledTimeIO = function( timeLength ){
-    var io = new IOManager( function(ioState ){
+    var io = new InputManager( function(ioState ){
       ioState.time = this._timeValue();
       return ioState;
     }, ["time"]);
-    io._timeValue = function(){
+    input._timeValue = function(){
       this._el = (function(self){
         var d = document.createElement("input");
         d.setAttribute("type", "range");
@@ -214,12 +214,12 @@
   };
 
   //Module exports
-  io.mouse          = mouseIO;
-  io.time           = timeIO;
-  io.deltaTime      = deltaTimeIO;
-  io.controlTime    = controledTimeIO;
-  io.keyboard       = keyboardIO;
-  io.noAutoKeyboard = noAutoKeyboardIO;
+  input.mouse          = mouseIO;
+  input.time           = timeIO;
+  input.deltaTime      = deltaTimeIO;
+  input.controlTime    = controledTimeIO;
+  input.keyboard       = keyboardIO;
+  input.noAutoKeyboard = noAutoKeyboardIO;
 })(
     window.Loop = window.Loop || {},
     window.Loop.io = window.Loop.io || {}
