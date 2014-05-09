@@ -8,9 +8,12 @@
      *    - outputState
      *    - resources (everything that has been loaded so far)
      *    - system (main loop) // Accessing that part is an indication of some
-     *      API limitations (eg fill a bug for that)
+     *      API limitations
      */
-    _init:function( context ){},
+    _init:function( context ){
+      this.context.system.on("start", this.onStart);
+      this.context.system.on("stop", this.onStop);
+    },
     /**
      * Force the animation to clean its mess
      * Next animate will return death?
@@ -62,6 +65,7 @@
   }
   Image.prototype = Object.create(Animation);
   Image.prototype._init = function( context ){
+    Animation.prototype._init.apply(this, arguments);
     this.img = context.resources.img[this.imgId];
   };
   Image.prototype.clean = function(){
