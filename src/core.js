@@ -1,4 +1,4 @@
-(function( loopModule ){
+(function( loopModule, animations ){
   //Request animation frame polyfill
   var requestAnimFrame = (function(){
     return  window.requestAnimationFrame ||
