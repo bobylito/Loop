@@ -3,11 +3,12 @@
   Animation.prototype = {
     /**
      * _init is called when the animation is first used (might not be at startup)
-     *  - context (object) : contains the whole context given 
+     *  - context (object) : contains the whole context given
      *    - inputState
      *    - outputState
      *    - resources (everything that has been loaded so far)
-     *    - system (main loop)
+     *    - system (main loop) // Accessing that part is an indication of some
+     *      API limitations (eg fill a bug for that)
      */
     _init:function( context ){},
     /**
