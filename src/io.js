@@ -12,7 +12,7 @@
   };
 
   var keyboardIO = function( watchedKeys ){
-    var io = new InputManager(function(ioState){
+    var inputK = new InputManager(function(ioState){
       if(ioState.keys){
         var currentK = this._currentKeys();
         for(var k in currentK){
@@ -25,37 +25,37 @@
       return ioState;
     });
  
-    input._keys = {};
-    input._inversedConfig = {};
+    inputK._keys = {};
+    inputK._inversedConfig = {};
     for(var k in watchedKeys ){
-      input._keys[k] = false;
-      input._inversedConfig[ watchedKeys[k] ] = k;
+      inputK._keys[k] = false;
+      inputK._inversedConfig[ watchedKeys[k] ] = k;
     }
 
-    input._currentKeys = function(){
+    inputK._currentKeys = function(){
       document.addEventListener("keydown", function(e){
         var code = e.keyCode;
-        if( code in input._inversedConfig ){
-          input._keys[ input._inversedConfig[code] ] = true;
+        if( code in inputK._inversedConfig ){
+          inputK._keys[ inputK._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in input._inversedConfig ){
-          input._keys[ input._inversedConfig[code] ] = false;
+        if( code in inputK._inversedConfig ){
+          inputK._keys[ inputK._inversedConfig[code] ] = false;
         }
       });
-      input._currentKeys = function(){
+      inputK._currentKeys = function(){
         return this._keys;
       };
       return this._keys;
     };
 
-    return io;
+    return inputK;
   };
 
   var noAutoKeyboardIO = function( watchedKeys ){
-    var io = new InputManager(function(ioState){
+    var inputK = new InputManager(function(ioState){
       if(ioState.keys){
         var currentK = this._currentKeys();
         for(var k in currentK){
@@ -69,45 +69,45 @@
       return ioState;
     });
  
-    input._keys = {};
-    input._firedKeys = {};
-    input._inversedConfig = {};
+    inputK._keys = {};
+    inputK._firedKeys = {};
+    inputK._inversedConfig = {};
 
     for(var k in watchedKeys ){
-      input._keys[k] = false;
-      input._firedKeys[k] = false;
-      input._inversedConfig[ watchedKeys[k] ] = k;
+      inputK._keys[k] = false;
+      inputK._firedKeys[k] = false;
+      inputK._inversedConfig[ watchedKeys[k] ] = k;
     }
 
-    input._currentKeys = function(){
+    inputK._currentKeys = function(){
       document.addEventListener("keydown", function(e){
         var code = e.keyCode;
-        if( code in input._inversedConfig && 
-              !input._firedKeys[ input._inversedConfig[code] ] ){
-          input._keys[ input._inversedConfig[code] ] = true;
-          input._firedKeys[ input._inversedConfig[code] ] = true;
+        if( code in inputK._inversedConfig && 
+              !inputK._firedKeys[ inputK._inversedConfig[code] ] ){
+          inputK._keys[ inputK._inversedConfig[code] ] = true;
+          inputK._firedKeys[ inputK._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in input._inversedConfig ){
-          input._keys[ input._inversedConfig[code] ] = false;
-          input._firedKeys[ input._inversedConfig[code] ] = false;
+        if( code in inputK._inversedConfig ){
+          inputK._keys[ inputK._inversedConfig[code] ] = false;
+          inputK._firedKeys[ inputK._inversedConfig[code] ] = false;
         }
       });
-      input._currentKeys = function(){
+      inputK._currentKeys = function(){
         return this._keys;
       };
       return this._keys;
     };
 
-    input._resetKeys = function(){
+    inputK._resetKeys = function(){
       for( var code in this._keys ){
         this._keys[ code ] = false;
       }
     };
 
-    return io;
+    return inputK;
   };
 
   var mouseIO = function(){
