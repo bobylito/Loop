@@ -11,6 +11,86 @@ a.xscale,c*a.yscale),b.lineTo(a.Xmax*a.xscale,c*a.yscale);b.stroke();b.save();b.
 g;b.moveTo(c,d(c));for(b.beginPath();c<=e;c++){var h=d(c/a.xscale),h=h<a.Ymin?a.Ymin-1:h,h=h>a.Ymax?a.Ymax+1:h;b.lineTo(c,h*a.yscale)}b.stroke()}catch(m){}finally{b.stokeStyle=f}}},l={Xmin:0,Xmax:10,Ymin:0,Ymax:3,xLabel:"x",yLabel:"y",canvasHeight:500,canvasWidth:500,gridVisible:!0},g=function(b,a,d){var a=f.extend({},l,a),c=a.X=a.Xmax-a.Xmin,e=a.Y=a.Ymax-a.Ymin,c=a.xscale=a.canvasWidth/c,e=a.yscale=a.canvasHeight/e,b=f.createCanvas(b,a);b.scale(1,-1);b.translate(0,-a.canvasHeight);b.translate(-(a.Xmin*
 c),-(a.Ymin*e));a.gridVisible&&f.drawGrid(b,a);f.drawAxes(b,a);for(c=0;c<d.length;c++)f.drawFunction(b,a,d[c])};g.tools={datasetToFunc:function(b){return b.reduce(function(a,b,c,e){c=e[c+1];if(void 0===c)return function(c){return c>b[0]?void 0:a(c)};var f=(c[1]-b[1])/(c[0]-b[0]),g=b[1]-f*b[0],h=b[0];return function(b){return b>=h?f*b+g:a(b)}},function(){})},funcToDataset:function(b,a){for(var d=f.findNiceRoundStep(a.Xmax-a.Xmin,15),c=[],e=a.Xmin-a.Xmin%d;e<a.Xmax;e+=d)c.push(b(e));return c}};return g}(window,
 document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i)g[key]=i[key]});return g});
+	;(function( loopModule ){
+	  function Animation(){}
+	  Animation.prototype = {
+	    /**
+	     * _init is called when the animation is first used (might not be at startup)
+	     *  - context (object) : contains the whole context given
+	     *    - inputState
+	     *    - outputState
+	     *    - resources (everything that has been loaded so far)
+	     *    - system (main loop) // Accessing that part is an indication of some
+	     *      API limitations
+	     */
+	    _init:function( context ){
+	      this.context.system.on("start", this.onStart);
+	      this.context.system.on("stop", this.onStop);
+	    },
+	    /**
+	     * Force the animation to clean its mess
+	     * Next animate will return death?
+	     */
+	    clean : function(){},
+	    // When animation is actually started
+	    onStart : function(){},
+	    // when animation is stopped (paused) but not killed
+	    onStop : function(){},
+	    /**
+	     * return animation life status : true is alive, false otherwise
+	     */
+	    animate : function(ioState){},
+	    render : function(outputs){},
+	    /**
+	     * return something for the next animation
+	     */
+	    result : function(){},
+	  };
+
+	  function Entity(id, types){
+	    this.id = id || window.performance.now().toString(); //Ugly
+	    this.types = types || [];
+	    this.state = {};
+	  }
+	  Entity.prototype = {
+	    /**
+	     * add a new type on a given entity
+	     *  - name : name of the type to added
+	     *  - properties : properties related to the type and their initial values
+	     *    >> {x : 0, y : 0}
+	     */
+	    addType : function(name, properties){
+	      if(!name) throw new Error("name not defined");
+	      if(!this.types[name]){
+		throw new Error("Type already defined on entity : " + this.id);
+	      }
+	      this.types.push(name);
+	    },
+	  };
+
+	  function Scene(){
+	    this.entities = [];
+	  }
+
+	  function Image( imageId, entityId ){
+	    this.imgId = imageId;
+	    this.entityId = entityId;
+	  }
+	  Image.prototype = Object.create(Animation);
+	  Image.prototype._init = function( context ){
+	    Animation.prototype._init.apply(this, arguments);
+	    this.img = context.resources.img[this.imgId];
+	  };
+	  Image.prototype.clean = function(){
+	    this.img = null;
+	  };
+	  Image.prototype.render = function( outputContext ){
+	    outputContext.canvas2D.drawImage(this.img, 0, 0);
+	  };
+	})(
+	    window.Loop = window.Loop || {},
+	    window.Loop.animations = window.Loop.animations || {}
+	  );
 ;(function( Loop, benchmark){
   benchmark.particles = function(){
     var nbParticles = document.createElement("div");
@@ -388,7 +468,7 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
   };
 
   var keyboardIO = function( watchedKeys ){
-    var io = new InputManager(function(ioState){
+    var inputK = new InputManager(function(ioState){
       if(ioState.keys){
         var currentK = this._currentKeys();
         for(var k in currentK){
@@ -401,37 +481,37 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       return ioState;
     });
  
-    input._keys = {};
-    input._inversedConfig = {};
+    inputK._keys = {};
+    inputK._inversedConfig = {};
     for(var k in watchedKeys ){
-      input._keys[k] = false;
-      input._inversedConfig[ watchedKeys[k] ] = k;
+      inputK._keys[k] = false;
+      inputK._inversedConfig[ watchedKeys[k] ] = k;
     }
 
-    input._currentKeys = function(){
+    inputK._currentKeys = function(){
       document.addEventListener("keydown", function(e){
         var code = e.keyCode;
-        if( code in input._inversedConfig ){
-          input._keys[ input._inversedConfig[code] ] = true;
+        if( code in inputK._inversedConfig ){
+          inputK._keys[ inputK._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in input._inversedConfig ){
-          input._keys[ input._inversedConfig[code] ] = false;
+        if( code in inputK._inversedConfig ){
+          inputK._keys[ inputK._inversedConfig[code] ] = false;
         }
       });
-      input._currentKeys = function(){
+      inputK._currentKeys = function(){
         return this._keys;
       };
       return this._keys;
     };
 
-    return io;
+    return inputK;
   };
 
   var noAutoKeyboardIO = function( watchedKeys ){
-    var io = new InputManager(function(ioState){
+    var inputK = new InputManager(function(ioState){
       if(ioState.keys){
         var currentK = this._currentKeys();
         for(var k in currentK){
@@ -445,45 +525,45 @@ document,function(g){[].slice.call(arguments,1).forEach(function(i){for(key in i
       return ioState;
     });
  
-    input._keys = {};
-    input._firedKeys = {};
-    input._inversedConfig = {};
+    inputK._keys = {};
+    inputK._firedKeys = {};
+    inputK._inversedConfig = {};
 
     for(var k in watchedKeys ){
-      input._keys[k] = false;
-      input._firedKeys[k] = false;
-      input._inversedConfig[ watchedKeys[k] ] = k;
+      inputK._keys[k] = false;
+      inputK._firedKeys[k] = false;
+      inputK._inversedConfig[ watchedKeys[k] ] = k;
     }
 
-    input._currentKeys = function(){
+    inputK._currentKeys = function(){
       document.addEventListener("keydown", function(e){
         var code = e.keyCode;
-        if( code in input._inversedConfig && 
-              !input._firedKeys[ input._inversedConfig[code] ] ){
-          input._keys[ input._inversedConfig[code] ] = true;
-          input._firedKeys[ input._inversedConfig[code] ] = true;
+        if( code in inputK._inversedConfig && 
+              !inputK._firedKeys[ inputK._inversedConfig[code] ] ){
+          inputK._keys[ inputK._inversedConfig[code] ] = true;
+          inputK._firedKeys[ inputK._inversedConfig[code] ] = true;
         }
       });
       document.addEventListener("keyup", function(e){
         var code = e.keyCode;
-        if( code in input._inversedConfig ){
-          input._keys[ input._inversedConfig[code] ] = false;
-          input._firedKeys[ input._inversedConfig[code] ] = false;
+        if( code in inputK._inversedConfig ){
+          inputK._keys[ inputK._inversedConfig[code] ] = false;
+          inputK._firedKeys[ inputK._inversedConfig[code] ] = false;
         }
       });
-      input._currentKeys = function(){
+      inputK._currentKeys = function(){
         return this._keys;
       };
       return this._keys;
     };
 
-    input._resetKeys = function(){
+    inputK._resetKeys = function(){
       for( var code in this._keys ){
         this._keys[ code ] = false;
       }
     };
 
-    return io;
+    return inputK;
   };
 
   var mouseIO = function(){
